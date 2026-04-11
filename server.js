@@ -1,17 +1,10 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.get('/', (req, res) => {
-  const files = fs.readdirSync(__dirname);
-  const html = files.find(f => f.endsWith('.html'));
-  if (html) {
-    res.sendFile(path.join(__dirname, html));
-  } else {
-    res.send('Nenhum HTML encontrado. Arquivos: ' + files.join(', '));
-  }
+  res.sendFile(path.join(__dirname, 'plano-futuro (2).html'));
 });
 
-app.listen(PORT, () => console.log('OK porta ' + PORT));
+app.listen(PORT, () => console.log('OK'));
