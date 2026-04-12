@@ -8,9 +8,10 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// Proxy ElevenLabs — evita bloqueio de CORS
+// Proxy ElevenLabs
 app.post('/api/speak', (req, res) => {
   const { text, voiceId, apiKey } = req.body;
+
   const data = JSON.stringify({
     text,
     model_id: 'eleven_multilingual_v2',
@@ -24,7 +25,7 @@ app.post('/api/speak', (req, res) => {
 
   const options = {
     hostname: 'api.elevenlabs.io',
-    path: `/v1/text-to-speech/${voiceId}/stream`,
+    path: `/v1/text-to-speech/${voiceId}`,
     method: 'POST',
     headers: {
       'xi-api-key': apiKey,
@@ -35,11 +36,24 @@ app.post('/api/speak', (req, res) => {
   };
 
   const elReq = https.request(options, elRes => {
+    console.log('ElevenLabs status:', elRes.statusCode);
+    if(elRes.statusCode !== 200){
+      let body = '';
+      elRes.on('data', d => body += d);
+      elRes.on('end', () => {
+        console.log('ElevenLabs erro:', body);
+        res.status(elRes.statusCode).json({ error: body });
+      });
+      return;
+    }
     res.setHeader('Content-Type', 'audio/mpeg');
     elRes.pipe(res);
   });
 
-  elReq.on('error', err => res.status(500).json({ error: err.message }));
+  elReq.on('error', err => {
+    console.log('Erro request:', err.message);
+    res.status(500).json({ error: err.message });
+  });
   elReq.write(data);
   elReq.end();
 });
