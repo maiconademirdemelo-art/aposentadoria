@@ -1771,8 +1771,17 @@ function _renderDiag(){
       taxa_real_anual: parseFloat((taxaAnual*100).toFixed(2)),
       anos_acumulacao: anos,
       esgota_em: esgotaAge,
-      simulacoes: []
+      // Novos campos do passo 7 e 8
+      renda_mensal_atual: rendaMensal,
+      renda_em_folha: rendaEmFolha,
+      possui_imoveis: possuiImoveis,
+      possui_holding: possuiHolding,
+      quantidade_imoveis: qtdImoveis,
+      valor_total_imoveis: valorImoveis,
+      fluxo: fluxoAtual
     })
+  }).then(r => r.json()).then(data => {
+    if(data.cooperado_id) window._cooperadoId = data.cooperado_id;
   }).catch(()=>{});
 
   // Salva estado para simulador customizado
@@ -2136,6 +2145,25 @@ function calcPGBL(){
   
   // Gráfico
   renderPGBLChart(anos, serieCombined, serieTax);
+  
+  // ── SALVA SIMULAÇÃO PGBL NO BANCO ──
+  if(window._cooperadoId && hasIncome && hasINSS){
+    fetch('/api/salvar-pgbl', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        cooperado_id: window._cooperadoId,
+        renda_bruta_anual: annualIncome,
+        contribui_inss: pgblINSS,
+        contribuicao_atual: existingContrib,
+        imposto_devido: annualTaxDue,
+        economia_potencial: potentialAdditionalSaving,
+        aporte_necessario: additionalContributionNeeded,
+        horizonte_anos: anos,
+        patrimonio_projetado: finalCombined
+      })
+    }).catch(()=>{});
+  }
 }
 
 function renderPGBLChart(anos, serieCombined, serieTax){
@@ -2452,6 +2480,29 @@ function calcHolding(){
   
   // Gráfico
   renderHldChart();
+  
+  // ── SALVA SIMULAÇÃO HOLDING NO BANCO ──
+  if(window._cooperadoId && hldValor > 0){
+    const recomendacao = economiaTotal > 0 ? 'holding' : 'pf';
+    fetch('/api/salvar-holding', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        cooperado_id: window._cooperadoId,
+        quantidade_imoveis: hldQtd,
+        valor_total_mercado: hldValor,
+        gera_aluguel: hldGeraAluguel,
+        renda_aluguel_mensal: hldAluguel,
+        horizonte_anos: hldAnos,
+        custo_total_pf: pfTotal,
+        custo_total_holding: holdingTotal,
+        economia_total: economiaTotal,
+        economia_inventario: economiaInv,
+        economia_itbi: economiaItbi,
+        recomendacao: recomendacao
+      })
+    }).catch(()=>{});
+  }
 }
 
 function calcIRPFHolding(rendaAnual){
