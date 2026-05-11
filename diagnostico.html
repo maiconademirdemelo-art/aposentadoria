@@ -182,6 +182,60 @@ select{appearance:none;cursor:pointer}
   .rcard-grid{grid-template-columns:1fr}
   .donut-wrap{width:180px;height:180px}
 }
+/* ═══ RELATÓRIO PROFISSIONAL ═══ */
+.rpt{padding:0 0 60px}
+.rpt-cover{text-align:center;padding:60px 0 48px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:48px}
+.rpt-cover-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:rgba(76,139,245,.1);border:1px solid rgba(76,139,245,.2);border-radius:99px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:#4c8bf5;margin-bottom:20px}
+.rpt-cover h1{font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.03em;color:#fff;margin-bottom:6px}
+.rpt-cover-meta{font-size:13px;color:#8b949e;line-height:1.6}
+.rpt-cover-meta strong{color:#e6edf3}
+
+.rpt-section{margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.04)}
+.rpt-section:last-child{border-bottom:none}
+.rpt-sheader{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.rpt-sicon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rpt-stitle{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;color:#fff;letter-spacing:-.02em}
+.rpt-stag{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;letter-spacing:1.4px;text-transform:uppercase;color:#8b949e;margin-top:2px}
+
+.rpt-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.rpt-metric{padding:18px 16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px}
+.rpt-metric-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:#444c56;margin-bottom:8px}
+.rpt-metric-val{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.03em;color:#fff;line-height:1}
+.rpt-metric-val.green{color:#2ecc8a}
+.rpt-metric-val.gold{color:#f8d75e}
+.rpt-metric-val.red{color:#f07070}
+.rpt-metric-sub{font-size:11px;color:#8b949e;margin-top:4px}
+
+.rpt-analysis{font-size:14px;color:#8b949e;line-height:1.7;margin-bottom:20px;padding:18px 20px;background:rgba(255,255,255,.02);border-left:3px solid rgba(76,139,245,.3);border-radius:0 10px 10px 0}
+.rpt-analysis strong{color:#e6edf3;font-weight:600}
+
+.rpt-chart{margin:24px 0;padding:20px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.04);border-radius:12px}
+.rpt-chart-title{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:#444c56;margin-bottom:16px}
+
+.rpt-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.rpt-cbox{padding:20px;border-radius:12px;text-align:center}
+.rpt-cbox.before{background:rgba(240,112,112,.05);border:1px solid rgba(240,112,112,.15)}
+.rpt-cbox.after{background:rgba(46,204,138,.05);border:1px solid rgba(46,204,138,.15)}
+.rpt-cbox-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.rpt-cbox.before .rpt-cbox-label{color:#f07070}
+.rpt-cbox.after .rpt-cbox-label{color:#2ecc8a}
+.rpt-cbox-val{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;color:#fff}
+.rpt-cbox-sub{font-size:11px;color:#8b949e;margin-top:4px}
+
+.rpt-rec{padding:16px 18px;background:rgba(46,204,138,.05);border:1px solid rgba(46,204,138,.15);border-radius:10px;margin-top:16px}
+.rpt-rec-title{font-size:13px;font-weight:700;color:#2ecc8a;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.rpt-rec-text{font-size:13px;color:#e6edf3;line-height:1.5}
+
+.rpt-norec{padding:16px 18px;background:rgba(240,112,112,.04);border:1px solid rgba(240,112,112,.12);border-radius:10px;margin-top:16px}
+
+.rpt-disclaimer{text-align:center;margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.04);font-family:'JetBrains Mono',monospace;font-size:10px;color:#444c56;letter-spacing:.4px;line-height:1.6}
+
+@media(max-width:600px){
+  .rpt-metrics{grid-template-columns:1fr}
+  .rpt-compare{grid-template-columns:1fr}
+  .rpt-metric-val{font-size:20px}
+}
+
 </style>
 </head>
 <body>
@@ -1077,121 +1131,260 @@ function scoreMeta(total) {
 }
 
 function renderResult(d) {
+  var df = window._dadosFinal || {};
   var s = RES.score;
-  var m = scoreMeta(s.total);
+  var sm = scoreMeta(s.total);
+  var today = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
-  // Título
-  document.getElementById('r-title').textContent = 'Diagnóstico de ' + d.nome;
-  document.getElementById('r-sub').textContent = 'Score ' + s.total + ' · Análise em 5 dimensões · ' + new Date().toLocaleDateString('pt-BR');
+  // Calculate gains for Aplicar Melhorias
+  var gains = [], gTotal = 0;
+  if(df.pgbl && RES.pgbl && RES.pgbl.economia > 0){
+    var g = Math.round(RES.pgbl.economia * 10);
+    gains.push({mod:'Otimização Tributária · PGBL',icon:'⚖',g:g,prio:'Alta',cor:'#f07070',
+      acao:'Otimizar PGBL no teto de 12% da renda bruta anual.',
+      det:'Economia de '+fmtR(RES.pgbl.economia)+'/ano, acumulando '+fmtR(g)+' em 10 anos. Aporte adicional necessário: '+fmtR(RES.pgbl.adicional)+'.'});
+    gTotal += g;
+  }
+  if(df.holding && df.holding.recomenda && RES.holding){
+    var g = Math.round((RES.holding.econ10||0) + (RES.holding.itcmd||0));
+    gains.push({mod:'Holding Patrimonial',icon:'🏛',g:g,prio:'Alta',cor:'#f07070',
+      acao:'Estruturar holding patrimonial para imóveis.',
+      det:'Reduz IR sobre aluguéis de 27,5% para 11,33% e protege contra ITCMD de '+fmtR(RES.holding.itcmd||0)+'.'});
+    gTotal += g;
+  }
+  if(df.vgbl && RES.vgbl && RES.vgbl.g > 0){
+    gains.push({mod:'VGBL Sucessório',icon:'🛡',g:RES.vgbl.g,prio:'Média',cor:'#f8d75e',
+      acao:'Implementar VGBL com beneficiários definidos.',
+      det:'Herança protegida: '+fmtR(RES.vgbl.com)+' vs '+fmtR(RES.vgbl.sem)+' sem estruturação.'});
+    gTotal += RES.vgbl.g;
+  }
+  if(df.aposentadoria && RES.apos){
+    var rd = d.aposRenda || d.renda*0.8;
+    var gap = Math.max(rd - RES.apos.rendaMes, 0);
+    if(gap > 0){
+      var g = Math.round(gap*12*10);
+      gains.push({mod:'Aposentadoria',icon:'🎯',g:g,prio:'Média',cor:'#f8d75e',
+        acao:'Ajustar alocação e aporte mensal.',
+        det:'Gap de '+fmtR(gap)+'/mês entre renda projetada ('+fmtR(RES.apos.rendaMes)+') e desejada ('+fmtR(rd)+').'});
+      gTotal += g;
+    }
+  }
+  window._gainsData = {items:gains, total:gTotal};
 
-  // Donut
-  document.getElementById('r-score').textContent = s.total;
-  var arc = document.getElementById('r-arc');
-  if (arc) arc.setAttribute('stroke-dashoffset', String(100 - s.total / 10));
-  var badge = document.getElementById('r-badge');
-  badge.textContent = m.label;
-  badge.className = 'score-badge ' + m.cls;
+  // ══ Construir relatório ══
+  var h = '<div class="rpt">';
+
+  // ── CAPA ──
+  h += '<div class="rpt-cover">';
+  h += '<div class="rpt-cover-badge">⬡ WealthPlanning</div>';
+  h += '<h1>Diagnóstico de Eficiência Patrimonial</h1>';
+  h += '<div class="rpt-cover-meta"><strong>'+d.nome+'</strong><br>'+today+'<br>Consultor: Maicon Melo · CEA ANBIMA</div>';
+  h += '</div>';
+
+  // ── SCORE ──
+  h += '<div class="rpt-section">';
+  h += '<div class="rpt-sheader"><div class="rpt-sicon" style="background:rgba(76,139,245,.15)">📊</div><div><div class="rpt-stitle">Score de Saúde Financeira</div><div class="rpt-stag">Análise ponderada em 5 dimensões</div></div></div>';
+
+  h += '<div class="score-section">';
+  h += '<div class="donut-wrap"><svg class="donut-svg" viewBox="0 0 200 200"><defs><linearGradient id="dGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2ecc8a"/><stop offset="50%" stop-color="#f8d75e"/><stop offset="100%" stop-color="#f07070"/></linearGradient></defs><circle class="donut-track" cx="100" cy="100" r="85"/><circle class="donut-arc" cx="100" cy="100" r="85" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="'+(100-s.total/10)+'" id="r-arc"/></svg>';
+  h += '<div class="donut-center"><div class="score-num" id="r-score">'+s.total+'</div><div class="score-of">de 1000</div><div class="score-badge '+sm.cls+'" id="r-badge">'+sm.label+'</div></div></div>';
 
   // Dimensões
   var dims = [
-    {icon:'⚖', name:'Eficiência Tributária', meta:'Peso 20%', score:s.trib, key:'trib',
-     desc: s.trib < 50 ? 'Oportunidade de otimização tributária identificada — PGBL e estrutura da declaração.' : 'Tributação razoavelmente otimizada.'},
-    {icon:'🏛', name:'Estrutura Sucessória', meta:'Peso 25%', score:s.suc, key:'suc',
-     desc: s.suc < 50 ? 'Patrimônio exposto a ITCMD e inventário judicial. Holding e VGBL podem proteger os herdeiros.' : 'Estrutura sucessória parcialmente protegida.'},
-    {icon:'📊', name:'Diversificação', meta:'Peso 25%', score:s.diver, key:'diver',
-     desc: s.diver < 60 ? 'Concentração elevada. Recomendável ampliar exposição a diferentes classes e geografias.' : 'Diversificação razoável para o perfil.'},
-    {icon:'🎯', name:'Aposentadoria', meta:'Peso 20%', score:s.apos, key:'apos',
-     desc: s.apos < 60 ? 'Projeção indica gap entre patrimônio acumulado e renda desejada na aposentadoria.' : 'Trajetória de acumulação alinhada ao objetivo.'},
-    {icon:'💧', name:'Liquidez', meta:'Peso 10%', score:s.liq, key:'liq',
-     desc: s.liq < 50 ? 'Reserva de emergência abaixo do recomendado (6 meses de gastos).' : 'Liquidez imediata adequada.'},
+    {i:'⚖',n:'Eficiência Tributária',w:'20%',s:s.trib,d:s.trib<50?'Oportunidades significativas de otimização tributária identificadas. PGBL, estrutura de declaração e regime de aluguéis podem ser otimizados.':'Tributação razoavelmente otimizada para o perfil atual.'},
+    {i:'🏛',n:'Estrutura Sucessória',w:'25%',s:s.suc,d:s.suc<50?'Patrimônio com exposição relevante a ITCMD e custos de inventário judicial. Holding e VGBL são instrumentos recomendados.':'Estrutura sucessória parcialmente protegida.'},
+    {i:'📊',n:'Diversificação',w:'25%',s:s.diver,d:s.diver<60?'Concentração elevada em poucas classes de ativos. Recomendável ampliar exposição a classes descorrelacionadas e proteção cambial.':'Diversificação razoável para o perfil de risco.'},
+    {i:'🎯',n:'Aposentadoria',w:'20%',s:s.apos,d:s.apos<60?'Projeção indica gap entre patrimônio acumulado e renda desejada no horizonte de aposentadoria.':'Trajetória de acumulação alinhada ao objetivo de aposentadoria.'},
+    {i:'💧',n:'Liquidez',w:'10%',s:s.liq,d:s.liq<50?'Reserva de emergência abaixo do ideal de 6 meses de gastos em liquidez imediata.':'Liquidez imediata adequada para o padrão de gastos.'}
   ];
-
-  calcGains(d);
-
-  var dimsHtml = '';
-  for (var dim of dims) {
-    dimsHtml += '<div class="dim" data-dim-key="' + dim.key + '">' +
-      '<div class="dim-header">' +
-        '<div class="dim-icon">' + dim.icon + '</div>' +
-        '<div><div class="dim-name">' + dim.name + '</div><div class="dim-meta">' + dim.meta + '</div></div>' +
-        '<div class="dim-score-val">' + dim.score + '</div>' +
-      '</div>' +
-      '<div class="dim-bar-track"><div class="dim-bar-fill" style="width:' + dim.score + '%;' + barColor(dim.score) + '"></div></div>' +
-      '<div class="dim-desc">' + dim.desc + '</div>' +
-    '</div>';
+  h += '<div class="dims">';
+  for(var i=0;i<dims.length;i++){
+    var dm=dims[i];
+    h += '<div class="dim"><div class="dim-header"><div class="dim-icon">'+dm.i+'</div><div><div class="dim-name">'+dm.n+'</div><div class="dim-meta">Peso '+dm.w+'</div></div><div class="dim-score-val">'+dm.s+'</div></div>';
+    h += '<div class="dim-bar-track"><div class="dim-bar-fill" style="width:'+dm.s+'%;'+barColor(dm.s)+'"></div></div>';
+    h += '<div class="dim-desc">'+dm.d+'</div></div>';
   }
-  document.getElementById('r-dims').innerHTML = dimsHtml;
+  h += '</div></div>';
 
-  // Cards
-  var cards = '';
-
-  // Aposentadoria
-  if (RES.apos) {
-    cards += '<div class="rcard">' +
-      '<div class="rcard-tag">Planejamento de Aposentadoria</div>' +
-      '<div class="rcard-title">Patrimônio projetado aos ' + d.aposId + ' anos</div>' +
-      '<div class="rcard-val">' + fmtR(RES.apos.futuro) + '</div>' +
-      '<div class="rcard-val-sub">patrimônio acumulado projetado</div>' +
-      '<div class="rcard-grid">' +
-        '<div class="rcard-item"><div class="rcard-item-label">Renda mensal gerada</div><div class="rcard-item-val">' + fmtR(RES.apos.rendaMes) + '/mês</div></div>' +
-        '<div class="rcard-item"><div class="rcard-item-label">Horizonte de acumulação</div><div class="rcard-item-val">' + RES.apos.anos + ' anos</div></div>' +
-      '</div>' +
-    '</div>';
+  // Resumo executivo
+  var resumo = 'O patrimônio de <strong>'+d.nome+'</strong> obteve Score <strong>'+s.total+'/1000</strong> ('+sm.label+'). ';
+  var gaps = dims.filter(function(x){return x.s < 60;});
+  if(gaps.length > 0){
+    resumo += 'Foram identificados gaps em <strong>'+gaps.length+' de 5 dimensões</strong>: '+gaps.map(function(x){return x.n+' ('+x.s+')';}).join(', ')+'. ';
   }
-
-  // PGBL
-  if (RES.pgbl && RES.pgbl.economia > 0) {
-    cards += '<div class="rcard">' +
-      '<div class="rcard-tag">Otimização Tributária · PGBL</div>' +
-      '<div class="rcard-title">Economia de IR disponível</div>' +
-      '<div class="rcard-val" style="color:var(--gold)">' + fmtR(RES.pgbl.economia) + '/ano</div>' +
-      '<div class="rcard-val-sub">economia anual com PGBL no teto</div>' +
-      (RES.pgbl.adicional > 0 ? '<div class="rcard-desc" style="margin-top:12px">Aporte adicional necessário para maximizar: <strong style="color:var(--white)">' + fmtR(RES.pgbl.adicional) + '</strong></div>' : '') +
-    '</div>';
+  if(gTotal > 0){
+    resumo += 'O potencial de ganho estimado com as melhorias recomendadas é de <strong>'+fmtR(gTotal)+' em 10 anos</strong>.';
   }
+  h += '<div class="rpt-analysis">'+resumo+'</div>';
+  h += '</div>';
 
-  // Holding
-  if (RES.holding) {
-    if (RES.holding.recomenda) {
-      cards += '<div class="rcard">' +
-        '<div class="rcard-tag">Holding Patrimonial</div>' +
-        '<div class="rcard-title">Estruturação recomendada</div>' +
-        '<div class="rcard-grid">' +
-          '<div class="rcard-item"><div class="rcard-item-label">Economia em IR (10 anos)</div><div class="rcard-item-val" style="color:var(--green)">' + fmtR(RES.holding.econ10) + '</div></div>' +
-          '<div class="rcard-item"><div class="rcard-item-label">ITCMD em risco sem holding</div><div class="rcard-item-val" style="color:var(--red)">' + fmtR(RES.holding.itcmd) + '</div></div>' +
-        '</div>' +
-      '</div>';
+  // ── MÓDULO: APOSENTADORIA ──
+  if(df.aposentadoria && RES.apos){
+    h += '<div class="rpt-section">';
+    h += '<div class="rpt-sheader"><div class="rpt-sicon" style="background:rgba(248,215,94,.12)">🎯</div><div><div class="rpt-stitle">Planejamento de Aposentadoria</div><div class="rpt-stag">Projeção de acumulação e renda</div></div></div>';
+
+    h += '<div class="rpt-metrics">';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Patrimônio projetado</div><div class="rpt-metric-val green">'+df.aposentadoria.patrimonio+'</div><div class="rpt-metric-sub">aos '+d.aposId+' anos ('+d.perfil+')</div></div>';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Renda mensal gerada</div><div class="rpt-metric-val">'+df.aposentadoria.renda+'</div><div class="rpt-metric-sub">'+(d.est==='renda'?'preservando capital':'consumindo capital')+'</div></div>';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Horizonte</div><div class="rpt-metric-val">'+RES.apos.anos+'</div><div class="rpt-metric-sub">anos de acumulação</div></div>';
+    h += '</div>';
+
+    // Chart SVG - curva de acumulação
+    if(df.aposentadoria.chartData && df.aposentadoria.chartData.valores.length > 0){
+      var vals = df.aposentadoria.chartData.valores;
+      var labels = df.aposentadoria.chartData.labels;
+      var maxV = Math.max.apply(null, vals);
+      var chartW = 600, chartH = 160, padL = 10, padR = 10, padT = 10, padB = 30;
+      var drawW = chartW - padL - padR, drawH = chartH - padT - padB;
+
+      var points = vals.map(function(v,i){
+        var x = padL + (i / Math.max(vals.length-1, 1)) * drawW;
+        var y = padT + drawH - (v / maxV) * drawH;
+        return x+','+y;
+      }).join(' ');
+
+      var areaPoints = padL+','+(padT+drawH) + ' ' + points + ' ' + (padL+drawW)+','+(padT+drawH);
+
+      h += '<div class="rpt-chart">';
+      h += '<div class="rpt-chart-title">Projeção de Patrimônio · '+RES.apos.anos+' anos</div>';
+      h += '<svg viewBox="0 0 '+chartW+' '+chartH+'" style="width:100%;height:auto">';
+      // Grid lines
+      for(var g=0;g<4;g++){
+        var gy = padT + (drawH/3)*g;
+        h += '<line x1="'+padL+'" y1="'+gy+'" x2="'+(padL+drawW)+'" y2="'+gy+'" stroke="rgba(255,255,255,.04)" stroke-width="1"/>';
+      }
+      // Area fill
+      h += '<polygon points="'+areaPoints+'" fill="url(#areaGrad)" opacity=".3"/>';
+      h += '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4c8bf5"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs>';
+      // Line
+      h += '<polyline points="'+points+'" fill="none" stroke="#4c8bf5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      // Labels
+      if(labels.length > 0){
+        h += '<text x="'+padL+'" y="'+(chartH-4)+'" fill="#444c56" font-size="9" font-family="JetBrains Mono,monospace">'+labels[0]+'</text>';
+        h += '<text x="'+(padL+drawW)+'" y="'+(chartH-4)+'" fill="#444c56" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="end">'+labels[labels.length-1]+'</text>';
+      }
+      // End value
+      var lastX = padL + drawW;
+      var lastY = padT + drawH - (vals[vals.length-1]/maxV)*drawH;
+      h += '<circle cx="'+lastX+'" cy="'+lastY+'" r="4" fill="#4c8bf5" stroke="#080e1a" stroke-width="2"/>';
+      h += '<text x="'+(lastX-8)+'" y="'+(lastY-10)+'" fill="#fff" font-size="10" font-family="Bricolage Grotesque,sans-serif" font-weight="700" text-anchor="end">'+fmtR(vals[vals.length-1])+'</text>';
+      h += '</svg></div>';
     }
+
+    var rendaDes = d.aposRenda || d.renda*0.8;
+    var rendaOk = RES.apos.rendaMes >= rendaDes;
+    h += '<div class="rpt-analysis">Com aporte mensal de <strong>'+df.aposentadoria.aporte+'</strong> e perfil <strong>'+d.perfil+'</strong>, o patrimônio projetado atinge <strong>'+df.aposentadoria.patrimonio+'</strong> aos '+d.aposId+' anos. A renda mensal gerada de <strong>'+df.aposentadoria.renda+'</strong> '+(rendaOk?'atende':'não atende')+' a meta de '+fmtR(rendaDes)+'/mês'+(rendaOk?'.':' — recomendável aumentar aporte ou ajustar perfil de risco.')+'</div>';
+    h += '</div>';
   }
 
-  // VGBL
-  if (RES.vgbl && RES.vgbl.ganho > 0) {
-    cards += '<div class="rcard">' +
-      '<div class="rcard-tag">Estrutura Sucessória · VGBL</div>' +
-      '<div class="rcard-title">Impacto na herança dos beneficiários</div>' +
-      '<div class="rcard-grid">' +
-        '<div class="rcard-item"><div class="rcard-item-label">Sem estruturação (exposto a ITCMD)</div><div class="rcard-item-val" style="color:var(--red)">' + fmtR(RES.vgbl.herancaSem) + '</div></div>' +
-        '<div class="rcard-item"><div class="rcard-item-label">Com VGBL + planejamento</div><div class="rcard-item-val" style="color:var(--green)">' + fmtR(RES.vgbl.herancaCom) + '</div></div>' +
-      '</div>' +
-      '<div class="rcard-desc" style="margin-top:12px">Diferença preservada: <strong style="color:var(--white)">' + fmtR(RES.vgbl.ganho) + '</strong></div>' +
-    '</div>';
+  // ── MÓDULO: PGBL ──
+  if(df.pgbl && RES.pgbl && RES.pgbl.economia > 0){
+    h += '<div class="rpt-section">';
+    h += '<div class="rpt-sheader"><div class="rpt-sicon" style="background:rgba(46,204,138,.12)">⚖</div><div><div class="rpt-stitle">Otimização Tributária · PGBL</div><div class="rpt-stag">Economia de IR via previdência privada</div></div></div>';
+
+    h += '<div class="rpt-metrics">';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Economia anual de IR</div><div class="rpt-metric-val green">'+fmtR(RES.pgbl.economia)+'</div><div class="rpt-metric-sub">por ano com PGBL otimizado</div></div>';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Aporte adicional ideal</div><div class="rpt-metric-val gold">'+fmtR(RES.pgbl.adicional)+'</div><div class="rpt-metric-sub">para atingir teto de 12%</div></div>';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Economia em 10 anos</div><div class="rpt-metric-val green">'+fmtR(RES.pgbl.economia*10)+'</div><div class="rpt-metric-sub">acumulada com reinvestimento</div></div>';
+    h += '</div>';
+
+    h += '<div class="rpt-compare">';
+    h += '<div class="rpt-cbox before"><div class="rpt-cbox-label">Sem PGBL otimizado</div><div class="rpt-cbox-val" style="color:#f07070">'+fmtR(d.renda*12*0.275*0.4)+'</div><div class="rpt-cbox-sub">IR pago por ano (estimativa)</div></div>';
+    h += '<div class="rpt-cbox after"><div class="rpt-cbox-label">Com PGBL no teto</div><div class="rpt-cbox-val" style="color:#2ecc8a">'+fmtR(d.renda*12*0.275*0.4 - RES.pgbl.economia)+'</div><div class="rpt-cbox-sub">IR otimizado por ano</div></div>';
+    h += '</div>';
+
+    h += '<div class="rpt-analysis">A declaração completa permite deduzir até <strong>12% da renda bruta anual</strong> em PGBL, reduzindo a base de cálculo do IR. Com renda de <strong>'+fmtR(d.renda)+'/mês</strong>, o teto de dedução é <strong>'+fmtR(d.renda*12*0.12)+'</strong>. '+(d.pgbl?'O aporte atual pode ser complementado em <strong>'+fmtR(RES.pgbl.adicional)+'</strong> para atingir o benefício máximo.':'Atualmente não há aporte em PGBL — a oportunidade é integral.')+'</div>';
+
+    h += '<div class="rpt-rec"><div class="rpt-rec-title">✓ Recomendação</div><div class="rpt-rec-text">Iniciar (ou complementar) aporte anual em PGBL de <strong>'+fmtR(d.renda*12*0.12)+'</strong>. A economia de <strong>'+fmtR(RES.pgbl.economia)+'/ano</strong> deve ser reinvestida para potencializar o efeito composto.</div></div>';
+    h += '</div>';
   }
 
-  document.getElementById('r-cards').innerHTML = cards;
+  // ── MÓDULO: HOLDING ──
+  if(df.holding){
+    h += '<div class="rpt-section">';
+    h += '<div class="rpt-sheader"><div class="rpt-sicon" style="background:rgba(76,139,245,.12)">🏛</div><div><div class="rpt-stitle">Holding Patrimonial</div><div class="rpt-stag">Proteção e eficiência imobiliária</div></div></div>';
 
-  scoreAtual = s.total;
-  // Animar score
-  var scoreEl = document.getElementById('r-score');
-  var from = 0;
-  var to = s.total;
-  var start = performance.now();
-  function animScore(now) {
-    var t = Math.min((now - start) / 1200, 1);
-    var eased = 1 - Math.pow(1 - t, 3);
-    scoreEl.textContent = Math.round(from + (to - from) * eased);
-    if (t < 1) requestAnimationFrame(animScore);
+    if(df.holding.recomenda && RES.holding){
+      h += '<div class="rpt-metrics">';
+      h += '<div class="rpt-metric"><div class="rpt-metric-label">Economia IR (10 anos)</div><div class="rpt-metric-val green">'+df.holding.economia+'</div><div class="rpt-metric-sub">redução tributária sobre aluguéis</div></div>';
+      h += '<div class="rpt-metric"><div class="rpt-metric-label">ITCMD protegido</div><div class="rpt-metric-val red">'+fmtR(RES.holding.itcmd)+'</div><div class="rpt-metric-sub">evitado via holding</div></div>';
+      h += '<div class="rpt-metric"><div class="rpt-metric-label">Patrimônio imobiliário</div><div class="rpt-metric-val">'+fmtR(d.imVal)+'</div><div class="rpt-metric-sub">em '+d.imQtd+' imóvel(is)</div></div>';
+      h += '</div>';
+
+      h += '<div class="rpt-compare">';
+      h += '<div class="rpt-cbox before"><div class="rpt-cbox-label">IR sobre aluguéis (PF)</div><div class="rpt-cbox-val" style="color:#f07070">27,5%</div><div class="rpt-cbox-sub">Tabela progressiva IRPF</div></div>';
+      h += '<div class="rpt-cbox after"><div class="rpt-cbox-label">IR sobre aluguéis (Holding)</div><div class="rpt-cbox-val" style="color:#2ecc8a">11,33%</div><div class="rpt-cbox-sub">Lucro presumido</div></div>';
+      h += '</div>';
+
+      h += '<div class="rpt-analysis">Com <strong>'+d.imQtd+' imóvel(is)</strong> totalizando <strong>'+fmtR(d.imVal)+'</strong> em nome de pessoa física, o patrimônio está exposto a <strong>ITCMD de '+fmtR(RES.holding.itcmd)+'</strong> em caso de sucessão, além de custos de inventário judicial (estimativa de 5-15% do patrimônio). A holding reduz a carga tributária sobre aluguéis e facilita a transmissão patrimonial.</div>';
+
+      h += '<div class="rpt-rec"><div class="rpt-rec-title">✓ Recomendação</div><div class="rpt-rec-text">Estruturar holding patrimonial para os imóveis. Migrar titularidade de PF para PJ. Economia projetada de <strong>'+df.holding.economia+'</strong> em 10 anos (IR + ITCMD).</div></div>';
+    } else {
+      h += '<div class="rpt-analysis">Patrimônio imobiliário avaliado. '+(df.holding.motivo||'Holding não recomendada neste momento — patrimônio abaixo do limiar de eficiência ou já estruturado em PJ.')+'</div>';
+      h += '<div class="rpt-norec"><div style="font-size:13px;font-weight:700;color:#f07070;margin-bottom:6px">✗ Não recomendado neste momento</div><div style="font-size:13px;color:#8b949e;line-height:1.5">O custo de constituição e manutenção da holding não se justifica para o patrimônio imobiliário atual.</div></div>';
+    }
+    h += '</div>';
   }
-  requestAnimationFrame(animScore);
+
+  // ── MÓDULO: VGBL ──
+  if(df.vgbl && RES.vgbl && RES.vgbl.g > 0){
+    h += '<div class="rpt-section">';
+    h += '<div class="rpt-sheader"><div class="rpt-sicon" style="background:rgba(248,215,94,.12)">🛡</div><div><div class="rpt-stitle">VGBL Sucessório</div><div class="rpt-stag">Proteção patrimonial na sucessão</div></div></div>';
+
+    h += '<div class="rpt-metrics">';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Herança sem estruturação</div><div class="rpt-metric-val red">'+df.vgbl.herancaSem+'</div><div class="rpt-metric-sub">após ITCMD 8% + inventário 5%</div></div>';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Herança com VGBL</div><div class="rpt-metric-val green">'+df.vgbl.herancaCom+'</div><div class="rpt-metric-sub">sem ITCMD, sem inventário</div></div>';
+    h += '<div class="rpt-metric"><div class="rpt-metric-label">Diferença preservada</div><div class="rpt-metric-val green">'+df.vgbl.ganho+'</div><div class="rpt-metric-sub">valor protegido pela estrutura</div></div>';
+    h += '</div>';
+
+    h += '<div class="rpt-compare">';
+    h += '<div class="rpt-cbox before"><div class="rpt-cbox-label">Sem estruturação</div><div class="rpt-cbox-val" style="color:#f07070">'+df.vgbl.herancaSem+'</div><div class="rpt-cbox-sub">Exposto a ITCMD + inventário</div></div>';
+    h += '<div class="rpt-cbox after"><div class="rpt-cbox-label">Com VGBL + planejamento</div><div class="rpt-cbox-val" style="color:#2ecc8a">'+df.vgbl.herancaCom+'</div><div class="rpt-cbox-sub">Liquidez imediata, sem burocracia</div></div>';
+    h += '</div>';
+
+    h += '<div class="rpt-analysis">O VGBL é um instrumento de <strong>planejamento sucessório</strong>, não de investimento. Sua principal vantagem: <strong>não entra em inventário</strong>, oferece liquidez imediata aos beneficiários, e em muitos estados não incide ITCMD. Para patrimônio de <strong>'+fmtR(RES.vgbl.pat)+'</strong>, a estruturação preserva <strong>'+df.vgbl.ganho+'</strong> que seriam consumidos por tributação e burocracia.</div>';
+
+    h += '<div class="rpt-rec"><div class="rpt-rec-title">✓ Recomendação</div><div class="rpt-rec-text">Implementar VGBL com beneficiários definidos, regime tributário regressivo (tabela decrescente). Migração gradual respeitando o limite de R$ 600.000/ano para evitar IOF.</div></div>';
+    h += '</div>';
+  }
+
+  // ── APLICAR MELHORIAS ──
+  if(gains.length > 0){
+    h += '<div class="rpt-section" id="r-mel-section">';
+    h += '<div id="r-mel-banner" style="display:none;padding:28px 32px;background:linear-gradient(135deg,rgba(46,204,138,.12),rgba(46,204,138,.04));border:1.5px solid rgba(46,204,138,.3);border-radius:16px;text-align:center;margin-bottom:24px">';
+    h += '<div style="font-family:JetBrains Mono,monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#2ecc8a;margin-bottom:10px">✦ Ganho total estimado nos próximos 10 anos</div>';
+    h += '<div style="font-weight:800;font-size:clamp(32px,5vw,48px);letter-spacing:-.04em;line-height:1;background:linear-gradient(180deg,#fff 30%,#2ecc8a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">'+fmtR(gTotal)+'</div>';
+    h += '<div style="font-size:13px;color:#8b949e;margin-top:8px">Economia tributária + proteção sucessória + otimização patrimonial</div>';
+    h += '</div>';
+
+    h += '<div style="text-align:center;margin:24px 0"><button id="r-btn-mel" onclick="toggleMelhorias()" style="display:inline-flex;align-items:center;gap:10px;padding:16px 32px;background:linear-gradient(135deg,#2ecc8a,#24a070);border:none;border-radius:12px;color:#fff;font-family:Bricolage Grotesque,sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(46,204,138,.3)">✦ Aplicar Melhorias — ver ganho potencial</button></div>';
+
+    h += '<div id="r-mel-actions" style="display:none">';
+    h += '<div style="font-family:JetBrains Mono,monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#4c8bf5;margin:28px 0 16px;text-align:center">⬡ Plano de Ação Priorizado</div>';
+    for(var i=0;i<gains.length;i++){
+      var gi = gains[i];
+      h += '<div style="padding:24px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(20,30,46,.8);margin-bottom:12px">';
+      h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">'+gi.icon+'</span><span style="font-weight:700;font-size:15px;color:#fff">'+gi.mod+'</span></div><span style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1px;padding:4px 10px;border-radius:99px;border:1px solid '+gi.cor+';color:'+gi.cor+'">'+gi.prio+'</span></div>';
+      h += '<div style="font-weight:800;font-size:28px;color:#2ecc8a;letter-spacing:-.03em;margin-bottom:8px">'+fmtR(gi.g)+'</div>';
+      h += '<div style="font-size:13px;color:#e6edf3;line-height:1.5;margin-bottom:6px"><strong>Ação:</strong> '+gi.acao+'</div>';
+      h += '<div style="font-size:12px;color:#8b949e;line-height:1.4">'+gi.det+'</div>';
+      h += '</div>';
+    }
+    h += '</div></div>';
+  }
+
+  // ── CTA ──
+  h += '<div class="final-cta">';
+  h += '<h3>Próximo passo: devolutiva presencial</h3>';
+  h += '<p>Este diagnóstico é o ponto de partida. Na reunião de devolutiva, Maicon apresenta o plano de ação completo com cronograma de implementação, priorização por impacto financeiro e projeções detalhadas para cada módulo.</p>';
+  h += '<a class="btn-cta" href="https://wa.me/5547992615146?text=Ol%C3%A1+Maicon%2C+conclu%C3%AD+o+diagn%C3%B3stico+patrimonial+e+quero+agendar+a+devolutiva." target="_blank">Agendar devolutiva →</a>';
+  h += '</div>';
+
+  h += '<div class="rpt-disclaimer">Este diagnóstico é baseado nos dados informados e utiliza premissas de mercado (CDI 10,5% a.a., IPCA 4,5% a.a.).<br>Não constitui recomendação individualizada de valores mobiliários nos termos da Resolução CVM nº 19/2021.<br><br><strong>Maicon Melo · CEA — Especialista em Investimentos ANBIMA</strong><br>WealthPlanning © 2026</div>';
+
+  h += '</div>';
+
+  document.getElementById('step-result').innerHTML = h;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1293,64 +1486,21 @@ function calcOptimizedScore() {
 
 function toggleMelhorias() {
   melhoriaAtiva = !melhoriaAtiva;
-  var btn = document.getElementById('r-btn-melhorias');
-  var banner = document.getElementById('r-gains-banner');
-  var actions = document.getElementById('r-actions');
+  var btn = document.getElementById('r-btn-mel');
+  var banner = document.getElementById('r-mel-banner');
+  var actions = document.getElementById('r-mel-actions');
 
   if (melhoriaAtiva) {
-    btn.textContent = '↺ Voltar ao estado atual';
-    btn.style.background = 'linear-gradient(135deg,#4c8bf5,#3a7bdc)';
-
-    // Mostrar banner de ganhos
-    banner.style.display = 'block';
-    document.getElementById('r-gains-total').textContent = fmtR(gainsData.total);
-
-    // Animar score
-    var opt = calcOptimizedScore();
-    animateValue(document.getElementById('r-score'), scoreAtual, opt.total, 1200);
-    scoreAtual = opt.total;
-    document.getElementById('r-arc').setAttribute('stroke-dashoffset', String(100 - opt.total / 10));
-    var badge = document.getElementById('r-badge');
-    var m = scoreMeta(opt.total);
-    badge.textContent = m.label; badge.className = 'score-badge ' + m.cls;
-
-    // Atualizar dimensões
-    updateDims(opt);
-
-    // Mostrar plano de ação
-    actions.style.display = 'block';
-    var html = '';
-    gainsData.items.forEach(function(item) {
-      html += '<div style="padding:24px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:linear-gradient(180deg,rgba(20,30,46,.8),rgba(15,24,36,.8))">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
-          '<div style="display:flex;align-items:center;gap:10px">' +
-            '<span style="font-size:18px">' + item.icon + '</span>' +
-            '<span style="font-family:Bricolage Grotesque,sans-serif;font-weight:700;font-size:15px;color:#fff">' + item.modulo + '</span>' +
-          '</div>' +
-          '<span style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1px;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid ' + item.prioCor + ';color:' + item.prioCor + '">' + item.prioridade + '</span>' +
-        '</div>' +
-        '<div style="font-family:Bricolage Grotesque,sans-serif;font-weight:800;font-size:28px;color:#2ecc8a;letter-spacing:-.03em;margin-bottom:8px">' + fmtR(item.ganho) + '</div>' +
-        '<div style="font-size:13px;color:#e6edf3;line-height:1.5;margin-bottom:8px"><strong>Ação:</strong> ' + item.acao + '</div>' +
-        '<div style="font-size:12px;color:#8b949e;line-height:1.4">' + item.detalhe + '</div>' +
-      '</div>';
-    });
-    document.getElementById('r-action-cards').innerHTML = html;
-
+    if(btn)btn.textContent = '\u21ba Voltar ao estado atual';
+    if(btn)btn.style.background = 'linear-gradient(135deg,#4c8bf5,#3a7bdc)';
+    if(banner)banner.style.display = 'block';
+    if(actions)actions.style.display = 'block';
+    if(banner)banner.scrollIntoView({behavior:'smooth',block:'center'});
   } else {
-    btn.innerHTML = '✦ Aplicar Melhorias — ver potencial';
-    btn.style.background = 'linear-gradient(135deg,#2ecc8a,#24a070)';
-    banner.style.display = 'none';
-    actions.style.display = 'none';
-
-    // Voltar score original
-    var orig = RES.score;
-    animateValue(document.getElementById('r-score'), scoreAtual, orig.total, 1200);
-    scoreAtual = orig.total;
-    document.getElementById('r-arc').setAttribute('stroke-dashoffset', String(100 - orig.total / 10));
-    var badge = document.getElementById('r-badge');
-    var m = scoreMeta(orig.total);
-    badge.textContent = m.label; badge.className = 'score-badge ' + m.cls;
-    updateDims(orig);
+    if(btn)btn.innerHTML = '\u2726 Aplicar Melhorias \u2014 ver ganho potencial';
+    if(btn)btn.style.background = 'linear-gradient(135deg,#2ecc8a,#24a070)';
+    if(banner)banner.style.display = 'none';
+    if(actions)actions.style.display = 'none';
   }
 }
 
