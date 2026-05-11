@@ -1752,7 +1752,16 @@ body.has-rxp{padding-top:48px}
       <!-- Cards de módulos (multi-seleção) -->
       <div class="modulos-grid">
         
-        <div class="modulo-card anim-element" data-anim-step="4.0" data-modulo="aposentadoria" onclick="toggleModulo('aposentadoria', this)">
+        <div class="modulo-card anim-element" data-anim-step="4.0" onclick="abrirDiagnostico()" style="grid-column:1/-1;background:rgba(76,139,245,.06);border:1.5px solid rgba(76,139,245,.25);cursor:pointer">
+          <div class="modulo-icon-bg" style="background:rgba(76,139,245,.15);border-color:rgba(76,139,245,.25)">
+            <span style="font-size:22px">⬡</span>
+          </div>
+          <div style="position:absolute;top:12px;right:12px;font-family:JetBrains Mono,monospace;font-size:8px;font-weight:600;letter-spacing:1px;padding:3px 8px;border-radius:99px;background:rgba(76,139,245,.2);color:#4c8bf5;text-transform:uppercase">Novo</div>
+          <div class="modulo-tit">Diagnóstico Completo</div>
+          <div class="modulo-desc">Coleta em 8 passos com Score, análise de todos os módulos e plano de melhorias</div>
+          <div class="modulo-tags">Eficiência · Score · Melhorias</div>
+        </div>
+<div class="modulo-card anim-element" data-anim-step="4.0" data-modulo="aposentadoria" onclick="toggleModulo('aposentadoria', this)">
           <div class="modulo-check">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
@@ -11017,6 +11026,54 @@ window.initRendaSimulator=function(){
   var w=document.getElementById("renda-next-wrap");if(w&&typeof fluxoAtual!=="undefined"&&fluxoAtual!=="pontual")w.style.display="block";
 };
 })();
+
+
+// Diagnóstico Completo via iframe isolado
+function abrirDiagnostico(){
+  // Criar iframe fullscreen
+  var overlay = document.createElement('div');
+  overlay.id = 'diag-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#080e1a;';
+  
+  var iframe = document.createElement('iframe');
+  iframe.src = 'diagnostico.html';
+  iframe.style.cssText = 'width:100%;height:100%;border:none;';
+  
+  overlay.appendChild(iframe);
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+  
+  // Listener pra fechar quando diagnostico envia mensagem
+  window._diagListener = function(e){
+    if(e.data === 'fechar-diagnostico'){
+      fecharDiagnostico();
+    }
+    if(e.data && e.data.type === 'diagnostico-dados'){
+      // Receber dados do diagnóstico pra integrar com plano-futuro
+      try {
+        var d = e.data.payload;
+        userName = d.nome || 'Cliente';
+        perfil = d.perfil || 'moderado';
+        estrat = d.est || 'renda';
+        rendaMensal = d.renda || 0;
+        possuiImoveis = d.im || false;
+        possuiHolding = d.hold || false;
+        fluxoAtual = 'raioX';
+      } catch(err){}
+    }
+  };
+  window.addEventListener('message', window._diagListener);
+}
+
+function fecharDiagnostico(){
+  var overlay = document.getElementById('diag-overlay');
+  if(overlay) overlay.remove();
+  document.body.style.overflow = '';
+  if(window._diagListener){
+    window.removeEventListener('message', window._diagListener);
+  }
+}
+
 </script>
 </body>
 </html>

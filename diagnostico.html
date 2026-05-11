@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Eficiência Patrimonial · WealthPlanning</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080e1a;--surf:#0f1824;--surf2:#141e2e;
+  --accent:#4c8bf5;--green:#2ecc8a;--gold:#f8d75e;--red:#f07070;
+  --white:#ffffff;--text:#e6edf3;--muted:#8b949e;--muted-d:#444c56;
+  --bdr:rgba(255,255,255,.08);
+}
+body{background:var(--bg);color:var(--text);font-family:'Bricolage Grotesque',sans-serif;min-height:100vh}
+.wrap{width:100%;max-width:700px;margin:0 auto;padding:0 24px}
+
+/* TOP BAR */
+.topbar{padding:20px 24px;display:flex;align-items:center;justify-content:space-between;max-width:700px;margin:0 auto}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.03em}
+.logo span{color:var(--accent)}
+.back-link{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:.5px;cursor:pointer}
+.back-link:hover{color:var(--white)}
+
+/* PROGRESS */
+.progress-wrap{max-width:700px;margin:0 auto;padding:0 24px 32px}
+.progress-track{height:3px;background:rgba(255,255,255,.06);border-radius:2px}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width .5s ease;width:0%}
+.progress-meta{display:flex;justify-content:space-between;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted-d);letter-spacing:.5px}
+
+/* STEPS — todos ocultos via JS no init */
+.step{display:none;padding-bottom:60px}
+
+/* TIPOGRAFIA DO FORM */
+.step-eye{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.step-title{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-bottom:10px}
+.step-sub{font-size:15px;color:var(--muted);line-height:1.5;margin-bottom:36px}
+
+/* CAMPOS */
+.fields{display:flex;flex-direction:column;gap:20px}
+.field{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+label{font-size:13px;font-weight:500;color:var(--text);letter-spacing:.05px}
+.hint{font-size:12px;color:var(--muted-d);margin-top:2px}
+.err{font-size:12px;color:var(--red);display:none;margin-top:4px}
+.err.show{display:block}
+
+input[type=text],input[type=number],select{
+  width:100%;padding:13px 16px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;color:var(--white);
+  font-family:'Bricolage Grotesque',sans-serif;font-size:15px;
+  outline:none;transition:border-color .2s;
+}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
+input[type=text].money{padding-left:44px}
+input::placeholder{color:rgba(255,255,255,.2)}
+select option{background:#161b22}
+select{appearance:none;cursor:pointer}
+.inp-wrap{position:relative}
+.inp-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none}
+
+/* PILLS */
+.pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.pill{padding:9px 18px;border:1px solid rgba(255,255,255,.1);border-radius:99px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;background:transparent;user-select:none}
+.pill:hover{border-color:rgba(76,139,245,.5);color:var(--white)}
+.pill.on{background:rgba(76,139,245,.15);border-color:var(--accent);color:var(--white)}
+.pill.on-green{background:rgba(46,204,138,.1);border-color:var(--green);color:var(--green)}
+
+/* RISK CARDS */
+.risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}
+.risk-card{padding:18px 14px;border:1px solid rgba(255,255,255,.08);border-radius:12px;cursor:pointer;transition:all .25s;text-align:center}
+.risk-card:hover{border-color:rgba(76,139,245,.4)}
+.risk-card.on{border-color:var(--accent);background:rgba(76,139,245,.1)}
+.risk-icon{font-size:26px;margin-bottom:10px}
+.risk-name{font-weight:700;font-size:14px;color:var(--white);margin-bottom:4px}
+.risk-desc{font-size:11px;color:var(--muted);line-height:1.4}
+
+/* ALOCAÇÃO */
+.alloc-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.alloc-row:last-child{border-bottom:none}
+.alloc-label{font-size:13px;color:var(--text)}
+.alloc-input-wrap{display:flex;align-items:center;gap:6px}
+.alloc-input-wrap input{width:72px;text-align:center;padding:8px 10px}
+.alloc-pct{font-size:13px;color:var(--muted)}
+.alloc-total{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:10px;color:var(--muted-d)}
+.alloc-total span{font-weight:600}
+
+/* NAVEGAÇÃO */
+.nav{display:flex;align-items:center;justify-content:space-between;margin-top:40px;gap:16px}
+.btn-back{display:flex;align-items:center;gap:8px;padding:12px 20px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-back:hover{border-color:rgba(255,255,255,.25);color:var(--white)}
+.btn-next{display:flex;align-items:center;gap:8px;padding:14px 28px;background:linear-gradient(135deg,var(--accent),#3a7bdc);border:none;border-radius:10px;color:var(--white);font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 6px 20px rgba(76,139,245,.25);letter-spacing:-.01em}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(76,139,245,.4)}
+
+/* WELCOME */
+.welcome{text-align:center;padding:20px 0 0}
+.welcome-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:rgba(76,139,245,.1);border:1px solid rgba(76,139,245,.25);border-radius:99px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);margin-bottom:28px}
+.welcome h1{font-size:clamp(36px,6vw,56px);font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:18px}
+.welcome h1 em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--accent)}
+.welcome p{font-size:16px;color:var(--muted);line-height:1.6;max-width:520px;margin:0 auto 36px}
+.welcome-blocks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:36px;text-align:left}
+.wb{padding:16px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.02)}
+.wb-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);margin-bottom:7px}
+.wb-title{font-weight:700;font-size:13px;color:var(--white);margin-bottom:3px}
+.wb-desc{font-size:11px;color:var(--muted);line-height:1.3}
+
+/* PROCESSING */
+.proc{text-align:center;padding:60px 0}
+.proc-icon{font-size:48px;margin-bottom:20px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.proc-title{font-size:28px;font-weight:700;color:var(--white);margin-bottom:8px;letter-spacing:-.02em}
+.proc-sub{font-size:14px;color:var(--muted);margin-bottom:32px}
+.proc-steps{display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto;text-align:left}
+.ps{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);font-size:13px;color:var(--muted);transition:all .4s}
+.ps.active{color:var(--white);border-color:rgba(76,139,245,.3);background:rgba(76,139,245,.05)}
+.ps.done{color:var(--white);border-color:rgba(46,204,138,.3);background:rgba(46,204,138,.05)}
+.ps-icon{width:22px;text-align:center;font-size:14px}
+
+/* RESULTADO FINAL */
+.result{padding:40px 0 60px}
+.result-header{text-align:center;margin-bottom:48px}
+.result-header h2{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.result-header p{font-size:15px;color:var(--muted)}
+
+/* SCORE DONUT */
+.score-section{display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:center;margin-bottom:36px;padding:36px;background:linear-gradient(180deg,var(--surf2),var(--surf));border:1px solid var(--bdr);border-radius:16px}
+.donut-wrap{position:relative;width:200px;height:200px;flex-shrink:0}
+.donut-svg{width:100%;height:100%;transform:rotate(-90deg)}
+.donut-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:14}
+.donut-arc{fill:none;stroke:url(#dGrad);stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.score-num{font-size:52px;font-weight:800;letter-spacing:-.04em;color:var(--white);line-height:1}
+.score-of{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted-d);letter-spacing:1px;margin:4px 0 10px}
+.score-badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.2px;padding:5px 12px;border-radius:99px}
+.score-badge.warn{color:var(--gold);background:rgba(248,215,94,.1);border:1px solid rgba(248,215,94,.3)}
+.score-badge.ok{color:#a8d75e;background:rgba(168,215,94,.1);border:1px solid rgba(168,215,94,.3)}
+.score-badge.good{color:var(--green);background:rgba(46,204,138,.1);border:1px solid rgba(46,204,138,.3)}
+.score-badge.bad{color:var(--red);background:rgba(240,112,112,.1);border:1px solid rgba(240,112,112,.3)}
+
+/* DIMENSÕES */
+.dims{display:flex;flex-direction:column;gap:10px}
+.dim{padding:14px 18px;background:rgba(8,14,26,.5);border:1px solid rgba(255,255,255,.06);border-radius:10px}
+.dim-header{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:8px}
+.dim-icon{font-size:15px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border-radius:7px}
+.dim-name{font-size:13px;font-weight:600;color:var(--white)}
+.dim-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted-d);letter-spacing:.5px}
+.dim-score-val{font-size:20px;font-weight:700;color:var(--white);letter-spacing:-.02em}
+.dim-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.dim-bar-fill{height:100%;border-radius:2px;transition:width 1s ease,background 1s ease}
+.dim-desc{font-size:12px;color:var(--muted);line-height:1.4}
+
+/* CARDS DE RESULTADO */
+.result-cards{display:flex;flex-direction:column;gap:16px;margin-top:20px}
+.rcard{padding:28px 28px;border:1px solid var(--bdr);border-radius:14px;background:linear-gradient(180deg,var(--surf2),var(--surf))}
+.rcard-tag{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.rcard-title{font-size:19px;font-weight:700;letter-spacing:-.02em;color:var(--white);margin-bottom:6px}
+.rcard-desc{font-size:14px;color:var(--muted);line-height:1.5}
+.rcard-val{font-size:36px;font-weight:800;letter-spacing:-.04em;color:var(--green);margin:12px 0 4px}
+.rcard-val-sub{font-size:12px;color:var(--muted-d);font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.rcard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.rcard-item{padding:14px;background:rgba(8,14,26,.5);border-radius:10px;border:1px solid rgba(255,255,255,.05)}
+.rcard-item-label{font-size:11px;color:var(--muted-d);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.rcard-item-val{font-size:18px;font-weight:700;color:var(--white);letter-spacing:-.02em}
+
+/* CTA FINAL */
+.final-cta{margin-top:40px;padding:36px;text-align:center;border:1px solid rgba(76,139,245,.25);border-radius:16px;background:linear-gradient(135deg,rgba(76,139,245,.08),rgba(76,139,245,.02))}
+.final-cta h3{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.final-cta p{font-size:15px;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.btn-cta{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;background:linear-gradient(135deg,var(--green),#24a070);border:none;border-radius:12px;color:var(--white);font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .25s;box-shadow:0 8px 24px rgba(46,204,138,.25);letter-spacing:-.01em}
+.btn-cta:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(46,204,204,.4)}
+
+.disclaimer{text-align:center;margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted-d);letter-spacing:.4px;line-height:1.6}
+
+@media(max-width:600px){
+  .row{grid-template-columns:1fr}
+  .risk-grid{grid-template-columns:1fr}
+  .welcome-blocks{grid-template-columns:1fr}
+  .score-section{grid-template-columns:1fr;justify-items:center}
+  .rcard-grid{grid-template-columns:1fr}
+  .donut-wrap{width:180px;height:180px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">Wealth<span>Planning</span></div>
+  <a class="back-link" onclick="fecharWizard()" style="cursor:pointer">✕ fechar</a>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+  <div class="progress-meta">
+    <span id="prog-label">Início</span>
+    <span id="prog-step">0 / 8</span>
+  </div>
+</div>
+
+<!-- SVG DEFS -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="dGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2ecc8a"/>
+      <stop offset="50%" stop-color="#f8d75e"/>
+      <stop offset="100%" stop-color="#f07070"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+<!-- ══ STEP 0: WELCOME ══ -->
+<div class="step" id="step-0">
+  <div class="welcome">
+    <div class="welcome-badge">⬡ Diagnóstico Patrimonial</div>
+    <h1>Seu patrimônio,<br><em>radiografado</em>.</h1>
+    <p>Responda 8 blocos de perguntas e receba um diagnóstico completo com Score de Saúde Financeira, análise tributária, sucessória e de aposentadoria.</p>
+    <div class="welcome-blocks">
+      <div class="wb"><div class="wb-num">01 · 02</div><div class="wb-title">Quem você é</div><div class="wb-desc">Perfil pessoal e renda</div></div>
+      <div class="wb"><div class="wb-num">03 · 04 · 05</div><div class="wb-title">O que você tem</div><div class="wb-desc">Investimentos e imóveis</div></div>
+      <div class="wb"><div class="wb-num">06 · 07 · 08</div><div class="wb-title">O que você quer</div><div class="wb-desc">Proteção e objetivos</div></div>
+    </div>
+    <div style="display:flex;justify-content:center">
+      <button class="btn-next" onclick="goTo(1)">Começar diagnóstico &nbsp;→</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STEP 1: IDENTIDADE ══ -->
+<div class="step" id="step-1">
+  <div class="step-eye">Passo 1 de 8 · Identidade</div>
+  <h2 class="step-title">Dados pessoais</h2>
+  <p class="step-sub">Essas informações personalizam cada cálculo do diagnóstico.</p>
+  <div class="fields">
+    <div class="field">
+      <label>Nome completo</label>
+      <input type="text" id="f-nome" placeholder="Como prefere ser chamado?">
+      <div class="err" id="e-nome">Informe seu nome.</div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Idade atual</label>
+        <input type="number" id="f-idade" min="18" max="80" placeholder="Ex: 42">
+        <div class="err" id="e-idade">Informe sua idade (18–80).</div>
+      </div>
+      <div class="field">
+        <label>Sexo</label>
+        <div class="pills">
+          <div class="pill on" id="pill-sexo-M" onclick="setPill('sexo','M')">Masculino</div>
+          <div class="pill" id="pill-sexo-F" onclick="setPill('sexo','F')">Feminino</div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Estado (UF)</label>
+        <select id="f-uf">
+          <option value="">Selecione...</option>
+          <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+          <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+          <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+          <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+          <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+          <option>RS</option><option>RO</option><option>RR</option><option selected>SC</option>
+          <option>SP</option><option>SE</option><option>TO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Estado civil</label>
+        <select id="f-ecivil">
+          <option value="">Selecione...</option>
+          <option>Solteiro(a)</option><option>Casado(a)</option>
+          <option>União Estável</option><option>Divorciado(a)</option><option>Viúvo(a)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Tem filhos?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-filhos-nao" onclick="setPill('filhos','nao');toggle('wrap-filhos-qtd',false)">Não</div>
+        <div class="pill" id="pill-filhos-sim" onclick="setPill('filhos','sim');toggle('wrap-filhos-qtd',true)">Sim</div>
+      </div>
+    </div>
+    <div class="field" id="wrap-filhos-qtd" style="display:none">
+      <label>Quantos filhos?</label>
+      <input type="number" id="f-qtd-filhos" min="1" max="20" placeholder="Ex: 2" style="max-width:160px">
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(0)">← Voltar</button>
+    <button class="btn-next" onclick="next(1)">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 2: RENDA ══ -->
+<div class="step" id="step-2">
+  <div class="step-eye">Passo 2 de 8 · Renda</div>
+  <h2 class="step-title">O que você ganha</h2>
+  <p class="step-sub">Renda e tributação — onde aparecem as maiores ineficiências fiscais.</p>
+  <div class="fields">
+    <div class="field">
+      <label>Renda bruta mensal total</label>
+      <div class="inp-wrap"><span class="inp-prefix">R$</span>
+        <input type="text" class="money" id="f-renda" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+      </div>
+      <div class="hint">Some salário, pró-labore, dividendos, aluguéis e outras rendas.</div>
+      <div class="err" id="e-renda">Informe sua renda bruta mensal.</div>
+    </div>
+    <div class="field">
+      <label>Gastos mensais (custo de vida)</label>
+      <div class="inp-wrap"><span class="inp-prefix">R$</span>
+        <input type="text" class="money" id="f-gastos" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label>Declara IR como?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-ir-completa" onclick="setPill('ir','completa')">Declaração Completa</div>
+        <div class="pill" id="pill-ir-simplificada" onclick="setPill('ir','simplificada')">Simplificada</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Contribui para INSS ou previdência oficial?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-inss-sim" onclick="setPill('inss','sim')">Sim</div>
+        <div class="pill" id="pill-inss-nao" onclick="setPill('inss','nao')">Não</div>
+      </div>
+      <div class="hint">CLT = sim. Empresário sem CLT = depende da estrutura.</div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(1)">← Voltar</button>
+    <button class="btn-next" onclick="next(2)">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 3: PREVIDÊNCIA ══ -->
+<div class="step" id="step-3">
+  <div class="step-eye">Passo 3 de 8 · Previdência</div>
+  <h2 class="step-title">PGBL e VGBL</h2>
+  <p class="step-sub">Previdência privada — onde mora boa parte da eficiência tributária e sucessória.</p>
+  <div class="fields">
+    <div class="field">
+      <label>Já investe em PGBL?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-pgbl-nao" onclick="setPill('pgbl','nao');toggle('wrap-pgbl',false)">Não</div>
+        <div class="pill" id="pill-pgbl-sim" onclick="setPill('pgbl','sim');toggle('wrap-pgbl',true)">Sim</div>
+      </div>
+    </div>
+    <div class="field" id="wrap-pgbl" style="display:none">
+      <label>Quanto já aportou em PGBL neste ano?</label>
+      <div class="inp-wrap"><span class="inp-prefix">R$</span>
+        <input type="text" class="money" id="f-pgbl-val" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label>Já possui VGBL?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-vgbl-nao" onclick="setPill('vgbl','nao');toggle('wrap-vgbl',false)">Não</div>
+        <div class="pill" id="pill-vgbl-sim" onclick="setPill('vgbl','sim');toggle('wrap-vgbl',true)">Sim</div>
+      </div>
+    </div>
+    <div class="field" id="wrap-vgbl" style="display:none">
+      <label>Patrimônio acumulado em VGBL</label>
+      <div class="inp-wrap"><span class="inp-prefix">R$</span>
+        <input type="text" class="money" id="f-vgbl-val" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(2)">← Voltar</button>
+    <button class="btn-next" onclick="next(3)">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 4: PATRIMÔNIO ══ -->
+<div class="step" id="step-4">
+  <div class="step-eye">Passo 4 de 8 · Patrimônio Financeiro</div>
+  <h2 class="step-title">Seus investimentos</h2>
+  <p class="step-sub">Total investido e como está alocado — sem contar imóveis.</p>
+  <div class="fields">
+    <div class="field">
+      <label>Total investido (renda fixa + ações + fundos + previdência)</label>
+      <div class="inp-wrap"><span class="inp-prefix">R$</span>
+        <input type="text" class="money" id="f-pat" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+      </div>
+      <div class="err" id="e-pat">Informe o patrimônio financeiro (pode colocar 0).</div>
+    </div>
+    <div class="field">
+      <label>Quanto investe por mês (aporte mensal)?</label>
+      <div class="inp-wrap"><span class="inp-prefix">R$</span>
+        <input type="text" class="money" id="f-aporte" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label>Alocação aproximada</label>
+      <div class="hint" style="margin-bottom:14px">Não precisa ser exato. Ideal fechar em 100%.</div>
+      <div class="alloc-row">
+        <div class="alloc-label">Renda Fixa (CDB, LCI, Tesouro)</div>
+        <div class="alloc-input-wrap">
+          <input type="number" id="f-rf" min="0" max="100" value="60" oninput="alocTotal()">
+          <span class="alloc-pct">%</span>
+        </div>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-label">Renda Variável (ações, ETFs)</div>
+        <div class="alloc-input-wrap">
+          <input type="number" id="f-rv" min="0" max="100" value="20" oninput="alocTotal()">
+          <span class="alloc-pct">%</span>
+        </div>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-label">Fundos / Internacional / Outros</div>
+        <div class="alloc-input-wrap">
+          <input type="number" id="f-fundos" min="0" max="100" value="20" oninput="alocTotal()">
+          <span class="alloc-pct">%</span>
+        </div>
+      </div>
+      <div class="alloc-total">Total: <span id="aloc-val" style="color:var(--green)">100%</span></div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(3)">← Voltar</button>
+    <button class="btn-next" onclick="next(4)">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 5: IMÓVEIS ══ -->
+<div class="step" id="step-5">
+  <div class="step-eye">Passo 5 de 8 · Imóveis</div>
+  <h2 class="step-title">Patrimônio imobiliário</h2>
+  <p class="step-sub">Onde aparece maior exposição a ITCMD, IR e inventário.</p>
+  <div class="fields">
+    <div class="field">
+      <label>Possui imóveis?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-imoveis-nao" onclick="setPill('imoveis','nao');toggle('wrap-imoveis',false)">Não possuo</div>
+        <div class="pill" id="pill-imoveis-sim" onclick="setPill('imoveis','sim');toggle('wrap-imoveis',true)">Sim, possuo</div>
+      </div>
+    </div>
+    <div id="wrap-imoveis" style="display:none">
+      <div class="fields" style="margin-top:16px">
+        <div class="row">
+          <div class="field">
+            <label>Quantidade de imóveis</label>
+            <input type="number" id="f-im-qtd" min="1" max="50" placeholder="Ex: 3">
+          </div>
+          <div class="field">
+            <label>Valor total de mercado</label>
+            <div class="inp-wrap"><span class="inp-prefix">R$</span>
+              <input type="text" class="money" id="f-im-val" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Algum imóvel gera aluguel?</label>
+          <div class="pills">
+            <div class="pill on" id="pill-aluguel-nao" onclick="setPill('aluguel','nao');toggle('wrap-aluguel',false)">Não</div>
+            <div class="pill" id="pill-aluguel-sim" onclick="setPill('aluguel','sim');toggle('wrap-aluguel',true)">Sim</div>
+          </div>
+        </div>
+        <div class="field" id="wrap-aluguel" style="display:none">
+          <label>Receita bruta mensal de aluguéis</label>
+          <div class="inp-wrap"><span class="inp-prefix">R$</span>
+            <input type="text" class="money" id="f-aluguel" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+          </div>
+        </div>
+        <div class="field">
+          <label>Imóveis em nome de...</label>
+          <div class="pills">
+            <div class="pill on" id="pill-tit-pf" onclick="setPill('tit','pf')">Pessoa Física (PF)</div>
+            <div class="pill" id="pill-tit-pj" onclick="setPill('tit','pj')">Pessoa Jurídica (PJ)</div>
+            <div class="pill" id="pill-tit-ambos" onclick="setPill('tit','ambos')">Ambos</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Possui holding patrimonial?</label>
+          <div class="pills">
+            <div class="pill on" id="pill-holding-nao" onclick="setPill('holding','nao')">Não tenho</div>
+            <div class="pill" id="pill-holding-sim" onclick="setPill('holding','sim')">Já tenho</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(4)">← Voltar</button>
+    <button class="btn-next" onclick="next(5)">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 6: PASSIVOS ══ -->
+<div class="step" id="step-6">
+  <div class="step-eye">Passo 6 de 8 · Passivos e Proteção</div>
+  <h2 class="step-title">Dívidas e proteção</h2>
+  <p class="step-sub">Passivos e instrumentos de proteção familiar.</p>
+  <div class="fields">
+    <div class="field">
+      <label>Possui financiamentos ou empréstimos?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-div-nao" onclick="setPill('div','nao');toggle('wrap-div',false)">Não</div>
+        <div class="pill" id="pill-div-sim" onclick="setPill('div','sim');toggle('wrap-div',true)">Sim</div>
+      </div>
+    </div>
+    <div id="wrap-div" style="display:none">
+      <div class="row" style="margin-top:16px">
+        <div class="field">
+          <label>Saldo total das dívidas</label>
+          <div class="inp-wrap"><span class="inp-prefix">R$</span>
+            <input type="text" class="money" id="f-div-tot" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+          </div>
+        </div>
+        <div class="field">
+          <label>Parcela mensal total</label>
+          <div class="inp-wrap"><span class="inp-prefix">R$</span>
+            <input type="text" class="money" id="f-div-parc" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Possui seguro de vida?</label>
+      <div class="pills">
+        <div class="pill" id="pill-seg-nao" onclick="setPill('seg','nao')">Não tenho</div>
+        <div class="pill on" id="pill-seg-sim" onclick="setPill('seg','sim')">Sim, tenho</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Possui testamento?</label>
+      <div class="pills">
+        <div class="pill on" id="pill-test-nao" onclick="setPill('test','nao')">Não</div>
+        <div class="pill" id="pill-test-sim" onclick="setPill('test','sim')">Sim</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(5)">← Voltar</button>
+    <button class="btn-next" onclick="next(6)">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 7: OBJETIVOS ══ -->
+<div class="step" id="step-7">
+  <div class="step-eye">Passo 7 de 8 · Objetivos</div>
+  <h2 class="step-title">Aposentadoria e renda</h2>
+  <p class="step-sub">O destino guia toda a estratégia de acumulação.</p>
+  <div class="fields">
+    <div class="row">
+      <div class="field">
+        <label>Idade desejada de aposentadoria</label>
+        <input type="number" id="f-apos-id" min="40" max="80" placeholder="Ex: 60">
+        <div class="err" id="e-apos">Informe a idade (40–80 e maior que a atual).</div>
+      </div>
+      <div class="field">
+        <label>Renda mensal desejada na aposentadoria</label>
+        <div class="inp-wrap"><span class="inp-prefix">R$</span>
+          <input type="text" class="money" id="f-apos-renda" placeholder="0,00" oninput="moeda(this)" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Estratégia de aposentadoria</label>
+      <div class="pills">
+        <div class="pill on" id="pill-estrat-renda" onclick="setPill('estrat','renda')">🏦 Viver de renda (preservar capital)</div>
+        <div class="pill" id="pill-estrat-consumo" onclick="setPill('estrat','consumo')">📉 Usar capital + rendimentos</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(6)">← Voltar</button>
+    <button class="btn-next" onclick="next(7)">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 8: RISCO ══ -->
+<div class="step" id="step-8">
+  <div class="step-eye">Passo 8 de 8 · Perfil de Risco</div>
+  <h2 class="step-title">Como você investe</h2>
+  <p class="step-sub">Define a rentabilidade-alvo nos cálculos de aposentadoria.</p>
+  <div class="fields">
+    <div class="field">
+      <label>Se sua carteira caísse 20% num mês, você...</label>
+      <div class="risk-grid">
+        <div class="risk-card" id="rc-conservador" onclick="setRisk('conservador')">
+          <div class="risk-icon">🛡️</div>
+          <div class="risk-name">Venderia tudo</div>
+          <div class="risk-desc">Segurança acima de tudo. Aceita rentabilidade menor.</div>
+        </div>
+        <div class="risk-card on" id="rc-moderado" onclick="setRisk('moderado')">
+          <div class="risk-icon">⚖️</div>
+          <div class="risk-name">Ficaria, sem mexer</div>
+          <div class="risk-desc">Equilíbrio entre segurança e crescimento.</div>
+        </div>
+        <div class="risk-card" id="rc-arrojado" onclick="setRisk('arrojado')">
+          <div class="risk-icon">🚀</div>
+          <div class="risk-name">Compraria mais</div>
+          <div class="risk-desc">Foco em crescimento de longo prazo.</div>
+        </div>
+      </div>
+      <div class="err" id="e-risco">Selecione seu perfil de risco.</div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goTo(7)">← Voltar</button>
+    <button class="btn-next" onclick="finalizar()">Gerar diagnóstico →</button>
+  </div>
+</div>
+
+<!-- ══ PROCESSING ══ -->
+<div class="step" id="step-processing">
+  <div class="proc">
+    <div class="proc-icon">⬡</div>
+    <div class="proc-title">Analisando seu patrimônio</div>
+    <div class="proc-sub">Calculando as 5 dimensões de eficiência...</div>
+    <div class="proc-steps">
+      <div class="ps" id="ps1"><div class="ps-icon">○</div>Planejamento de aposentadoria</div>
+      <div class="ps" id="ps2"><div class="ps-icon">○</div>Otimização tributária (PGBL)</div>
+      <div class="ps" id="ps3"><div class="ps-icon">○</div>Holding patrimonial</div>
+      <div class="ps" id="ps4"><div class="ps-icon">○</div>Estrutura sucessória (VGBL)</div>
+      <div class="ps" id="ps5"><div class="ps-icon">○</div>Score de saúde financeira</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULTADO ══ -->
+<div class="step" id="step-result">
+  <div class="result">
+    <div class="result-header">
+      <div class="step-eye" style="justify-content:center;display:flex">Diagnóstico Concluído</div>
+      <h2 id="r-title">Diagnóstico Patrimonial</h2>
+      <p id="r-sub">Análise personalizada</p>
+    </div>
+
+    <!-- BANNER DE GANHOS (oculto até clicar Aplicar Melhorias) -->
+    <div id="r-gains-banner" style="display:none;padding:28px 32px;background:linear-gradient(135deg,rgba(46,204,138,.12),rgba(46,204,138,.04));border:1.5px solid rgba(46,204,138,.3);border-radius:16px;text-align:center;margin-bottom:32px">
+      <div style="font-family:JetBrains Mono,monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#2ecc8a;margin-bottom:10px">✦ Ganho total identificado nos próximos 10 anos</div>
+      <div id="r-gains-total" style="font-family:Bricolage Grotesque,sans-serif;font-weight:800;font-size:clamp(36px,6vw,56px);letter-spacing:-.04em;line-height:1;background:linear-gradient(180deg,#fff 30%,#2ecc8a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">R$ 0</div>
+      <div style="font-size:13px;color:#8b949e;margin-top:8px">Economia tributária + proteção sucessória + otimização patrimonial</div>
+    </div>
+
+    <!-- SCORE -->
+    <div class="score-section">
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 200 200">
+          <circle class="donut-track" cx="100" cy="100" r="85"/>
+          <circle class="donut-arc" cx="100" cy="100" r="85"
+            pathLength="100" stroke-dasharray="100 100"
+            stroke-dashoffset="50" id="r-arc"/>
+        </svg>
+        <div class="donut-center">
+          <div class="score-num" id="r-score">—</div>
+          <div class="score-of">de 1000</div>
+          <div class="score-badge" id="r-badge">—</div>
+        </div>
+</div>
+      <div class="dims" id="r-dims"></div>
+    </div>
+
+    <!-- CARDS DE RESULTADO -->
+    <div class="result-cards" id="r-cards"></div>
+
+    <!-- CTA -->
+    <div class="final-cta">
+      <h3>Próximo passo: a devolutiva</h3>
+      <p>Esse diagnóstico é o ponto de partida. Na reunião de devolutiva, Maicon apresenta o plano de ação priorizado para cada gap identificado — com números reais do seu patrimônio.</p>
+      <a class="btn-cta" href="https://wa.me/5547992615146?text=Ol%C3%A1+Maicon%2C+conclu%C3%AD+o+diagn%C3%B3stico+patrimonial+e+quero+agendar+a+devolutiva." target="_blank">
+        Agendar devolutiva →
+      </a>
+    </div>
+    <div class="disclaimer">★ Diagnóstico baseado nos dados informados. Não constitui recomendação de valores mobiliários.<br>Maicon Melo · CEA · WealthPlanning</div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════════
+var TOTAL = 8;
+var pills = {
+  sexo:'M', ir:'completa', inss:'sim', filhos:'nao',
+  pgbl:'nao', vgbl:'nao', imoveis:'nao', aluguel:'nao',
+  tit:'pf', holding:'nao', div:'nao', seg:'sim', test:'nao',
+  estrat:'renda'
+};
+var risco = 'moderado';
+var CDI = 0.105;
+var INFL = 0.045;
+var FAT = {conservador:1.0, moderado:1.2, arrojado:1.7};
+
+// ═══════════════════════════════════════════════════════════════
+// NAVEGAÇÃO — puro inline style, zero CSS class dependency
+// ═══════════════════════════════════════════════════════════════
+function goTo(n) {
+  // Esconder tudo
+  for (var i = 0; i <= TOTAL; i++) {
+    var el = document.getElementById('step-' + i);
+    if (el) el.style.display = 'none';
+  }
+  var proc = document.getElementById('step-processing');
+  if (proc) proc.style.display = 'none';
+  var res = document.getElementById('step-result');
+  if (res) res.style.display = 'none';
+
+  // Mostrar alvo
+  var target = document.getElementById('step-' + n);
+  if (target) target.style.display = 'block';
+
+  // Progress
+  var pct = n === 0 ? 0 : Math.round((n / TOTAL) * 100);
+  var fill = document.getElementById('prog-fill');
+  if (fill) fill.style.width = pct + '%';
+  var lbl = document.getElementById('prog-label');
+  var labels = ['Início','Identidade','Renda','Previdência','Patrimônio','Imóveis','Passivos','Objetivos','Perfil'];
+  if (lbl) lbl.textContent = labels[n] || '';
+  var ps = document.getElementById('prog-step');
+  if (ps) ps.textContent = (n === 0 ? '0' : n) + ' / ' + TOTAL;
+
+  window.scrollTo(0, 0);
+}
+
+function showProcessing() {
+  for (var i = 0; i <= TOTAL; i++) {
+    var el = document.getElementById('step-' + i);
+    if (el) el.style.display = 'none';
+  }
+  var proc = document.getElementById('step-processing');
+  if (proc) proc.style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function showResult() {
+  var proc = document.getElementById('step-processing');
+  if (proc) proc.style.display = 'none';
+  var res = document.getElementById('step-result');
+  if (res) res.style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITÁRIOS
+// ═══════════════════════════════════════════════════════════════
+function moeda(el) {
+  var r = el.value.replace(/\D/g, '');
+  if (!r) { el.value = ''; el.dataset.raw = '0'; return; }
+  var cents = parseInt(r, 10);
+  var reais = cents / 100;
+  el.dataset.raw = String(reais);
+  el.value = reais.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function getMoeda(id) {
+  var el = document.getElementById(id);
+  if (!el) return 0;
+  return parseFloat(el.dataset.raw || '0') || 0;
+}
+
+function getNum(id) {
+  var el = document.getElementById(id);
+  if (!el) return 0;
+  return parseFloat(el.value) || 0;
+}
+
+function fmtR(v) {
+  return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+}
+
+function toggle(id, show) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = show ? 'block' : 'none';
+}
+
+function alocTotal() {
+  var rf = getNum('f-rf');
+  var rv = getNum('f-rv');
+  var fu = getNum('f-fundos');
+  var tot = rf + rv + fu;
+  var el = document.getElementById('aloc-val');
+  if (el) {
+    el.textContent = tot + '%';
+    el.style.color = tot === 100 ? '#2ecc8a' : tot > 100 ? '#f07070' : '#f8d75e';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PILLS E SELEÇÃO
+// ═══════════════════════════════════════════════════════════════
+function setPill(group, val) {
+  pills[group] = val;
+  // Desativar todos do grupo
+  var allPills = document.querySelectorAll('[id^="pill-' + group + '-"]');
+  for (var i = 0; i < allPills.length; i++) {
+    allPills[i].classList.remove('on');
+  }
+  // Ativar o selecionado
+  var target = document.getElementById('pill-' + group + '-' + val);
+  if (target) target.classList.add('on');
+}
+
+function setRisk(val) {
+  risco = val;
+  var cards = document.querySelectorAll('.risk-card');
+  for (var i = 0; i < cards.length; i++) cards[i].classList.remove('on');
+  var t = document.getElementById('rc-' + val);
+  if (t) t.classList.add('on');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VALIDAÇÃO
+// ═══════════════════════════════════════════════════════════════
+function showErr(id, show) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = show ? 'block' : 'none';
+}
+
+function validate(step) {
+  var ok = true;
+  if (step === 1) {
+    var nome = (document.getElementById('f-nome') || {}).value || '';
+    showErr('e-nome', !nome.trim());
+    if (!nome.trim()) ok = false;
+    var idade = getNum('f-idade');
+    showErr('e-idade', idade < 18 || idade > 80);
+    if (idade < 18 || idade > 80) ok = false;
+  }
+  if (step === 2) {
+    var renda = getMoeda('f-renda');
+    showErr('e-renda', renda <= 0);
+    if (renda <= 0) ok = false;
+  }
+  if (step === 4) {
+    var pat = document.getElementById('f-pat');
+    var patOk = pat && (pat.dataset.raw !== undefined);
+    showErr('e-pat', !patOk);
+    if (!patOk) ok = false;
+  }
+  if (step === 7) {
+    var apos = getNum('f-apos-id');
+    var idAt = getNum('f-idade');
+    var aposOk = apos >= 40 && apos <= 80 && apos > idAt;
+    showErr('e-apos', !aposOk);
+    if (!aposOk) ok = false;
+  }
+  return ok;
+}
+
+function next(step) {
+  if (!validate(step)) return;
+  goTo(step + 1);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CÁLCULOS
+// ═══════════════════════════════════════════════════════════════
+function calcINSS(gross) {
+  if (gross <= 0) return 0;
+  var brackets = [{l:1412,r:.075},{l:2666.68,r:.09},{l:4000.03,r:.12},{l:7786.02,r:.14}];
+  var prev = 0, total = 0;
+  for (var b of brackets) {
+    var slice = Math.min(gross, b.l) - prev;
+    if (slice > 0) { total += slice * b.r; prev = b.l; }
+  }
+  return total;
+}
+
+function calcIR(base) {
+  if (base <= 0) return 0;
+  if (base <= 2259.20) return 0;
+  if (base <= 2826.65) return base * .075 - 169.44;
+  if (base <= 3751.05) return base * .15 - 381.44;
+  if (base <= 4664.68) return base * .225 - 662.77;
+  return base * .275 - 896;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINALIZAR
+// ═══════════════════════════════════════════════════════════════
+function finalizar() {
+  if (!risco) { showErr('e-risco', true); return; }
+  showErr('e-risco', false);
+
+  // Coletar todos os dados
+  var d = {
+    nome:      (document.getElementById('f-nome') || {}).value || 'Cliente',
+    idade:     getNum('f-idade'), sexo: pills.sexo,
+    uf:        (document.getElementById('f-uf') || {}).value || 'SC',
+    renda:     getMoeda('f-renda'), gastos: getMoeda('f-gastos'),
+    ir:        pills.ir, inss: pills.inss === 'sim',
+    pgbl:      pills.pgbl === 'sim', pgblV: getMoeda('f-pgbl-val'),
+    vgbl:      pills.vgbl === 'sim', vgblV: getMoeda('f-vgbl-val'),
+    pat:       getMoeda('f-pat'), aporte: getMoeda('f-aporte'),
+    rf:        getNum('f-rf'), rv: getNum('f-rv'),
+    im:        pills.imoveis === 'sim', imQtd: getNum('f-im-qtd'),
+    imVal:     getMoeda('f-im-val'),
+    alug:      pills.aluguel === 'sim', alugV: getMoeda('f-aluguel'),
+    tit:       pills.tit, hold: pills.holding === 'sim',
+    seg:       pills.seg === 'sim', test: pills.test === 'sim',
+    aposId:    getNum('f-apos-id'), aposR: getMoeda('f-apos-renda'),
+    est:       pills.estrat, perfil: risco
+  };
+
+  // Salvar no localStorage
+  localStorage.setItem('wp_diagnostico', JSON.stringify(d));
+
+  // Verificar se deve redirecionar para plano-futuro
+  var params = new URLSearchParams(window.location.search);
+  var retorno = params.get('return');
+
+  if (retorno) {
+    // Mostrar processamento e redirecionar
+    showProcessing();
+    var steps = [1,2,3,4,5];
+    steps.forEach(function(n, i) {
+      setTimeout(function(){ markPS(n, 'active'); }, i * 500 + 300);
+      setTimeout(function(){ markPS(n, 'done'); }, i * 500 + 700);
+    });
+    setTimeout(function() {
+      window.location.href = retorno + '?auto=1';
+    }, 3000);
+  } else {
+    // Modo standalone — processar localmente
+    finalizarLocal(d);
+  }
+}
+
+function finalizarLocal(d) {
+  showProcessing();
+  setTimeout(function(){ markPS(1,'active'); }, 300);
+  setTimeout(function(){ markPS(1,'done'); calcApos(d); markPS(2,'active'); }, 900);
+  setTimeout(function(){ markPS(2,'done'); calcPGBL(d); markPS(3,'active'); }, 1500);
+  setTimeout(function(){ markPS(3,'done'); calcHolding(d); markPS(4,'active'); }, 2100);
+  setTimeout(function(){ markPS(4,'done'); calcVGBL(d); markPS(5,'active'); }, 2700);
+  setTimeout(function(){ markPS(5,'done'); calcScore(d); }, 3300);
+  setTimeout(function(){ renderResult(d); showResult(); enviarDadosParent(d); }, 4000);
+}
+
+function markPS(n, state) {
+  var el = document.getElementById('ps' + n);
+  if (!el) return;
+  el.className = 'ps ' + state;
+  el.querySelector('.ps-icon').textContent = state === 'active' ? '↻' : state === 'done' ? '✓' : '○';
+}
+
+// ── Resultados globais
+var RES = {};
+
+function calcApos(d) {
+  var taxBruta = CDI * (FAT[d.perfil] || 1.2);
+  var taxAnual = (1 + taxBruta) / (1 + INFL) - 1;
+  var taxMes = taxAnual / 12;
+  var anos = Math.max(1, d.aposId - d.idade);
+  var p = d.pat;
+  for (var m = 0; m < anos * 12; m++) p = p * (1 + taxMes) + d.aporte;
+  var futuro = Math.round(p);
+  var rendaMes;
+  if (d.estrat === 'renda') {
+    rendaMes = Math.round(futuro * taxMes);
+  } else {
+    var prazo = Math.max(1, 99 - d.aposId);
+    var n = prazo * 12;
+    var den = 1 - Math.pow(1 + taxMes, -n);
+    rendaMes = den > 0 ? Math.round(futuro * taxMes / den) : Math.round(futuro / n);
+  }
+  RES.apos = {futuro:futuro, rendaMes:rendaMes, anos:anos};
+}
+
+function calcPGBL(d) {
+  var rendaAnual = d.renda * 12;
+  var contrib = d.pgblVal || 0;
+  var monthlyInc = d.renda;
+  var monthlyInss = d.inss ? calcINSS(monthlyInc) : 0;
+  var irAtual = calcIR(Math.max(monthlyInc - monthlyInss, 0)) * 12;
+  var maxDed = d.inss ? rendaAnual * 0.12 : 0;
+  var irComPGBL = d.inss ? calcIR(Math.max(monthlyInc - monthlyInss - maxDed / 12, 0)) * 12 : irAtual;
+  var economia = Math.max(irAtual - irComPGBL, 0);
+  var adicional = Math.max(maxDed - contrib, 0);
+  RES.pgbl = {economia:economia, adicional:adicional, maxDed:maxDed};
+}
+
+function calcHolding(d) {
+  if (!d.imoveis || d.imVal <= 0) { RES.holding = null; return; }
+  var aluguel = d.aluguel ? d.aluguelV : 0;
+  var emPF = d.tit !== 'pj';
+  var irPF = aluguel * 12 * 0.275;
+  var irHold = aluguel * 12 * 0.1133;
+  var econAno = emPF ? Math.max(irPF - irHold, 0) : 0;
+  var itcmd = d.imVal * 0.08;
+  RES.holding = {
+    recomenda: emPF && (econAno > 8000 || d.imVal > 1000000),
+    econAno: econAno,
+    econ10: econAno * 10,
+    itcmd: itcmd,
+    imVal: d.imVal
+  };
+}
+
+function calcVGBL(d) {
+  var pat = d.vgbl ? d.vgblVal : d.pat;
+  var herancaSem = Math.round(pat * (1 - 0.08 - 0.05));
+  var herancaCom = Math.round(pat * 0.95);
+  var ganho = Math.max(herancaCom - herancaSem, 0);
+  RES.vgbl = {herancaSem:herancaSem, herancaCom:herancaCom, ganho:ganho, pat:pat};
+}
+
+function calcScore(d) {
+  // Liquidez (10%)
+  var reserva = d.pat * 0.2; // estimativa
+  var despAnual = d.gastos * 12 || d.renda * 12 * 0.6;
+  var mesesReserva = despAnual > 0 ? (reserva / despAnual) * 12 : 6;
+  var scoreLiq = Math.min(100, Math.round(mesesReserva / 6 * 65));
+
+  // Tributária (20%)
+  var scoreTrib = 30;
+  if (d.pgbl) scoreTrib += 20;
+  if (d.inss && d.ir === 'completa') scoreTrib += 20;
+  if (d.imoveis && !d.holding && d.tit === 'pf') scoreTrib = Math.max(scoreTrib - 10, 20);
+  scoreTrib = Math.min(95, scoreTrib);
+
+  // Diversificação (25%)
+  var rv = d.rv || 0;
+  var scoreDiver = Math.min(90, 40 + rv * 0.8);
+  if (d.pat < 500000) scoreDiver = Math.min(scoreDiver, 60);
+
+  // Sucessória (25%)
+  var scoreSuc = 30;
+  if (d.testamento) scoreSuc += 20;
+  if (d.seguro) scoreSuc += 15;
+  if (d.vgbl) scoreSuc += 20;
+  if (d.holding) scoreSuc += 15;
+  scoreSuc = Math.min(95, scoreSuc);
+
+  // Aposentadoria (20%)
+  var anos = Math.max(1, d.aposId - d.idade);
+  var scoreApos = Math.min(90, 30 + d.aporte / Math.max(d.renda, 1) * 200);
+  if (d.pat > 500000) scoreApos = Math.min(90, scoreApos + 15);
+  scoreApos = Math.max(20, scoreApos);
+
+  var total = Math.round(
+    scoreLiq * 0.10 +
+    scoreTrib * 0.20 +
+    scoreDiver * 0.25 +
+    scoreSuc * 0.25 +
+    scoreApos * 0.20
+  ) * 10;
+
+  RES.score = {
+    total: total,
+    liq: Math.round(scoreLiq),
+    trib: Math.round(scoreTrib),
+    diver: Math.round(scoreDiver),
+    suc: Math.round(scoreSuc),
+    apos: Math.round(scoreApos)
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER RESULTADO
+// ═══════════════════════════════════════════════════════════════
+function barColor(v) {
+  if (v < 40) return 'background:linear-gradient(90deg,#f07070,#f5876e)';
+  if (v < 60) return 'background:linear-gradient(90deg,#f5876e,#f8d75e)';
+  if (v < 75) return 'background:linear-gradient(90deg,#f8d75e,#a8d75e)';
+  return 'background:linear-gradient(90deg,#a8d75e,#2ecc8a)';
+}
+
+function scoreMeta(total) {
+  if (total < 400) return {label:'Crítico', cls:'bad'};
+  if (total < 600) return {label:'Atenção', cls:'warn'};
+  if (total < 800) return {label:'Regular', cls:'ok'};
+  return {label:'Excelente', cls:'good'};
+}
+
+function renderResult(d) {
+  var s = RES.score;
+  var m = scoreMeta(s.total);
+
+  // Título
+  document.getElementById('r-title').textContent = 'Diagnóstico de ' + d.nome;
+  document.getElementById('r-sub').textContent = 'Score ' + s.total + ' · Análise em 5 dimensões · ' + new Date().toLocaleDateString('pt-BR');
+
+  // Donut
+  document.getElementById('r-score').textContent = s.total;
+  var arc = document.getElementById('r-arc');
+  if (arc) arc.setAttribute('stroke-dashoffset', String(100 - s.total / 10));
+  var badge = document.getElementById('r-badge');
+  badge.textContent = m.label;
+  badge.className = 'score-badge ' + m.cls;
+
+  // Dimensões
+  var dims = [
+    {icon:'⚖', name:'Eficiência Tributária', meta:'Peso 20%', score:s.trib, key:'trib',
+     desc: s.trib < 50 ? 'Oportunidade de otimização tributária identificada — PGBL e estrutura da declaração.' : 'Tributação razoavelmente otimizada.'},
+    {icon:'🏛', name:'Estrutura Sucessória', meta:'Peso 25%', score:s.suc, key:'suc',
+     desc: s.suc < 50 ? 'Patrimônio exposto a ITCMD e inventário judicial. Holding e VGBL podem proteger os herdeiros.' : 'Estrutura sucessória parcialmente protegida.'},
+    {icon:'📊', name:'Diversificação', meta:'Peso 25%', score:s.diver, key:'diver',
+     desc: s.diver < 60 ? 'Concentração elevada. Recomendável ampliar exposição a diferentes classes e geografias.' : 'Diversificação razoável para o perfil.'},
+    {icon:'🎯', name:'Aposentadoria', meta:'Peso 20%', score:s.apos, key:'apos',
+     desc: s.apos < 60 ? 'Projeção indica gap entre patrimônio acumulado e renda desejada na aposentadoria.' : 'Trajetória de acumulação alinhada ao objetivo.'},
+    {icon:'💧', name:'Liquidez', meta:'Peso 10%', score:s.liq, key:'liq',
+     desc: s.liq < 50 ? 'Reserva de emergência abaixo do recomendado (6 meses de gastos).' : 'Liquidez imediata adequada.'},
+  ];
+
+  calcGains(d);
+
+  var dimsHtml = '';
+  for (var dim of dims) {
+    dimsHtml += '<div class="dim" data-dim-key="' + dim.key + '">' +
+      '<div class="dim-header">' +
+        '<div class="dim-icon">' + dim.icon + '</div>' +
+        '<div><div class="dim-name">' + dim.name + '</div><div class="dim-meta">' + dim.meta + '</div></div>' +
+        '<div class="dim-score-val">' + dim.score + '</div>' +
+      '</div>' +
+      '<div class="dim-bar-track"><div class="dim-bar-fill" style="width:' + dim.score + '%;' + barColor(dim.score) + '"></div></div>' +
+      '<div class="dim-desc">' + dim.desc + '</div>' +
+    '</div>';
+  }
+  document.getElementById('r-dims').innerHTML = dimsHtml;
+
+  // Cards
+  var cards = '';
+
+  // Aposentadoria
+  if (RES.apos) {
+    cards += '<div class="rcard">' +
+      '<div class="rcard-tag">Planejamento de Aposentadoria</div>' +
+      '<div class="rcard-title">Patrimônio projetado aos ' + d.aposId + ' anos</div>' +
+      '<div class="rcard-val">' + fmtR(RES.apos.futuro) + '</div>' +
+      '<div class="rcard-val-sub">patrimônio acumulado projetado</div>' +
+      '<div class="rcard-grid">' +
+        '<div class="rcard-item"><div class="rcard-item-label">Renda mensal gerada</div><div class="rcard-item-val">' + fmtR(RES.apos.rendaMes) + '/mês</div></div>' +
+        '<div class="rcard-item"><div class="rcard-item-label">Horizonte de acumulação</div><div class="rcard-item-val">' + RES.apos.anos + ' anos</div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // PGBL
+  if (RES.pgbl && RES.pgbl.economia > 0) {
+    cards += '<div class="rcard">' +
+      '<div class="rcard-tag">Otimização Tributária · PGBL</div>' +
+      '<div class="rcard-title">Economia de IR disponível</div>' +
+      '<div class="rcard-val" style="color:var(--gold)">' + fmtR(RES.pgbl.economia) + '/ano</div>' +
+      '<div class="rcard-val-sub">economia anual com PGBL no teto</div>' +
+      (RES.pgbl.adicional > 0 ? '<div class="rcard-desc" style="margin-top:12px">Aporte adicional necessário para maximizar: <strong style="color:var(--white)">' + fmtR(RES.pgbl.adicional) + '</strong></div>' : '') +
+    '</div>';
+  }
+
+  // Holding
+  if (RES.holding) {
+    if (RES.holding.recomenda) {
+      cards += '<div class="rcard">' +
+        '<div class="rcard-tag">Holding Patrimonial</div>' +
+        '<div class="rcard-title">Estruturação recomendada</div>' +
+        '<div class="rcard-grid">' +
+          '<div class="rcard-item"><div class="rcard-item-label">Economia em IR (10 anos)</div><div class="rcard-item-val" style="color:var(--green)">' + fmtR(RES.holding.econ10) + '</div></div>' +
+          '<div class="rcard-item"><div class="rcard-item-label">ITCMD em risco sem holding</div><div class="rcard-item-val" style="color:var(--red)">' + fmtR(RES.holding.itcmd) + '</div></div>' +
+        '</div>' +
+      '</div>';
+    }
+  }
+
+  // VGBL
+  if (RES.vgbl && RES.vgbl.ganho > 0) {
+    cards += '<div class="rcard">' +
+      '<div class="rcard-tag">Estrutura Sucessória · VGBL</div>' +
+      '<div class="rcard-title">Impacto na herança dos beneficiários</div>' +
+      '<div class="rcard-grid">' +
+        '<div class="rcard-item"><div class="rcard-item-label">Sem estruturação (exposto a ITCMD)</div><div class="rcard-item-val" style="color:var(--red)">' + fmtR(RES.vgbl.herancaSem) + '</div></div>' +
+        '<div class="rcard-item"><div class="rcard-item-label">Com VGBL + planejamento</div><div class="rcard-item-val" style="color:var(--green)">' + fmtR(RES.vgbl.herancaCom) + '</div></div>' +
+      '</div>' +
+      '<div class="rcard-desc" style="margin-top:12px">Diferença preservada: <strong style="color:var(--white)">' + fmtR(RES.vgbl.ganho) + '</strong></div>' +
+    '</div>';
+  }
+
+  document.getElementById('r-cards').innerHTML = cards;
+
+  scoreAtual = s.total;
+  // Animar score
+  var scoreEl = document.getElementById('r-score');
+  var from = 0;
+  var to = s.total;
+  var start = performance.now();
+  function animScore(now) {
+    var t = Math.min((now - start) / 1200, 1);
+    var eased = 1 - Math.pow(1 - t, 3);
+    scoreEl.textContent = Math.round(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(animScore);
+  }
+  requestAnimationFrame(animScore);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT — mostrar step 0 ao carregar
+// ═══════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════
+// APLICAR MELHORIAS — toggle antes/depois
+// ═══════════════════════════════════════════════════════════════
+var melhoriaAtiva = false;
+var scoreAtual = 0;
+var scoreOtimizado = 0;
+var gainsData = {};
+
+function calcGains(d) {
+  var gains = {total:0, items:[]};
+
+  // PGBL
+  if (RES.pgbl && RES.pgbl.economia > 0) {
+    var g = Math.round(RES.pgbl.economia * 10);
+    gains.items.push({
+      modulo: 'Otimização Tributária · PGBL',
+      icon: '⚖',
+      ganho: g,
+      acao: 'Otimizar PGBL no teto de 12% da renda bruta anual' + (RES.pgbl.adicional > 0 ? '. Aporte adicional de ' + fmtR(RES.pgbl.adicional) + ' necessário.' : '.'),
+      prioridade: 'Alta',
+      prioCor: '#f07070',
+      detalhe: 'Economia de ' + fmtR(RES.pgbl.economia) + '/ano em IR, acumulando ' + fmtR(g) + ' em 10 anos.'
+    });
+    gains.total += g;
+  }
+
+  // Holding
+  if (RES.holding && RES.holding.recomenda) {
+    var g = Math.round(RES.holding.econ10 + (RES.holding.itcmd || 0));
+    gains.items.push({
+      modulo: 'Holding Patrimonial',
+      icon: '🏛',
+      ganho: g,
+      acao: 'Estruturar holding para imóveis. Migrar titularidade de PF para PJ.',
+      prioridade: 'Alta',
+      prioCor: '#f07070',
+      detalhe: 'Reduz IR sobre aluguéis (27,5% → 11,33%) e protege contra ITCMD de ' + fmtR(RES.holding.itcmd || 0) + ' no inventário.'
+    });
+    gains.total += g;
+  }
+
+  // VGBL
+  if (RES.vgbl && RES.vgbl.ganho > 0) {
+    var g = RES.vgbl.ganho;
+    gains.items.push({
+      modulo: 'Estrutura Sucessória · VGBL',
+      icon: '🛡',
+      ganho: g,
+      acao: 'Implementar VGBL com beneficiários definidos. Evita inventário e ITCMD sobre essa parcela.',
+      prioridade: 'Média',
+      prioCor: '#f8d75e',
+      detalhe: 'Herança protegida: ' + fmtR(RES.vgbl.herancaCom) + ' (vs ' + fmtR(RES.vgbl.herancaSem) + ' sem estruturação).'
+    });
+    gains.total += g;
+  }
+
+  // Aposentadoria (ganho de renda)
+  if (RES.apos) {
+    var rendaDesejada = d.aposRenda || d.renda * 0.8;
+    var gap = Math.max(rendaDesejada - RES.apos.rendaMes, 0);
+    if (gap > 0) {
+      var g = Math.round(gap * 12 * 10);
+      gains.items.push({
+        modulo: 'Planejamento de Aposentadoria',
+        icon: '🎯',
+        ganho: g,
+        acao: 'Ajustar alocação para perfil ' + (d.perfil === 'conservador' ? 'moderado' : 'arrojado') + ' e aumentar aporte mensal em ' + fmtR(Math.round(gap * 0.4)) + '.',
+        prioridade: 'Média',
+        prioCor: '#f8d75e',
+        detalhe: 'Gap atual de ' + fmtR(gap) + '/mês entre renda projetada e desejada. Ajuste fecha esse gap em ' + Math.round(RES.apos.anos * 0.7) + ' anos.'
+      });
+      gains.total += g;
+    }
+  }
+
+  gainsData = gains;
+  return gains;
+}
+
+function calcOptimizedScore() {
+  var s = RES.score;
+  // Scores otimizados (simulação pós-implementação)
+  return {
+    total: Math.min(950, Math.round(s.total * 1.65)),
+    trib: Math.min(92, Math.round(s.trib * 2.2)),
+    suc: Math.min(90, Math.round(s.suc * 1.9)),
+    diver: Math.min(85, Math.round(s.diver * 1.4)),
+    apos: Math.min(88, Math.round(s.apos * 1.45)),
+    liq: Math.min(85, Math.round(s.liq * 1.2))
+  };
+}
+
+function toggleMelhorias() {
+  melhoriaAtiva = !melhoriaAtiva;
+  var btn = document.getElementById('r-btn-melhorias');
+  var banner = document.getElementById('r-gains-banner');
+  var actions = document.getElementById('r-actions');
+
+  if (melhoriaAtiva) {
+    btn.textContent = '↺ Voltar ao estado atual';
+    btn.style.background = 'linear-gradient(135deg,#4c8bf5,#3a7bdc)';
+
+    // Mostrar banner de ganhos
+    banner.style.display = 'block';
+    document.getElementById('r-gains-total').textContent = fmtR(gainsData.total);
+
+    // Animar score
+    var opt = calcOptimizedScore();
+    animateValue(document.getElementById('r-score'), scoreAtual, opt.total, 1200);
+    scoreAtual = opt.total;
+    document.getElementById('r-arc').setAttribute('stroke-dashoffset', String(100 - opt.total / 10));
+    var badge = document.getElementById('r-badge');
+    var m = scoreMeta(opt.total);
+    badge.textContent = m.label; badge.className = 'score-badge ' + m.cls;
+
+    // Atualizar dimensões
+    updateDims(opt);
+
+    // Mostrar plano de ação
+    actions.style.display = 'block';
+    var html = '';
+    gainsData.items.forEach(function(item) {
+      html += '<div style="padding:24px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:linear-gradient(180deg,rgba(20,30,46,.8),rgba(15,24,36,.8))">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<span style="font-size:18px">' + item.icon + '</span>' +
+            '<span style="font-family:Bricolage Grotesque,sans-serif;font-weight:700;font-size:15px;color:#fff">' + item.modulo + '</span>' +
+          '</div>' +
+          '<span style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1px;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid ' + item.prioCor + ';color:' + item.prioCor + '">' + item.prioridade + '</span>' +
+        '</div>' +
+        '<div style="font-family:Bricolage Grotesque,sans-serif;font-weight:800;font-size:28px;color:#2ecc8a;letter-spacing:-.03em;margin-bottom:8px">' + fmtR(item.ganho) + '</div>' +
+        '<div style="font-size:13px;color:#e6edf3;line-height:1.5;margin-bottom:8px"><strong>Ação:</strong> ' + item.acao + '</div>' +
+        '<div style="font-size:12px;color:#8b949e;line-height:1.4">' + item.detalhe + '</div>' +
+      '</div>';
+    });
+    document.getElementById('r-action-cards').innerHTML = html;
+
+  } else {
+    btn.innerHTML = '✦ Aplicar Melhorias — ver potencial';
+    btn.style.background = 'linear-gradient(135deg,#2ecc8a,#24a070)';
+    banner.style.display = 'none';
+    actions.style.display = 'none';
+
+    // Voltar score original
+    var orig = RES.score;
+    animateValue(document.getElementById('r-score'), scoreAtual, orig.total, 1200);
+    scoreAtual = orig.total;
+    document.getElementById('r-arc').setAttribute('stroke-dashoffset', String(100 - orig.total / 10));
+    var badge = document.getElementById('r-badge');
+    var m = scoreMeta(orig.total);
+    badge.textContent = m.label; badge.className = 'score-badge ' + m.cls;
+    updateDims(orig);
+  }
+}
+
+function updateDims(scores) {
+  var dims = document.querySelectorAll('[data-dim-key]');
+  dims.forEach(function(el) {
+    var key = el.dataset.dimKey;
+    var val = scores[key];
+    if (val !== undefined) {
+      el.querySelector('.dim-score-val').textContent = val;
+      var bar = el.querySelector('.dim-bar-fill');
+      bar.style.width = val + '%';
+      bar.style.background = barColor(val).replace('background:','');
+    }
+  });
+}
+
+function animateValue(el, from, to, duration) {
+  var start = performance.now();
+  function step(now) {
+    var t = Math.min((now - start) / duration, 1);
+    var eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+
+
+// Comunicação com parent (quando rodando em iframe)
+function fecharWizard(){
+  if(window.parent !== window){
+    window.parent.postMessage('fechar-diagnostico','*');
+  } else {
+    history.back();
+  }
+}
+
+function enviarDadosParent(d){
+  if(window.parent !== window){
+    window.parent.postMessage({type:'diagnostico-dados',payload:d},'*');
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  goTo(0);
+});
+</script>
+</body>
+</html>
