@@ -4067,113 +4067,630 @@ function renderActions(aps, pgbl, hld, vgbl, renda, ia){
 }
 
 /* ═════════════════════════════════════════════════════
-   GERAR PDF (html2canvas + jsPDF)
+   CAMADA IA INSTITUCIONAL · específica para o PDF
+   Segunda chamada, mais densa, persona "head wealth"
+   ═════════════════════════════════════════════════════ */
+
+const DIAG_SYS_PDF = `Você é Head de Wealth Management de uma boutique brasileira de consultoria patrimonial — perfil sênior, atuação na faixa private/family office, MBA financeiro, certificação CFP, ~15-20 anos de mercado. Sua escrita é institucional, técnica, densa, formal mas com voz humana. Você produz pareceres assinados, escritos para serem lidos por clientes patrimoniais sofisticados e seus advogados/contadores.
+
+Sua tarefa: produzir o conteúdo textual de um relatório institucional de diagnóstico patrimonial em PDF. Esse documento será impresso ou enviado ao cliente. NÃO é uma análise de tela conversacional — é um parecer institucional formal.
+
+Diretrizes obrigatórias:
+- Linguagem técnica e densa. Use vocabulário próprio do mercado: "drag tributário", "sequência de retornos", "decumulation phase", "alpha tributário", "wealth bracket", "asset-liability matching", "governança societária", "cotização patrimonial", "lucro presumido", "regime regressivo de tributação".
+- Primeira pessoa do consultor ("recomendamos", "nossa leitura", "identificamos") — voz da casa. NÃO use 2ª pessoa "você" no PDF (isso é tom de tela).
+- Reconheça incertezas: "no horizonte de premissas adotadas", "sob cenário macro de medianas históricas", "considerando o atual arcabouço normativo".
+- Cite valores e percentuais específicos sempre que possível (R$, %, anos, idades).
+- Mencione legislação relevante quando pertinente: EC 132/2023 (reforma tributária), Lei 11.053/2004 (regime regressivo de previdência), Lei 9.250/1995 (declaração IR), ITCMD por estado.
+- Sem alarmismo, sem hype, sem markdown, sem emojis, sem cercas. Tom institucional reservado.
+- Quando o número de frases for especificado, respeite com precisão (faixa ±1 frase).
+- Retorne APENAS um objeto JSON válido. Nada antes, nada depois.`;
+
+function _diagBuildPromptPDF(D, calc, iaTela){
+  const aps = calc.aps, pgbl = calc.pgbl, hld = calc.hld, vgbl = calc.vgbl, renda = calc.renda, score = calc.score;
+  const fr = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+  const fp = v => (v||0).toFixed(1).replace('.',',') + '%';
+
+  // Brief do cliente
+  const linhas = [];
+  linhas.push('═══ DOSSIÊ DO CLIENTE ═══');
+  linhas.push(`Nome: ${D.nome}${D.prof?' · '+D.prof:''} · ${D.idade} anos`);
+  linhas.push(`Renda mensal bruta: ${fr(D.renda)} | Regime: ${({clt:'CLT',pj:'PJ',empresario:'Empresário'})[D.regime]} | INSS: ${D.inss==='sim'?'Sim':'Não'} | IR: ${D.ir==='completa'?'Declaração completa':'Simplificada/Isento'}`);
+  linhas.push(`Patrimônio investido: ${fr(D.patrim)} | Aporte mensal: ${fr(D.aporte)} | Perfil de risco: ${D.perfil}`);
+  linhas.push(`Idade-alvo aposentadoria: ${D.aposAge} anos | Estratégia: ${D.estrat==='renda'?'renda vitalícia (preserva capital)':'consumir patrimônio até 99 anos'}`);
+  if(D.tempr==='sim'){
+    linhas.push(`Previdência contratada: PGBL saldo ${fr(D.pgblSaldo)}, aporte anual ${fr(D.pgblAporte)} | VGBL saldo ${fr(D.vgblSaldo)}`);
+  }
+  linhas.push(`Imóveis: ${D.temimo==='sim'?`${D.qtdimo} unidade(s), valor ${fr(D.valimo)}, aluguel ${fr(D.alug)}/mês, ${D.cvqtd} venda(s)/ano, holding ${D.temhld==='sim'?'estruturada':'inexistente'}`:'não possui'}`);
+  linhas.push(`Sucessão: ${D.depend==='sim'?`${D.qtddep} dependente(s) direto(s)`:'sem dependentes diretos'} | Objetivo principal: ${({acumular:'acumular patrimônio',proteger:'proteger sucessão',renda:'gerar renda mensal',equilibrio:'equilíbrio entre objetivos'})[D.objet]}`);
+
+  linhas.push('');
+  linhas.push('═══ RESULTADOS PROJETADOS ═══');
+  linhas.push('');
+  linhas.push('APOSENTADORIA:');
+  linhas.push(`- Patrimônio projetado aos ${D.aposAge} anos (valor real): ${fr(aps.totalFuturo)}`);
+  linhas.push(`- ${aps.isRenda?'Renda passiva vitalícia':'Retirada até 99a'}: ${fr(aps.rendaMes)}/mês`);
+  linhas.push(`- Renda-alvo (80% da renda atual): ${fr(aps.rendaIdeal)} | Cobertura projetada: ${fp(aps.cobertura)}`);
+  linhas.push(`- Taxa real anual: ${fp(aps.taxaAnual*100)} | Anos de acumulação: ${aps.anos}`);
+  if(aps.esgoto) linhas.push(`- ALERTA: estratégia escolhida esgota patrimônio aos ${aps.esgoto.age} anos`);
+
+  linhas.push('');
+  linhas.push('PGBL:');
+  if(pgbl.aplica){
+    linhas.push(`- Teto de dedução (12%): ${fr(pgbl.tetoDeducao)}/ano`);
+    linhas.push(`- Aporte atual: ${fr(pgbl.aporteAtual)} | Aporte adicional possível: ${fr(pgbl.aporteAdicional)}`);
+    linhas.push(`- Economia tributária atual: ${fr(pgbl.economiaAtual)}/ano | Adicional acessível: ${fr(pgbl.economiaAdicional)}/ano`);
+    linhas.push(`- Patrimônio adicional projetado (15 anos, reaplicação 9% a.a.): ${fr(pgbl.patrimonio15Anos)}`);
+  } else {
+    linhas.push(`- NÃO SE APLICA · motivo: ${pgbl.motivo}`);
+  }
+
+  linhas.push('');
+  linhas.push('HOLDING PATRIMONIAL:');
+  if(hld.aplica){
+    linhas.push(`- Status: ${hld.jaTem?'holding ESTRUTURADA':'SEM holding'}`);
+    linhas.push(`- Custo sucessório se mantido em PF: ${fr(hld.pfSucessao)}`);
+    linhas.push(`- Economia sucessória via holding: ${fr(hld.economiaSucessao)}`);
+    linhas.push(`- Economia tributária anual (aluguel + vendas): ${fr(hld.economiaAnual)}`);
+    linhas.push(`- Economia total acumulada em ${hld.horizonte} anos: ${fr(hld.economiaTotal)}`);
+    linhas.push(`- Custos: abertura ${fr(hld.custoAbertura)} | manutenção ${fr(hld.manutAnual)}/ano`);
+  } else {
+    linhas.push(`- NÃO SE APLICA · motivo: ${hld.motivo}`);
+  }
+
+  linhas.push('');
+  linhas.push('VGBL SUCESSÓRIO:');
+  if(vgbl.aplica){
+    linhas.push(`- Status: ${vgbl.jaTem?'VGBL EXISTENTE ('+fr(D.vgblSaldo)+')':'sem VGBL'}`);
+    linhas.push(`- Patrimônio financeiro protegível: ${fr(vgbl.patProtegivel)}`);
+    linhas.push(`- Economia sucessória direta (ausência de ITCMD/inventário): ${fr(vgbl.economiaSucessao)}`);
+    linhas.push(`- Alpha tributário 15 anos (ausência de come-cotas): ${fr(vgbl.alpha15Anos)}`);
+  } else {
+    linhas.push(`- NÃO SE APLICA · motivo: ${vgbl.motivo}`);
+  }
+
+  linhas.push('');
+  linhas.push('RENDA PASSIVA:');
+  linhas.push(`- Renda passiva atual gerada pelo patrimônio: ${fr(renda.rendaAtualMes)}/mês`);
+  linhas.push(`- Cobertura da renda salarial atual: ${fp(renda.coberturaAtual)}`);
+  linhas.push(`- Patrimônio necessário para 100% de cobertura: ${fr(renda.patNecessario)}`);
+  linhas.push(`- Gap a acumular: ${fr(renda.gap)} | Yield real anual: ${fp(renda.yieldAnual*100)}`);
+
+  linhas.push('');
+  linhas.push(`SCORE PATRIMONIAL CONSOLIDADO: ${score.total}/100`);
+  score.dims.forEach(d => linhas.push(`- ${d.n}: ${d.v}/${d.max}`));
+
+  linhas.push('');
+  linhas.push(`PREMISSAS MACRO: CDI ${fp(CDI*100)} a.a., IPCA ${fp(INFL*100)} a.a. (medianas históricas 30a).`);
+
+  if(iaTela && iaTela.teseCentral){
+    linhas.push('');
+    linhas.push('═══ TESE PRELIMINAR DA ANÁLISE DE TELA ═══');
+    linhas.push('(use como referência para alinhamento, mas REESCREVA o conteúdo em linguagem institucional formal — não copie literalmente)');
+    linhas.push(iaTela.teseCentral);
+  }
+
+  linhas.push('');
+  linhas.push('═══ PRODUZA O JSON A SEGUIR ═══');
+  linhas.push(`
+{
+  "cartaConsultor": "5-7 frases. Abertura institucional do parecer. Primeira pessoa formal ('recomendamos', 'apresentamos'). Contextualiza o diagnóstico, estabelece a relação consultiva, motiva a leitura do documento. Tom de carta assinada.",
+
+  "resumoExecutivoInst": "8-10 frases. Visão institucional condensada do diagnóstico. Inclui: faixa de patrimônio em termos de wealth bracket (private inicial / private médio / private alto / family office), fase do ciclo de vida (acumulação inicial / acumulação madura / pré-aposentadoria / distribuição), 3 principais lacunas identificadas com números, e a recomendação central. Linguagem densa, sem hype.",
+
+  "visaoMacro": "5-6 frases. Cenário macroeconômico brasileiro relevante para o plano: Selic, juros reais, ciclo, inflação (mediana histórica vs Focus atual), NTN-B 10 anos como referência, ambiente regulatório (cite EC 132/2023 ao menos uma vez), e como esses fatores impactam as recomendações deste cliente específico. Termine com a sensibilidade do plano a mudanças macro.",
+
+  "analiseEstrategica": {
+    "aposentadoria": "7-9 frases. Análise institucional profunda. Diagnóstico do gap de cobertura, adequação da estratégia (renda vitalícia vs decumulation), análise da alocação por perfil de risco, considerações sobre sequência de retornos na fase de distribuição (sequence-of-returns risk), e opções concretas de mitigação do gap. Mencionar a taxa real adotada e as premissas de longevidade (até 99 anos). Cite valores específicos.",
+    "pgbl": "7-9 frases. Tese sobre o caso. Eficiência tributária comparada (PGBL vs VGBL vs aplicação tradicional), simulação do efeito juros compostos da restituição reaplicada, considerações sobre liquidez restrita na previdência, regime tributário ideal para o resgate (regressivo vs progressivo). Se não se aplica, justifique tecnicamente e proponha alternativa.",
+    "holding": "7-9 frases. Análise da viabilidade econômica e jurídica. Comparação tributária PF vs PJ pós-reforma tributária (CBS/IBS 7,95% sobre aluguel em PF, 15,8% efetivo em Lucro Presumido), análise sucessória detalhada (custo de inventário ~6% + ITCMD 8% + ITBI 8% vs ITCMD sobre cotas 8%), considerações de governança societária mínima, riscos em caso de divórcio/conflito familiar. Se não se aplica, justifique pelo porte patrimonial.",
+    "vgbl": "7-9 frases. Análise das vantagens sucessórias (ausência de inventário, ausência de ITCMD em vários estados, liquidez aos beneficiários em ~30 dias). Alpha tributário do come-cotas (drag tributário ~22% em aplicação tradicional vs ~10% no VGBL ao longo de 15 anos). Seleção entre tabela regressiva (10% após 10 anos) vs progressiva (compensação na DIRPF). Integração com testamento e doações em vida.",
+    "renda": "7-9 frases. Estratégia de retiradas e composição. Análise da carteira recomendada por perfil (Tesouro IPCA+, FIIs lajes/logística, ações de dividendos, crédito privado, alocação internacional), risco de sequência de retornos no início da fase de distribuição, distinção entre yield real e nominal, e cronograma realista para atingir cobertura plena. Cite a taxa real estimada."
+  },
+
+  "estrategiaIntegrada": "6-8 frases. Como as peças se conectam de forma integrada. Priorização lógica das ações (qual primeiro, por quê), sequenciamento temporal, interdependências (ex: migrar para declaração completa habilita PGBL; constituir holding habilita governança que habilita doações em vida planejadas). Impacto cumulativo do plano integrado vs ações isoladas. Termine com a tese central de coordenação dos instrumentos.",
+
+  "planoImplementacao": [
+    {
+      "fase": "Fase 1 · Imediato (0-90 dias)",
+      "titulo": "Título da fase (4-7 palavras)",
+      "objetivo": "1 frase definindo o objetivo dessa fase",
+      "acoes": ["Ação 1 específica e acionável", "Ação 2 específica", "Ação 3 específica"]
+    },
+    {
+      "fase": "Fase 2 · Médio prazo (3-12 meses)",
+      "titulo": "Título da fase",
+      "objetivo": "1 frase",
+      "acoes": ["Ação 1", "Ação 2", "Ação 3"]
+    },
+    {
+      "fase": "Fase 3 · Longo prazo (1-3 anos)",
+      "titulo": "Título da fase",
+      "objetivo": "1 frase",
+      "acoes": ["Ação 1", "Ação 2", "Ação 3"]
+    }
+  ],
+
+  "riscosInstitucionais": [
+    {
+      "categoria": "Macro OU Tributário OU Concentração OU Liquidez OU Regulatório OU Sucessório OU Comportamental",
+      "probabilidade": "Baixa OU Média OU Alta",
+      "impacto": "Baixo OU Médio OU Alto",
+      "descricao": "2 frases descrevendo o risco com nuance institucional específica ao caso.",
+      "mitigacao": "1-2 frases com a ação concreta e a métrica de monitoramento (qual indicador acompanhar e em que frequência)."
+    }
+  ],
+
+  "observacoesRegulatorias": "4-6 frases. Comentário institucional sobre o ambiente regulatório relevante: EC 132/2023 (reforma tributária e impacto em renda imobiliária), PL 1087/2025 (tributação de alta renda), tabelas IR vigentes em 2026, ITCMD por estado (mencionar variação 4-8%), regime regressivo Lei 11.053/2004. Sem alarmismo, apenas mapeamento dos vetores regulatórios relevantes ao plano.",
+
+  "cadenciaRevisao": "3-4 frases. Cadência de revisão recomendada. Quando revisar o plano: revisão tática de alocação (a cada 6 meses), revisão de objetivos (anual), e gatilhos extraordinários (mudança de regime CLT/PJ, recebimento de herança, nascimento de dependente, mudança de estado, mudança regulatória relevante). Definir o ritmo de relacionamento profissional.",
+
+  "fechamento": "3-4 frases. Encerramento institucional do parecer. Reafirma a tese central de forma sintética, compromisso profissional de acompanhamento, referência ao próximo encontro. Tom de carta assinada, formal."
+}
+
+REGRAS DE QUANTIDADE:
+- 3 fases no planoImplementacao (Fase 1, Fase 2, Fase 3), com 3-4 ações cada
+- 5-6 riscos em riscosInstitucionais
+- Respeite com precisão os limites de frases especificados em cada campo (±1 frase)`);
+
+  return linhas.join('\n');
+}
+
+async function _diagGerarAnaliseInstitucional(){
+  if(!lastReport) throw new Error('Diagnóstico não foi gerado ainda');
+  const calc = {
+    aps: lastReport.aps, pgbl: lastReport.pgbl, hld: lastReport.hld,
+    vgbl: lastReport.vgbl, renda: lastReport.renda, score: lastReport.score
+  };
+  const userPrompt = _diagBuildPromptPDF(D, calc, lastReport.ia);
+  const respText = await _diagCallClaude(DIAG_SYS_PDF, userPrompt, 2);
+  return _diagExtractJSON(respText);
+}
+
+/* ═════════════════════════════════════════════════════
+   GERAR PDF INSTITUCIONAL · padrão wealth management
+   Dispara 2ª chamada à IA (institucional, densa)
    ═════════════════════════════════════════════════════ */
 async function gerarPDF(){
   const btn = document.getElementById('btn-pdf');
   const txt = document.getElementById('btn-pdf-txt');
+  if(!lastReport){ alert('Gere o diagnóstico primeiro.'); return; }
   btn.classList.add('loading');
-  txt.textContent = 'Gerando PDF…';
+
+  // ─── Etapa 1: gerar análise institucional via IA (se ainda não cacheada) ───
+  if(!lastReport.iaInstitucional){
+    txt.textContent = 'Compondo análise institucional…';
+    // Mostra overlay de loading com ticker
+    const lo = document.getElementById('loading');
+    lo.classList.add('show');
+    _setLoadingTxt('Composição institucional em andamento…', 'Head de wealth está escrevendo o parecer institucional — pode levar até 60 segundos.');
+    const t0 = Date.now();
+    const ticker = setInterval(()=>{
+      const segs = Math.floor((Date.now()-t0)/1000);
+      const subEl = document.getElementById('loading-sub');
+      if(subEl) subEl.textContent = `Head de wealth escrevendo o parecer · ${segs}s · pode levar até 60 segundos.`;
+    }, 1000);
+
+    try {
+      lastReport.iaInstitucional = await _diagGerarAnaliseInstitucional();
+      clearInterval(ticker);
+      _setLoadingTxt('Parecer institucional concluído', 'Compondo documento PDF…');
+      await new Promise(r => setTimeout(r, 600));
+    } catch(err){
+      clearInterval(ticker);
+      console.warn('[pdf] IA institucional falhou, usando fallback canned:', err);
+      _setLoadingTxt('Análise institucional indisponível', 'Gerando PDF com estrutura padrão. Erro: ' + (err.message||'').slice(0,80));
+      await new Promise(r => setTimeout(r, 1800));
+      lastReport.iaInstitucional = null; // marca explicitamente para usar fallback
+    }
+    lo.classList.remove('show');
+  }
+
+  txt.textContent = 'Renderizando páginas…';
+
+  // ─── Paleta institucional ───
+  const C = {
+    navy:'#0D1F2D', dark:'#1C3A4A', petrol:'#2E5D6E',
+    body:'#3D3D3D', muted:'#6B6B6B', light:'#A8A8A8',
+    green:'#1A7A4A', red:'#8B1A1A', amber:'#7A5C00',
+    bg:'#FFFFFF', alt:'#F4F5F6', sub:'#EAF0F3',
+    blue:'#1B4F7A', gold:'#8B7500', purple:'#5D4FA5'
+  };
+
+  const {aps, pgbl, hld, vgbl, renda, score} = lastReport;
+  const iaI = lastReport.iaInstitucional || {};
+  const hoje = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'});
+  const docId = lastReport.docId || ('WP-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*900000)+100000));
+  lastReport.docId = docId;
+
+  const fr = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+  const fk = v => {
+    const a = Math.abs(v||0);
+    if(a>=1e6) return 'R$ ' + (v/1e6).toFixed(2).replace('.',',') + ' M';
+    if(a>=1e3) return 'R$ ' + (v/1e3).toFixed(0) + ' K';
+    return fr(v);
+  };
+  const fp = v => (v||0).toFixed(1).replace('.',',') + '%';
+  const perfilLbl = D.perfil[0].toUpperCase()+D.perfil.slice(1);
+
+  // ─── Helpers ───
+  function sec(num, title){
+    return `<div style="margin-top:30px;margin-bottom:14px"><div style="font-size:9px;font-weight:600;color:${C.petrol};letter-spacing:.15em;font-family:Helvetica,Arial,sans-serif">SEÇÃO ${num}</div><div style="font-size:18px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif;letter-spacing:-.01em">${title}</div><div style="height:1px;background:${C.dark};margin-top:8px"></div></div>`;
+  }
+  function tr(label, value, alt){
+    const bg = alt ? C.alt : C.bg;
+    return `<tr><td style="padding:7px 12px;font-size:10.5px;color:${C.body};border-bottom:1px solid #eee;background:${bg};font-family:Helvetica,Arial,sans-serif">${label}</td><td style="padding:7px 12px;font-size:10.5px;color:${C.body};font-weight:600;text-align:right;border-bottom:1px solid #eee;background:${bg};font-family:Helvetica,Arial,sans-serif">${value}</td></tr>`;
+  }
+  function th(cols){
+    return `<tr style="background:${C.petrol};color:white">${cols.map(c=>`<td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;font-family:Helvetica,Arial,sans-serif;${c.align==='right'?'text-align:right':(c.align==='center'?'text-align:center':'')}">${c.label}</td>`).join('')}</tr>`;
+  }
+  function tbl(headers, rows){
+    return `<table style="width:100%;border-collapse:collapse;margin:12px 0;font-family:Helvetica,Arial,sans-serif">${th(headers)}${rows.join('')}</table>`;
+  }
+  function parecer(text, color, label){
+    if(!text) return '';
+    const c = color || C.petrol;
+    return `<div style="background:${C.alt};border-left:3px solid ${c};padding:14px 18px;margin:14px 0;font-size:10.5px;color:${C.body};line-height:1.75;font-family:Helvetica,Arial,sans-serif">${label?`<div style="font-size:8.5px;font-weight:700;letter-spacing:.14em;color:${c};margin-bottom:8px">${label}</div>`:''}${text}</div>`;
+  }
+  function prose(text){
+    return `<p style="font-size:11px;color:${C.body};line-height:1.75;margin:10px 0;font-family:Helvetica,Arial,sans-serif">${text}</p>`;
+  }
+  function proseInst(text){
+    // prosa institucional, levemente menor e mais densa
+    return `<p style="font-size:10.5px;color:${C.body};line-height:1.8;margin:10px 0;text-align:justify;font-family:Helvetica,Arial,sans-serif">${text}</p>`;
+  }
+  function kpiBox(label, value, sub, color){
+    return `<div style="flex:1;padding:18px 14px;text-align:center;border-right:1px solid #ddd"><div style="font-size:8.5px;font-weight:600;color:${C.muted};letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;font-family:Helvetica,Arial,sans-serif">${label}</div><div style="font-size:22px;font-weight:300;color:${color||C.navy};font-family:Helvetica,Arial,sans-serif;letter-spacing:-.02em">${value}</div><div style="font-size:9px;color:${C.muted};margin-top:6px;font-family:Helvetica,Arial,sans-serif">${sub||''}</div></div>`;
+  }
+  function faseBlock(fase, titulo, objetivo, acoes){
+    return `<div style="margin:14px 0;border:1px solid #ddd;border-left:4px solid ${C.petrol};border-radius:0;background:${C.bg}">
+      <div style="padding:14px 18px;background:${C.alt};border-bottom:1px solid #ddd">
+        <div style="font-size:9px;font-weight:700;color:${C.petrol};letter-spacing:.14em;font-family:Helvetica,Arial,sans-serif">${fase}</div>
+        <div style="font-size:13px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif">${titulo||''}</div>
+      </div>
+      <div style="padding:14px 18px">
+        <div style="font-size:10.5px;color:${C.body};line-height:1.6;margin-bottom:10px;font-family:Helvetica,Arial,sans-serif"><strong style="color:${C.navy}">Objetivo:</strong> ${objetivo||''}</div>
+        ${(acoes||[]).map(a => `<div style="display:flex;gap:10px;padding:5px 0;font-size:10.5px;color:${C.body};font-family:Helvetica,Arial,sans-serif"><span style="color:${C.petrol};font-weight:700">•</span><span>${a}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }
+  function riscoRow(r, alt){
+    const probColor = r.probabilidade==='Alta'?C.red:(r.probabilidade==='Média'?C.amber:C.green);
+    const impColor  = r.impacto==='Alto'?C.red:(r.impacto==='Médio'?C.amber:C.green);
+    return `<tr style="background:${alt?C.alt:C.bg}">
+      <td style="padding:9px 12px;font-size:10.5px;color:${C.body};border-bottom:1px solid #eee;font-weight:600;font-family:Helvetica,Arial,sans-serif;vertical-align:top">${r.categoria||'—'}</td>
+      <td style="padding:9px 12px;font-size:10px;color:${probColor};font-weight:700;text-align:center;border-bottom:1px solid #eee;font-family:Helvetica,Arial,sans-serif;vertical-align:top">${r.probabilidade||'—'}</td>
+      <td style="padding:9px 12px;font-size:10px;color:${impColor};font-weight:700;text-align:center;border-bottom:1px solid #eee;font-family:Helvetica,Arial,sans-serif;vertical-align:top">${r.impacto||'—'}</td>
+      <td style="padding:9px 12px;font-size:10px;color:${C.body};border-bottom:1px solid #eee;line-height:1.6;font-family:Helvetica,Arial,sans-serif">${r.descricao||''}<div style="margin-top:6px;font-size:9px;color:${C.petrol};font-weight:600;letter-spacing:.04em">MITIGAÇÃO E MONITORAMENTO</div><div style="font-size:10px;color:${C.body};margin-top:2px">${r.mitigacao||'—'}</div></td>
+    </tr>`;
+  }
+
+  // ═══ MONTAR HTML INSTITUCIONAL ═══
+  let h = `<div id="pdf-root" style="width:794px;font-family:Helvetica,Arial,sans-serif;color:${C.body};background:${C.bg};box-sizing:border-box">`;
+
+  // ─── CAPA ───
+  h += `<div style="background:${C.navy};padding:48px 44px 36px;color:white;position:relative">`;
+  h += `<div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:${C.petrol};letter-spacing:.2em;font-family:Helvetica,Arial,sans-serif">WEALTHPLANNING</div>
+      <div style="font-size:9px;color:${C.light};margin-top:4px;letter-spacing:.05em">Wealth Management · Diagnóstico Patrimonial Institucional</div>
+    </div>
+    <div style="text-align:right;font-size:8.5px;color:${C.light};font-family:Helvetica,Arial,sans-serif">
+      <div style="letter-spacing:.06em">DOCUMENTO ${docId}</div>
+      <div style="margin-top:3px">${hoje}</div>
+    </div>
+  </div>`;
+  h += `<div style="display:inline-block;background:${C.dark};padding:4px 12px;border-radius:3px;font-size:9.5px;color:${C.petrol};margin-top:30px;letter-spacing:.08em;font-weight:600">PARECER PATRIMONIAL · ANÁLISE INSTITUCIONAL</div>`;
+  h += `<div style="width:48px;height:1px;background:${C.petrol};margin:18px 0"></div>`;
+  h += `<div style="font-size:34px;font-weight:300;color:white;line-height:1.1;letter-spacing:-.02em">${D.nome}</div>`;
+  h += `<div style="font-size:13px;color:${C.light};margin-top:8px;letter-spacing:.02em">${D.idade} anos${D.prof?' · '+D.prof:''} · Perfil ${perfilLbl}</div>`;
+  h += `<div style="margin-top:32px;display:flex;align-items:flex-end;gap:24px">
+    <div>
+      <div style="font-size:9px;color:${C.petrol};letter-spacing:.15em;font-weight:600">SCORE PATRIMONIAL CONSOLIDADO</div>
+      <div style="font-size:64px;font-weight:200;color:white;line-height:1;margin-top:4px;letter-spacing:-.04em">${score.total}<span style="font-size:24px;color:${C.light};font-weight:300">/100</span></div>
+    </div>
+    <div style="flex:1;padding-bottom:12px">
+      ${score.dims.map(d => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:10px;color:${C.light}">
+          <span>${d.n}</span>
+          <span style="font-weight:600;color:white">${d.v}/${d.max}</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+  h += `</div>`;
+
+  // KPI strip
+  h += `<div style="background:${C.alt};display:flex;border-bottom:1px solid #ddd">`;
+  h += kpiBox('Patrimônio Atual', fk(D.patrim), 'investido');
+  h += kpiBox('Aporte Mensal', fk(D.aporte), 'recorrente');
+  h += kpiBox('Renda Projetada', fk(aps.rendaMes), `aos ${D.aposAge} anos`, C.green);
+  h += kpiBox('Cobertura Renda', fp(aps.cobertura), 'vs 80% atual', aps.cobertura>=80?C.green:(aps.cobertura>=50?C.amber:C.red));
+  h += `</div>`;
+
+  h += `<div style="padding:10px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:8px;color:${C.light};font-family:Helvetica,Arial,sans-serif">
+    <span>${D.nome} · ${perfilLbl}</span>
+    <span>Documento informativo — não constitui oferta ou recomendação personalizada de investimento</span>
+  </div>`;
+
+  // ═══ CORPO ═══
+  h += `<div style="padding:0 36px 36px">`;
+
+  // CARTA DO CONSULTOR (abertura, sem numeração)
+  if(iaI.cartaConsultor){
+    h += `<div style="margin-top:30px;margin-bottom:8px"><div style="font-size:9px;font-weight:600;color:${C.petrol};letter-spacing:.15em;font-family:Helvetica,Arial,sans-serif">PARECER ABERTURA</div><div style="font-size:18px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif;letter-spacing:-.01em">Carta do consultor</div><div style="height:1px;background:${C.dark};margin-top:8px"></div></div>`;
+    h += `<div style="margin:14px 0;font-size:11px;color:${C.body};line-height:1.85;font-family:Helvetica,Arial,sans-serif;text-align:justify">${iaI.cartaConsultor}</div>`;
+  }
+
+  // SEÇÃO 01 · RESUMO EXECUTIVO INSTITUCIONAL
+  h += sec('01', 'Resumo Executivo Institucional');
+  if(iaI.resumoExecutivoInst){
+    h += proseInst(iaI.resumoExecutivoInst);
+  } else {
+    h += proseInst(`Cliente em fase de ${D.idade<40?'acumulação inicial':(D.idade<55?'acumulação madura':(D.idade<65?'pré-aposentadoria':'distribuição'))}, com patrimônio investido de ${fk(D.patrim)} e capacidade de aporte de ${fr(D.aporte)}/mês. Score patrimonial consolidado de ${score.total}/100 indica plano ${score.total>=70?'bem estruturado com necessidade de ajustes finos':(score.total>=50?'com oportunidades claras de otimização nas dimensões tributária e sucessória':'que demanda revisão estrutural prioritária')}.`);
+  }
+
+  // SEÇÃO 02 · VISÃO MACROECONÔMICA
+  h += sec('02', 'Visão Macroeconômica Relevante');
+  if(iaI.visaoMacro){
+    h += proseInst(iaI.visaoMacro);
+  } else {
+    h += proseInst(`Premissas adotadas no diagnóstico: CDI ${fp(CDI*100)} a.a. e IPCA ${fp(INFL*100)} a.a., correspondentes às medianas históricas brasileiras dos últimos 30 anos. A reforma tributária introduzida pela EC 132/2023 modifica a tributação de renda imobiliária via CBS/IBS (7,95% sobre aluguéis em pessoa física acima de R$ 28.560/ano) e justifica a reavaliação de estruturas de holding patrimonial. Para o horizonte do plano deste cliente (${aps.anos} anos até aposentadoria + fase de distribuição), o que importa estatisticamente é a média histórica, não a taxa momentânea — a Selic oscilou entre 2% e 15% nos últimos 30 anos.`);
+  }
+
+  // SEÇÃO 03 · SCORE PATRIMONIAL CONSOLIDADO
+  h += sec('03', 'Composição do Score Patrimonial');
+  h += tbl(
+    [{label:'DIMENSÃO'},{label:'PONTUAÇÃO',align:'right'},{label:'STATUS',align:'right'}],
+    score.dims.map((d,i) => {
+      const pct = (d.v/d.max)*100;
+      const status = pct>=80?'Excelente':pct>=60?'Adequado':pct>=40?'Atenção':'Crítico';
+      const statusColor = pct>=80?C.green:pct>=60?C.blue:pct>=40?C.amber:C.red;
+      return `<tr style="background:${i%2?C.alt:C.bg}">
+        <td style="padding:9px 12px;font-size:10.5px;color:${C.body};border-bottom:1px solid #eee;font-family:Helvetica,Arial,sans-serif">${d.n}</td>
+        <td style="padding:9px 12px;font-size:11px;color:${C.navy};font-weight:600;text-align:right;border-bottom:1px solid #eee;font-family:Helvetica,Arial,sans-serif">${d.v} <span style="color:${C.muted};font-weight:400">/ ${d.max}</span></td>
+        <td style="padding:9px 12px;font-size:10px;color:${statusColor};font-weight:700;text-align:right;border-bottom:1px solid #eee;font-family:Helvetica,Arial,sans-serif">${status.toUpperCase()}</td>
+      </tr>`;
+    })
+  );
+
+  // SEÇÃO 04 · APOSENTADORIA
+  h += sec('04', 'Análise Estratégica · Planejamento de Aposentadoria');
+  h += tbl(
+    [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
+    [
+      tr('Idade atual', D.idade + ' anos', false),
+      tr('Idade-alvo aposentadoria', D.aposAge + ' anos', true),
+      tr('Anos de acumulação', aps.anos + ' anos', false),
+      tr('Patrimônio projetado (valor real)', fk(aps.totalFuturo), true),
+      tr(aps.isRenda ? 'Renda passiva mensal (vitalícia)' : 'Retirada mensal (até 99a)', fr(aps.rendaMes), false),
+      tr('Renda-alvo (80% da renda atual)', fr(aps.rendaIdeal), true),
+      tr('Cobertura projetada', fp(aps.cobertura), false),
+      tr('Taxa real anual', fp(aps.taxaAnual*100), true),
+      tr('Estratégia adotada', aps.isRenda ? 'Renda vitalícia · capital preservado' : 'Decumulation phase · consumo do capital', false),
+      aps.esgoto ? tr('Idade de esgotamento (alerta)', aps.esgoto.age + ' anos', true) : tr('Patrimônio aos 99 anos', fk(aps.series[aps.series.length-1]?.patrimonio || 0), true)
+    ]
+  );
+  h += parecer(iaI.analiseEstrategica?.aposentadoria, C.blue, 'PARECER · APOSENTADORIA');
+
+  // SEÇÃO 05 · PGBL
+  h += sec('05', 'Análise Estratégica · Otimização Tributária PGBL');
+  if(pgbl.aplica){
+    h += tbl(
+      [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
+      [
+        tr('Aplicabilidade', 'Aplica · Declaração completa + INSS', false),
+        tr('Renda bruta anual', fr(D.renda*12), true),
+        tr('Teto de dedução (12%)', fr(pgbl.tetoDeducao), false),
+        tr('Aporte atual em PGBL', fr(pgbl.aporteAtual), true),
+        tr('Aporte adicional disponível', fr(pgbl.aporteAdicional), false),
+        tr('Economia já capturada', fr(pgbl.economiaAtual), true),
+        tr('Economia adicional acessível', fr(pgbl.economiaAdicional), false),
+        tr('Economia total possível', fr(pgbl.economiaTotalPossivel), true),
+        tr('Patrimônio adicional projetado (15a, 9%a.a.)', fk(pgbl.patrimonio15Anos), false)
+      ]
+    );
+  } else {
+    h += proseInst(`<strong style="color:${C.navy}">PGBL não se aplica ao perfil tributário atual.</strong> Motivo: ${pgbl.motivo}. Sem o benefício fiscal do PGBL, o instrumento alternativo recomendado é o VGBL pelas vantagens sucessórias (ausência de inventário, ausência de ITCMD em vários estados, liquidez aos beneficiários em até 30 dias) e pela ausência de come-cotas semestrais.`);
+  }
+  h += parecer(iaI.analiseEstrategica?.pgbl, C.green, 'PARECER · PGBL');
+
+  // SEÇÃO 06 · HOLDING
+  h += sec('06', 'Análise Estratégica · Estruturação Societária');
+  if(hld.aplica){
+    const horizonte = hld.horizonte || 25;
+    h += `<div style="font-size:9px;color:${C.muted};margin:8px 0 6px;letter-spacing:.06em">COMPARATIVO PATRIMONIAL · HORIZONTE ${horizonte} ANOS</div>`;
+    h += `<table style="width:100%;border-collapse:collapse;margin:8px 0;font-family:Helvetica,Arial,sans-serif">
+      <tr style="background:${C.petrol};color:white">
+        <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em">RUBRICA</td>
+        <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;text-align:right">PESSOA FÍSICA</td>
+        <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;text-align:right">HOLDING</td>
+      </tr>`;
+    const cmp = (label, v1, v2, alt) => {
+      const bg = alt ? C.alt : C.bg;
+      return `<tr><td style="padding:7px 12px;font-size:10.5px;color:${C.body};border-bottom:1px solid #eee;background:${bg};font-family:Helvetica,Arial,sans-serif">${label}</td><td style="padding:7px 12px;font-size:10.5px;color:${C.red};font-weight:600;text-align:right;border-bottom:1px solid #eee;background:${bg};font-family:Helvetica,Arial,sans-serif">${v1}</td><td style="padding:7px 12px;font-size:10.5px;color:${C.green};font-weight:600;text-align:right;border-bottom:1px solid #eee;background:${bg};font-family:Helvetica,Arial,sans-serif">${v2}</td></tr>`;
+    };
+    h += cmp('Status atual', '—', hld.jaTem?'Estruturada':'Não estruturada', false);
+    h += cmp('Imóveis', D.qtdimo + ' un. · ' + fk(D.valimo), 'Cotas societárias', true);
+    if(D.alug>0){
+      const irPF = ((()=>{const r=D.alug;let ir=r<=2259.20?0:r<=2826.65?r*.075-169.44:r<=3751.05?r*.15-381.44:r<=4664.68?r*.225-662.77:r*.275-896;return (ir+(D.alug*12>28560?D.alug*0.0795:0))*12;})());
+      h += cmp('Tributação aluguel/ano', fr(irPF), fr(D.alug*0.158*12), false);
+    }
+    h += cmp('Custo sucessório', fr(D.valimo*0.22), fr(D.valimo*0.08), true);
+    h += cmp('Custo abertura', '—', fr(hld.custoAbertura), false);
+    h += cmp('Manutenção anual', '—', fr(hld.manutAnual), true);
+    h += `</table>`;
+    h += tbl(
+      [{label:'RESULTADO'},{label:'VALOR',align:'right'}],
+      [
+        tr('Economia sucessória estimada', fk(hld.economiaSucessao), false),
+        tr('Economia tributária anual', fr(hld.economiaAnual), true),
+        tr(`Economia total em ${horizonte} anos`, fk(hld.economiaTotal), false),
+        tr('Recomendação técnica', hld.jaTem ? 'Manter e revisar a cada 3 anos' : (hld.economiaTotal > 50000 ? 'Estruturar holding' : 'Avaliar caso-a-caso'), true)
+      ]
+    );
+  } else {
+    h += proseInst(`<strong style="color:${C.navy}">Holding patrimonial não se aplica ao porte atual.</strong> Motivo: ${hld.motivo}. A constituição de holding ganha sentido econômico a partir de 2-3 imóveis ou patrimônio imobiliário superior a R$ 1 milhão, especialmente em presença de herdeiros diretos e/ou receita de aluguel relevante.`);
+  }
+  h += parecer(iaI.analiseEstrategica?.holding, C.gold, 'PARECER · HOLDING');
+
+  // SEÇÃO 07 · VGBL
+  h += sec('07', 'Análise Estratégica · Proteção Sucessória VGBL');
+  if(vgbl.aplica){
+    h += tbl(
+      [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
+      [
+        tr('Aplicabilidade', 'Aplica · Patrimônio financeiro + dependentes', false),
+        tr('Status atual', vgbl.jaTem ? `Existente · saldo ${fk(D.vgblSaldo)}` : 'Sem VGBL', true),
+        tr('Patrimônio financeiro protegível', fk(vgbl.patProtegivel), false),
+        tr('Dependentes diretos', D.qtddep + ' pessoa(s)', true),
+        tr('Economia sucessória direta', fk(vgbl.economiaSucessao), false),
+        tr('Alpha tributário 15a (sem come-cotas)', fk(vgbl.alpha15Anos), true),
+        tr('Ganho total potencial', fk(vgbl.economiaSucessao + vgbl.alpha15Anos), false),
+        tr('Liquidez para herdeiros', '~30 dias vs 1-3 anos (inventário)', true)
+      ]
+    );
+  } else {
+    h += proseInst(`<strong style="color:${C.navy}">VGBL não se aplica ao perfil atual.</strong> Motivo: ${vgbl.motivo}.`);
+  }
+  h += parecer(iaI.analiseEstrategica?.vgbl, C.purple, 'PARECER · VGBL');
+
+  // SEÇÃO 08 · RENDA PASSIVA
+  h += sec('08', 'Análise Estratégica · Geração de Renda Passiva');
+  h += tbl(
+    [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
+    [
+      tr('Capital atual investido', fk(D.patrim), false),
+      tr('Renda passiva mensal atual', fr(renda.rendaAtualMes), true),
+      tr('Cobertura da renda atual', fp(renda.coberturaAtual), false),
+      tr('Patrimônio necessário para 100%', fk(renda.patNecessario), true),
+      tr('Gap a acumular', fk(renda.gap), false),
+      tr('Yield real anual', fp(renda.yieldAnual*100), true),
+      tr('Prazo estimado para cobertura plena', renda.gap>0 && D.aporte>0 ? Math.round(renda.gap/(D.aporte*12)) + ' anos (mantendo aporte)' : 'já atingida', false)
+    ]
+  );
+  h += parecer(iaI.analiseEstrategica?.renda, '#1A6E78', 'PARECER · RENDA PASSIVA');
+
+  // SEÇÃO 09 · ESTRATÉGIA INTEGRADA
+  if(iaI.estrategiaIntegrada){
+    h += sec('09', 'Estratégia Integrada e Sequenciamento');
+    h += proseInst(iaI.estrategiaIntegrada);
+  }
+
+  // SEÇÃO 10 · PLANO DE IMPLEMENTAÇÃO FASEADO
+  h += sec('10', 'Plano de Implementação Faseado');
+  if(iaI.planoImplementacao && iaI.planoImplementacao.length){
+    iaI.planoImplementacao.forEach(f => {
+      h += faseBlock(f.fase, f.titulo, f.objetivo, f.acoes);
+    });
+  } else {
+    // Fallback simplificado
+    h += faseBlock('Fase 1 · Imediato (0-90 dias)', 'Captura de oportunidades tributárias', 'Iniciar ações de alto retorno e baixo esforço regulatório.', [
+      'Revisar regime de declaração IR (completa vs simplificada) na próxima janela',
+      pgbl.aplica && pgbl.economiaAdicional > 0 ? `Ajustar aporte PGBL para atingir teto de 12% (${fr(pgbl.tetoDeducao)})` : 'Avaliar VGBL para horizonte de 10+ anos',
+      'Documentar testamento e nomeação de beneficiários nos veículos existentes'
+    ]);
+    h += faseBlock('Fase 2 · Médio prazo (3-12 meses)', 'Estruturação societária e tributária', 'Implementar instrumentos de longo prazo.', [
+      hld.aplica && !hld.jaTem ? 'Avaliar constituição de holding patrimonial com assessoria especializada' : 'Revisar contrato social da holding existente (governança e cotas)',
+      'Iniciar VGBL com aporte recorrente conforme capacidade',
+      'Revisar alocação da carteira para o perfil ' + perfilLbl
+    ]);
+    h += faseBlock('Fase 3 · Longo prazo (1-3 anos)', 'Consolidação e revisão sistêmica', 'Operacionalizar plano e estabelecer cadência de revisão.', [
+      'Reavaliar idade-alvo de aposentadoria conforme evolução patrimonial',
+      'Considerar doações em vida planejadas (quota disponível) se aplicável',
+      'Revisão integrada anual do plano patrimonial'
+    ]);
+  }
+
+  // SEÇÃO 11 · MAPA DE RISCOS
+  if(iaI.riscosInstitucionais && iaI.riscosInstitucionais.length){
+    h += sec('11', 'Mapa de Riscos Institucionais');
+    h += `<table style="width:100%;border-collapse:collapse;margin:12px 0;font-family:Helvetica,Arial,sans-serif">
+      <tr style="background:${C.petrol};color:white">
+        <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;width:140px">CATEGORIA</td>
+        <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;text-align:center;width:70px">PROB.</td>
+        <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;text-align:center;width:70px">IMPACTO</td>
+        <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em">DESCRIÇÃO · MITIGAÇÃO</td>
+      </tr>`;
+    iaI.riscosInstitucionais.forEach((r,i) => { h += riscoRow(r, i%2===1); });
+    h += `</table>`;
+  }
+
+  // SEÇÃO 12 · OBSERVAÇÕES REGULATÓRIAS
+  if(iaI.observacoesRegulatorias){
+    h += sec('12', 'Observações Regulatórias');
+    h += proseInst(iaI.observacoesRegulatorias);
+  }
+
+  // SEÇÃO 13 · CADÊNCIA DE REVISÃO
+  if(iaI.cadenciaRevisao){
+    h += sec('13', 'Cadência de Revisão e Próximos Passos');
+    h += proseInst(iaI.cadenciaRevisao);
+  }
+
+  // FECHAMENTO INSTITUCIONAL
+  if(iaI.fechamento){
+    h += `<div style="margin-top:40px;padding-top:24px;border-top:2px solid ${C.dark}">`;
+    h += `<div style="font-size:10.5px;color:${C.body};line-height:1.85;font-family:Helvetica,Arial,sans-serif;text-align:justify;margin-bottom:30px">${iaI.fechamento}</div>`;
+    h += `<div style="margin-top:36px;padding-top:14px;border-top:1px solid ${C.dark};width:240px">
+      <div style="font-size:9px;color:${C.muted};letter-spacing:.12em;font-family:Helvetica,Arial,sans-serif">WEALTHPLANNING · WEALTH MANAGEMENT</div>
+      <div style="font-size:10px;color:${C.body};margin-top:4px;font-family:Helvetica,Arial,sans-serif">Equipe de assessoria patrimonial</div>
+      <div style="font-size:9px;color:${C.muted};margin-top:6px;font-family:Helvetica,Arial,sans-serif">${hoje} · ${docId}</div>
+    </div>`;
+    h += `</div>`;
+  }
+
+  // ANEXO A · PREMISSAS
+  h += sec('A', 'Anexo · Premissas e Memória de Cálculo');
+  h += `<div style="font-size:10px;color:${C.body};line-height:1.75;font-family:Helvetica,Arial,sans-serif">
+    <p style="margin:8px 0"><strong style="color:${C.navy}">Cenário macroeconômico utilizado:</strong> CDI de ${fp(CDI*100)} a.a. e IPCA de ${fp(INFL*100)} a.a., correspondentes às medianas históricas brasileiras dos últimos 30 anos (1995-2025) — fontes: Banco Central do Brasil (SGS), IBGE, B3.</p>
+    <p style="margin:8px 0"><strong style="color:${C.navy}">Perfil de risco e fator multiplicador:</strong> ${perfilLbl} — taxa bruta = CDI × ${FAT[D.perfil].toFixed(1)}. Taxa real anual descontada da inflação: ${fp(aps.taxaAnual*100)}.</p>
+    <p style="margin:8px 0"><strong style="color:${C.navy}">Tributação:</strong> Tabelas progressivas de INSS e IR vigentes em 2026. Reforma tributária (EC 132/2023) considerada nas alíquotas de holding (CBS/IBS 7,95% sobre aluguel em PF acima de R$ 28.560/ano).</p>
+    <p style="margin:8px 0"><strong style="color:${C.navy}">Holding:</strong> Lucro Presumido, atividade imobiliária. Tributação efetiva sobre aluguel: 15,8%. Ganho de capital: 6,73% sobre receita. Custos: abertura R$ 8.000 + R$ 500/imóvel acima do 5º; manutenção R$ 6.000/ano. ITCMD na sucessão de cotas: 8% (médio nacional).</p>
+    <p style="margin:8px 0"><strong style="color:${C.navy}">VGBL:</strong> Drag tributário estimado de 22% na aplicação tradicional (come-cotas 15% semestral + IR 15% no resgate) vs 10% no VGBL (alíquota regressiva mínima após 10 anos). Sem ITCMD, sem inventário.</p>
+    <p style="margin:8px 0"><strong style="color:${C.navy}">Renda Passiva:</strong> Yield real ponderado da carteira recomendada, composta por Tesouro IPCA+, FIIs (lajes/logística), ações de dividendos, crédito privado e alocação internacional, em proporções variáveis por perfil.</p>
+  </div>`;
+
+  // DISCLAIMER FINAL
+  h += `<div style="margin-top:30px;padding:14px;background:${C.alt};border-left:3px solid ${C.dark};font-size:9px;color:${C.muted};line-height:1.7;font-family:Helvetica,Arial,sans-serif">
+    <strong style="color:${C.navy}">Disclaimer regulatório:</strong> Este documento tem finalidade exclusivamente informativa e educacional. Não constitui oferta, recomendação personalizada de investimento, consultoria de valores mobiliários, parecer tributário ou advocatício. Os valores apresentados são projeções estatísticas baseadas em premissas macroeconômicas históricas e podem divergir significativamente dos resultados reais. Rentabilidade passada não garante rentabilidade futura. Decisões de investimento, estruturação societária e planejamento sucessório devem ser tomadas com aconselhamento de profissionais certificados (CFP, advogado tributário, contador). Documento confidencial, de uso exclusivo do cliente identificado e seu consultor financeiro.
+  </div>`;
+
+  h += `</div>`; // fim padding
+  h += `</div>`; // fim pdf-root
+
+  // ─── Renderizar off-screen ───
+  const container = document.createElement('div');
+  container.innerHTML = h;
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;background:white';
+  document.body.appendChild(container);
+  const el = container.firstChild;
 
   try {
-    const wrap = document.getElementById('r-wrap');
-    // Captura
-    const canvas = await html2canvas(wrap, {
-      backgroundColor: '#080e1a',
+    const canvas = await html2canvas(el, {
       scale: 2,
       useCORS: true,
-      logging: false,
-      windowWidth: wrap.scrollWidth
+      backgroundColor: '#ffffff',
+      logging: false
     });
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4', compress:true });
+    const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4', compress:true});
 
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-
+    const pageW = 210, pageH = 297;
     const imgW = pageW;
-    const imgH = (canvas.height * imgW) / canvas.width;
+    const imgH = canvas.height * pageW / canvas.width;
+    const pages = Math.ceil(imgH / pageH);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.94);
 
-    // CAPA institucional
-    pdf.setFillColor(8,14,26);
-    pdf.rect(0,0,pageW,pageH,'F');
-    pdf.setTextColor(76,139,245);
-    pdf.setFont('helvetica','bold');
-    pdf.setFontSize(14);
-    pdf.text('WealthPlanning', 20, 25);
-    pdf.setTextColor(176,184,196);
-    pdf.setFont('helvetica','normal');
-    pdf.setFontSize(9);
-    pdf.text('Diagnóstico Patrimonial Completo', 20, 31);
-
-    // Linha
-    pdf.setDrawColor(30,58,95);
-    pdf.setLineWidth(0.3);
-    pdf.line(20, 40, pageW-20, 40);
-
-    // Nome do cliente
-    pdf.setTextColor(237,237,237);
-    pdf.setFont('helvetica','bold');
-    pdf.setFontSize(28);
-    pdf.text('Plano de', 20, 70);
-    pdf.setTextColor(76,139,245);
-    pdf.text(D.nome, 20, 82);
-
-    // Score
-    pdf.setTextColor(176,184,196);
-    pdf.setFont('helvetica','normal');
-    pdf.setFontSize(10);
-    pdf.text(`Score geral: ${lastReport.score.total}/100`, 20, 95);
-    pdf.text(`Perfil: ${D.perfil[0].toUpperCase()+D.perfil.slice(1)} · Idade: ${D.idade} anos · Aposentadoria aos ${D.aposAge}`, 20, 102);
-    pdf.text(`Data de emissão: ${new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})}`, 20, 109);
-
-    // Resumo executivo
-    pdf.setTextColor(76,139,245);
-    pdf.setFont('helvetica','bold');
-    pdf.setFontSize(11);
-    pdf.text('RESUMO EXECUTIVO', 20, 130);
-    pdf.setTextColor(237,237,237);
-    pdf.setFontSize(9);
-    pdf.setFont('helvetica','normal');
-    const dims = lastReport.score.dims;
-    let y = 140;
-    dims.forEach(d => {
-      pdf.text(`• ${d.n}:`, 20, y);
-      pdf.text(`${d.v}/${d.max}`, 80, y);
-      y += 6;
-    });
-
-    // Footer da capa
-    pdf.setTextColor(120,128,140);
-    pdf.setFontSize(7);
-    pdf.text('Documento confidencial · Uso exclusivo do cliente e seu consultor financeiro', pageW/2, pageH-15, {align:'center'});
-
-    // Páginas com o relatório (paginação automática)
-    let position = 0;
-    let pageCount = 1;
-    while (position < imgH) {
-      pdf.addPage();
-      pageCount++;
-      const sourceY = position * (canvas.width / imgW);
-      const sliceHeight = Math.min(pageH * (canvas.width / imgW), canvas.height - sourceY);
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = canvas.width;
-      sliceCanvas.height = sliceHeight;
-      const sliceCtx = sliceCanvas.getContext('2d');
-      sliceCtx.fillStyle = '#080e1a';
-      sliceCtx.fillRect(0,0,canvas.width, sliceHeight);
-      sliceCtx.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
-      const imgData = sliceCanvas.toDataURL('image/jpeg', 0.92);
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, (sliceHeight * imgW) / canvas.width);
-
-      // Rodapé com paginação
-      pdf.setTextColor(120,128,140);
-      pdf.setFontSize(7);
-      pdf.setFont('helvetica','normal');
-      pdf.text(`WealthPlanning · ${D.nome}`, 15, pageH-8);
-      pdf.text(`Página ${pageCount}`, pageW-15, pageH-8, {align:'right'});
-
-      position += sliceHeight * imgW / canvas.width;
+    for(let pg = 0; pg < pages; pg++){
+      if(pg > 0) pdf.addPage();
+      pdf.addImage(dataUrl, 'JPEG', 0, -(pg*pageH), imgW, imgH);
+      if(pg > 0){
+        pdf.setFontSize(7);
+        pdf.setTextColor(140,140,140);
+        pdf.setFont('helvetica','normal');
+        pdf.text(`WealthPlanning · ${D.nome} · ${docId}`, 14, pageH-8);
+        pdf.text(`Documento confidencial · Página ${pg+1} de ${pages}`, pageW-14, pageH-8, {align:'right'});
+      }
     }
 
     const fname = `Diagnostico_${D.nome.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
@@ -4181,12 +4698,15 @@ async function gerarPDF(){
 
     txt.textContent = 'PDF baixado ✓';
     setTimeout(()=>{ txt.textContent = 'Baixar PDF institucional'; btn.classList.remove('loading'); }, 2400);
-  } catch (e) {
-    console.error(e);
-    txt.textContent = 'Erro ao gerar PDF';
-    setTimeout(()=>{ txt.textContent = 'Baixar PDF institucional'; btn.classList.remove('loading'); }, 2400);
+  } catch(err){
+    console.error('PDF error:', err);
+    txt.textContent = 'Erro: ' + (err.message||'desconhecido').slice(0,40);
+    setTimeout(()=>{ txt.textContent = 'Baixar PDF institucional'; btn.classList.remove('loading'); }, 3500);
+  } finally {
+    container.remove();
   }
 }
+
 
 /* ═════════════════════════════════════════════════════
    RESET / FECHAR
