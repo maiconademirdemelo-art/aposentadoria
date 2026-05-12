@@ -1067,6 +1067,64 @@ a{text-decoration:none;color:inherit}
   .br{flex-direction:column-reverse}
   .bp,.bn{flex:1}
 }
+/* ═══════════════════════════════════════════════════════════
+   MODO CLIENTE · telas de boas-vindas, verificação e obrigado
+   ═══════════════════════════════════════════════════════════ */
+.welcome-wrap{max-width:520px;margin:0 auto;padding:64px 24px 48px;animation:fadeUp .6s ease both}
+.welcome-logo{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;color:var(--white);letter-spacing:-.02em;margin-bottom:42px;display:inline-block}
+.welcome-logo span{color:var(--accent)}
+.welcome-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.welcome-title{font-family:'Bricolage Grotesque',sans-serif;font-size:36px;font-weight:800;color:var(--white);line-height:1.1;letter-spacing:-.025em;margin-bottom:18px}
+@media(max-width:520px){.welcome-title{font-size:28px}}
+.welcome-desc{font-family:'Instrument Sans',sans-serif;font-size:15.5px;color:var(--text);line-height:1.65;margin-bottom:36px;max-width:480px}
+.welcome-form{display:flex;flex-direction:column;gap:18px;margin-bottom:24px}
+.welcome-field{display:flex;flex-direction:column;gap:8px}
+.welcome-field label{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.welcome-field input{background:rgba(255,255,255,.03);border:1.5px solid var(--bdr);border-radius:12px;padding:16px 18px;color:var(--white);font-family:'Instrument Sans',sans-serif;font-size:16px;outline:none;transition:border-color .2s, background .2s}
+.welcome-field input:focus{border-color:var(--accent);background:rgba(76,139,245,.04)}
+.welcome-field input::placeholder{color:var(--light)}
+.welcome-hint{font-size:12.5px;color:var(--muted);margin-top:2px}
+.welcome-btn{background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;border-radius:12px;padding:18px 24px;color:#fff;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.005em;cursor:pointer;transition:transform .15s, opacity .15s;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.welcome-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px rgba(76,139,245,.3)}
+.welcome-btn:disabled{opacity:.35;cursor:not-allowed}
+.welcome-btn.loading{opacity:.7;cursor:wait}
+.welcome-btn-cta{background:linear-gradient(135deg,#2ecc8a,#1ba66a);text-decoration:none;margin-top:8px}
+.welcome-btn-cta:hover{box-shadow:0 10px 24px rgba(46,204,138,.3)}
+.welcome-btn-secondary{background:rgba(255,255,255,.05);border:1px solid var(--bdr)}
+.welcome-err{font-size:13px;color:#f07070;min-height:18px;font-family:'Instrument Sans',sans-serif;line-height:1.5;padding:0 4px}
+.welcome-tos{font-size:11.5px;color:var(--muted);line-height:1.7;margin-top:32px;padding-top:24px;border-top:1px solid var(--bdr);opacity:.7}
+
+/* Verificação por código */
+.code-title{margin-top:8px}
+.code-inputs{display:flex;gap:8px;justify-content:center;margin:28px 0 18px}
+@media(max-width:520px){.code-inputs{gap:6px}}
+.code-i{width:48px;height:60px;background:rgba(255,255,255,.04);border:1.5px solid var(--bdr);border-radius:10px;color:var(--white);font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:700;text-align:center;outline:none;transition:border-color .15s, transform .1s}
+@media(max-width:520px){.code-i{width:42px;height:54px;font-size:20px}}
+.code-i:focus{border-color:var(--accent);transform:scale(1.04)}
+.code-i.filled{border-color:var(--accent);background:rgba(76,139,245,.06)}
+.code-resend{font-size:13px;color:var(--muted);text-align:center;margin-top:20px;line-height:1.7}
+.code-resend a{color:var(--accent);text-decoration:none;font-weight:600}
+.code-resend a:hover{text-decoration:underline}
+
+/* Tela de obrigado */
+.thank-wrap{text-align:center;padding-top:48px}
+.thank-icon{display:flex;justify-content:center;margin-bottom:24px;animation:scaleIn .5s ease both}
+@keyframes scaleIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+.thank-wrap .welcome-eyebrow{color:#2ecc8a}
+.thank-wrap .welcome-title{margin-bottom:14px}
+.thank-wrap .welcome-desc{margin-left:auto;margin-right:auto;text-align:center}
+.thank-score-box{background:linear-gradient(135deg,rgba(76,139,245,.08),rgba(76,139,245,.02));border:1px solid rgba(76,139,245,.25);border-radius:16px;padding:28px 24px;margin:32px 0;animation:fadeUp .6s ease .2s both}
+.thank-score-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.thank-score-num{font-family:'Bricolage Grotesque',sans-serif;font-size:68px;font-weight:200;color:var(--white);line-height:1;letter-spacing:-.04em;margin-bottom:8px}
+.thank-score-max{font-size:24px;color:var(--muted);font-weight:300;margin-left:2px}
+.thank-score-sub{font-size:12px;color:var(--muted);line-height:1.55;max-width:340px;margin:0 auto}
+.thank-insights{display:flex;flex-direction:column;gap:10px;margin:24px 0 28px;text-align:left;animation:fadeUp .6s ease .35s both}
+.thank-insight{background:var(--surf);border:1px solid var(--bdr);border-left:3px solid var(--accent);border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
+.thank-insight-ico{flex-shrink:0;width:22px;height:22px;border-radius:6px;background:rgba(76,139,245,.15);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;font-weight:800;margin-top:1px;font-family:'Bricolage Grotesque',sans-serif}
+.thank-insight-txt{font-size:13.5px;color:var(--text);line-height:1.6;font-family:'Instrument Sans',sans-serif}
+.thank-doc{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:24px;letter-spacing:.06em}
+.thank-doc strong{color:var(--text);font-weight:600}
+
 </style>
 </head>
 <body>
@@ -1081,6 +1139,106 @@ a{text-decoration:none;color:inherit}
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     Fechar
   </button>
+</div>
+
+<!-- ═══════════════════════════════════
+     BOAS-VINDAS (MODO CLIENTE)
+     Visível apenas quando aberto fora de iframe
+     ═══════════════════════════════════ -->
+<div id="sV" class="screen">
+  <div class="welcome-wrap">
+    <div class="welcome-logo">Wealth<span>Planning</span></div>
+    <div class="welcome-eyebrow">Diagnóstico Patrimonial Institucional</div>
+    <h1 class="welcome-title">Olá. Vamos começar?</h1>
+    <p class="welcome-desc">
+      Em ~5 minutos você responde 8 perguntas sobre seu patrimônio. Nosso consultor sênior analisa pessoalmente e entra em contato com o diagnóstico completo em até 24 horas.
+    </p>
+    <div class="welcome-form">
+      <div class="welcome-field">
+        <label for="w-nome">Seu nome</label>
+        <input type="text" id="w-nome" placeholder="Nome completo" maxlength="80" autocomplete="name">
+      </div>
+      <div class="welcome-field">
+        <label for="w-wa">WhatsApp</label>
+        <input type="tel" id="w-wa" placeholder="(47) 99999-9999" maxlength="20" autocomplete="tel" oninput="maskWA(this)">
+        <div class="welcome-hint">Vamos enviar um código de verificação por SMS.</div>
+      </div>
+      <button class="welcome-btn" id="w-btn" onclick="solicitarCodigo()">
+        <span id="w-btn-txt">Receber código de verificação</span>
+      </button>
+      <div class="welcome-err" id="w-err"></div>
+    </div>
+    <div class="welcome-tos">
+      Seus dados são tratados com confidencialidade e usados exclusivamente para a elaboração do seu diagnóstico patrimonial.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     VERIFICAÇÃO SMS (MODO CLIENTE)
+     ═══════════════════════════════════ -->
+<div id="sC" class="screen">
+  <div class="welcome-wrap">
+    <div class="welcome-logo">Wealth<span>Planning</span></div>
+    <div class="welcome-eyebrow">Verificação de identidade</div>
+    <h1 class="welcome-title code-title">Confirme o código</h1>
+    <p class="welcome-desc">
+      Enviamos um SMS de 6 dígitos para <strong id="c-wa-display">+55...</strong>.<br>
+      Pode levar até 30 segundos pra chegar.
+    </p>
+    <div class="code-inputs">
+      <input class="code-i" type="tel" maxlength="1" inputmode="numeric" autofocus>
+      <input class="code-i" type="tel" maxlength="1" inputmode="numeric">
+      <input class="code-i" type="tel" maxlength="1" inputmode="numeric">
+      <input class="code-i" type="tel" maxlength="1" inputmode="numeric">
+      <input class="code-i" type="tel" maxlength="1" inputmode="numeric">
+      <input class="code-i" type="tel" maxlength="1" inputmode="numeric">
+    </div>
+    <button class="welcome-btn" id="c-btn" onclick="validarCodigo()" disabled>
+      <span id="c-btn-txt">Confirmar</span>
+    </button>
+    <div class="welcome-err" id="c-err"></div>
+    <div class="code-resend">
+      Não recebeu? <a href="#" onclick="event.preventDefault(); reenviarCodigo();">Reenviar código</a>
+      &nbsp;·&nbsp;
+      <a href="#" onclick="event.preventDefault(); voltarBoasVindas();">Mudar número</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     OBRIGADO (MODO CLIENTE, após submit)
+     ═══════════════════════════════════ -->
+<div id="sT" class="screen">
+  <div class="welcome-wrap thank-wrap">
+    <div class="thank-icon">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="26" stroke="#2ecc8a" stroke-width="2"/>
+        <path d="M16 28l8 8 16-18" stroke="#2ecc8a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="welcome-eyebrow">Diagnóstico recebido</div>
+    <h1 class="welcome-title">Obrigado, <span id="t-nome">cliente</span>.</h1>
+    <p class="welcome-desc">
+      Seus dados chegaram com sucesso. Nosso consultor sênior vai analisar pessoalmente e entrar em contato pelo seu WhatsApp em até <strong>24 horas</strong> com o diagnóstico completo, plano de ação e relatório institucional.
+    </p>
+
+    <div class="thank-score-box">
+      <div class="thank-score-label">Score patrimonial preliminar</div>
+      <div class="thank-score-num"><span id="t-score">--</span><span class="thank-score-max">/100</span></div>
+      <div class="thank-score-sub">cálculo preliminar baseado nas suas respostas — análise completa será entregue pelo consultor</div>
+    </div>
+
+    <div class="thank-insights" id="t-insights"></div>
+
+    <a class="welcome-btn welcome-btn-cta" id="t-cta" href="#" target="_blank" rel="noopener">
+      Falar agora com Maicon no WhatsApp
+    </a>
+
+    <div class="thank-doc">
+      Protocolo: <strong id="t-id">—</strong>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════
@@ -1516,7 +1674,7 @@ a{text-decoration:none;color:inherit}
             <button class="bp" onclick="wPrev(8)">Voltar</button>
             <button class="bn gold" id="btn-gerar" onclick="gerarDiagnostico()">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4.5L15 6l-3.5 3 1 5L8 11.5 3.5 14l1-5L1 6l5-.5z" fill="currentColor"/></svg>
-              Gerar Diagnóstico Completo
+              <span id="btn-gerar-txt">Gerar Diagnóstico Completo</span>
             </button>
           </div>
         </div>
@@ -2344,8 +2502,15 @@ function _setLoadingTxt(titulo, sub){
 
 /* ═════════════════════════════════════════════════════
    GERAR DIAGNÓSTICO (cálculo + IA + render)
+   Em MODO CLIENTE: redireciona para submeterCliente (sem IA)
+   Em MODO CONSULTOR: comportamento normal (IA + render)
    ═════════════════════════════════════════════════════ */
 async function gerarDiagnostico(){
+  // Modo cliente: pula IA, envia direto pro servidor
+  if(MODO_CLIENTE){
+    return submeterCliente();
+  }
+
   const lo = document.getElementById('loading');
   lo.classList.add('show');
 
@@ -4737,17 +4902,361 @@ function fecharDiagnostico(){
 }
 
 /* ═════════════════════════════════════════════════════
+   MODO CLIENTE · detecção, captura, verificação, submit
+   Visível apenas quando aberto fora do iframe do consultor
+   ═════════════════════════════════════════════════════ */
+const MODO_CLIENTE = (window.self === window.top);
+const CLIENTE_WA_MAICON = '5547992615146'; // sem + nem espaços
+let clienteSessionToken = null;
+let clienteWhatsapp = null;
+let clienteNome = null;
+let clienteSubmissionId = null;
+
+/* Máscara visual do WhatsApp enquanto digita */
+function maskWA(input){
+  let v = input.value.replace(/\D/g, '');
+  if(v.length > 11) v = v.slice(0, 11);
+  // Formato (XX) XXXXX-XXXX
+  let out = v;
+  if(v.length > 0) out = '(' + v.slice(0, 2);
+  if(v.length >= 3) out += ') ' + v.slice(2, 7);
+  if(v.length >= 8) out += '-' + v.slice(7, 11);
+  input.value = out;
+}
+
+/* Mostrar tela específica (helper) */
+function _showScreen(id){
+  ['sV','sC','sW','sR','sT'].forEach(s => {
+    const el = document.getElementById(s);
+    if(el) el.classList.toggle('active', s === id);
+  });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+/* ─────────────────────────────────────────
+   Passo 1 cliente: solicitar código por SMS
+   ───────────────────────────────────────── */
+async function solicitarCodigo(){
+  const nomeEl = document.getElementById('w-nome');
+  const waEl = document.getElementById('w-wa');
+  const btn = document.getElementById('w-btn');
+  const btnTxt = document.getElementById('w-btn-txt');
+  const err = document.getElementById('w-err');
+  err.textContent = '';
+
+  const nome = (nomeEl.value || '').trim();
+  const wa = (waEl.value || '').trim();
+
+  if(nome.length < 2){
+    err.textContent = 'Informe seu nome completo.';
+    nomeEl.focus();
+    return;
+  }
+  // valida WhatsApp: precisa ter 10 ou 11 dígitos (com DDD)
+  const digits = wa.replace(/\D/g, '');
+  if(digits.length < 10 || digits.length > 11){
+    err.textContent = 'WhatsApp inválido. Use o formato (47) 99999-9999.';
+    waEl.focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btnTxt.textContent = 'Enviando SMS…';
+
+  try {
+    const r = await fetch('/api/diag/send-code', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({whatsapp: digits})
+    });
+    const data = await r.json();
+    if(!data.ok){
+      err.textContent = data.error || 'Não foi possível enviar o código.';
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btnTxt.textContent = 'Receber código de verificação';
+      return;
+    }
+    // Sucesso: guarda dados e vai pra tela de código
+    clienteNome = nome;
+    clienteWhatsapp = data.whatsapp;
+    document.getElementById('c-wa-display').textContent = formatWaDisplay(data.whatsapp);
+    document.getElementById('w-err').textContent = '';
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btnTxt.textContent = 'Receber código de verificação';
+
+    _showScreen('sC');
+    setTimeout(() => document.querySelectorAll('.code-i')[0]?.focus(), 200);
+  } catch(e){
+    console.error('[solicitarCodigo]', e);
+    err.textContent = 'Erro de conexão. Tente novamente em alguns segundos.';
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btnTxt.textContent = 'Receber código de verificação';
+  }
+}
+
+function formatWaDisplay(wa){
+  // +5547996518844 → +55 (47) 99651-8844
+  if(!wa) return '';
+  const d = wa.replace(/\D/g, '');
+  if(d.length === 13) return `+${d.slice(0,2)} (${d.slice(2,4)}) ${d.slice(4,9)}-${d.slice(9)}`;
+  if(d.length === 12) return `+${d.slice(0,2)} (${d.slice(2,4)}) ${d.slice(4,8)}-${d.slice(8)}`;
+  return wa;
+}
+
+/* ─────────────────────────────────────────
+   Passo 2 cliente: validar código digitado
+   ───────────────────────────────────────── */
+function _setupCodeInputs(){
+  const inputs = document.querySelectorAll('.code-i');
+  const btn = document.getElementById('c-btn');
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      // só dígitos
+      inp.value = inp.value.replace(/\D/g, '').slice(0, 1);
+      if(inp.value){ inp.classList.add('filled'); if(i < 5) inputs[i+1].focus(); }
+      else { inp.classList.remove('filled'); }
+      const allFilled = Array.from(inputs).every(x => x.value.length === 1);
+      btn.disabled = !allFilled;
+      if(allFilled) setTimeout(()=>validarCodigo(), 100); // auto-submit
+    });
+    inp.addEventListener('keydown', e => {
+      if(e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus();
+      if(e.key === 'Enter') validarCodigo();
+    });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+      pasted.split('').forEach((ch, k) => {
+        if(inputs[k]){ inputs[k].value = ch; inputs[k].classList.add('filled'); }
+      });
+      btn.disabled = pasted.length < 6;
+      if(pasted.length === 6) setTimeout(()=>validarCodigo(), 100);
+    });
+  });
+}
+
+async function validarCodigo(){
+  const inputs = document.querySelectorAll('.code-i');
+  const code = Array.from(inputs).map(i => i.value).join('');
+  const btn = document.getElementById('c-btn');
+  const btnTxt = document.getElementById('c-btn-txt');
+  const err = document.getElementById('c-err');
+  err.textContent = '';
+
+  if(code.length !== 6) return;
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btnTxt.textContent = 'Verificando…';
+
+  try {
+    const r = await fetch('/api/diag/verify-code', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({whatsapp: clienteWhatsapp, code})
+    });
+    const data = await r.json();
+    if(!data.ok){
+      err.textContent = data.error || 'Código incorreto.';
+      inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
+      inputs[0].focus();
+      btn.disabled = true;
+      btn.classList.remove('loading');
+      btnTxt.textContent = 'Confirmar';
+      return;
+    }
+    clienteSessionToken = data.sessionToken;
+    btn.classList.remove('loading');
+    btnTxt.textContent = 'Confirmado ✓';
+
+    // Pré-preenche o D (state do wizard) com nome
+    D.nome = clienteNome;
+    document.getElementById('i-nome').value = clienteNome;
+
+    // Vai pro wizard
+    setTimeout(() => {
+      _showScreen('sW');
+      // Foca no primeiro campo após o nome (idade)
+      document.getElementById('i-idade')?.focus();
+    }, 600);
+  } catch(e){
+    console.error('[validarCodigo]', e);
+    err.textContent = 'Erro de conexão. Tente novamente.';
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btnTxt.textContent = 'Confirmar';
+  }
+}
+
+async function reenviarCodigo(){
+  const err = document.getElementById('c-err');
+  err.textContent = '';
+  try {
+    const r = await fetch('/api/diag/send-code', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({whatsapp: clienteWhatsapp.replace(/\D/g,'')})
+    });
+    const data = await r.json();
+    if(data.ok){
+      err.style.color = '#2ecc8a';
+      err.textContent = '✓ Código reenviado. Aguarde 30 segundos.';
+      setTimeout(() => { err.style.color = ''; err.textContent = ''; }, 4000);
+    } else {
+      err.style.color = '';
+      err.textContent = data.error || 'Não foi possível reenviar.';
+    }
+  } catch(e){
+    err.textContent = 'Erro de conexão.';
+  }
+}
+
+function voltarBoasVindas(){
+  // limpa state
+  document.querySelectorAll('.code-i').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+  document.getElementById('c-btn').disabled = true;
+  document.getElementById('c-err').textContent = '';
+  _showScreen('sV');
+  setTimeout(() => document.getElementById('w-wa')?.focus(), 200);
+}
+
+/* ─────────────────────────────────────────
+   Submit do cliente após terminar wizard
+   ───────────────────────────────────────── */
+async function submeterCliente(){
+  // Calcula score local (sem IA)
+  const aps   = calcAposentadoria();
+  const pgbl  = calcPGBL();
+  const hld   = calcHolding();
+  const vgbl  = calcVGBL();
+  const renda = calcRendaPassiva();
+  const score = calcScore(aps, pgbl, hld, vgbl, renda);
+
+  // Mostra loading
+  const lo = document.getElementById('loading');
+  lo.classList.add('show');
+  _setLoadingTxt('Enviando seu diagnóstico…', 'Salvando suas respostas com segurança no servidor.');
+
+  // Monta payload — D inteiro com todas as respostas
+  const payload = {
+    sessionToken: clienteSessionToken,
+    whatsapp: clienteWhatsapp.replace(/\D/g,''),
+    nome: clienteNome,
+    score: score.total,
+    dados: D
+  };
+
+  try {
+    const r = await fetch('/api/diag/submit', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json();
+    if(!data.ok){
+      lo.classList.remove('show');
+      alert('Erro ao enviar: ' + (data.error || 'tente novamente.'));
+      return;
+    }
+    clienteSubmissionId = data.id;
+
+    _setLoadingTxt('Enviado com sucesso ✓', 'Preparando tela de confirmação…');
+    setTimeout(() => {
+      lo.classList.remove('show');
+      mostrarTelaObrigado(score, aps, pgbl, hld, vgbl, renda);
+    }, 700);
+  } catch(e){
+    console.error('[submit]', e);
+    lo.classList.remove('show');
+    alert('Erro de conexão ao enviar diagnóstico. Tente novamente.');
+  }
+}
+
+function mostrarTelaObrigado(score, aps, pgbl, hld, vgbl, renda){
+  document.getElementById('t-nome').textContent = (clienteNome || '').split(' ')[0] || 'cliente';
+  document.getElementById('t-score').textContent = score.total;
+  document.getElementById('t-id').textContent = clienteSubmissionId || '—';
+
+  // Insights canned (1-2) baseados na situação real
+  const insights = [];
+
+  // Insight 1: sempre sobre aposentadoria
+  if(aps.cobertura >= 80){
+    insights.push({n:'A', t:`Sua projeção indica uma cobertura confortável de ${aps.cobertura.toFixed(0)}% da renda atual aos ${D.aposAge} anos. O plano está bem dimensionado para o cenário macro adotado.`});
+  } else if(aps.cobertura >= 50){
+    insights.push({n:'A', t:`Sua projeção atual cobre ${aps.cobertura.toFixed(0)}% da renda desejada na aposentadoria. Existe espaço para otimização — o consultor vai apresentar os ajustes que podem fechar essa lacuna.`});
+  } else {
+    insights.push({n:'A', t:`Identificamos um gap relevante na sua cobertura projetada (${aps.cobertura.toFixed(0)}%). Há ajustes estruturais a fazer no plano — esse é provavelmente o principal tema da nossa conversa.`});
+  }
+
+  // Insight 2: o mais impactante entre PGBL, Holding, VGBL
+  const candidatos = [];
+  if(pgbl.aplica && pgbl.economiaAdicional > 1000){
+    candidatos.push({peso: pgbl.economiaAdicional, t:`Identificamos espaço tributário não capturado via PGBL — potencial de aproximadamente R$ ${Math.round(pgbl.economiaAdicional).toLocaleString('pt-BR')} por ano em economia fiscal.`});
+  }
+  if(hld.aplica && !hld.jaTem && hld.economiaTotal > 50000){
+    candidatos.push({peso: hld.economiaTotal, t:`O perfil dos seus imóveis sugere viabilidade de estruturação societária (holding patrimonial), com potencial de economia significativa em tributação corrente e sucessão.`});
+  }
+  if(vgbl.aplica && !vgbl.jaTem && D.qtddep > 0){
+    candidatos.push({peso: vgbl.economiaSucessao + vgbl.alpha15Anos, t:`Com ${D.qtddep} dependente(s) direto(s), há oportunidade clara de proteção sucessória via VGBL — menos custos de inventário, liquidez imediata aos herdeiros.`});
+  }
+  if(renda.coberturaAtual < 30 && D.objet === 'renda'){
+    candidatos.push({peso: 999999, t:`Seu objetivo é gerar renda passiva, mas hoje sua carteira cobre apenas ${renda.coberturaAtual.toFixed(0)}% da renda. O consultor vai mapear como rebalancear pra acelerar essa cobertura.`});
+  }
+  candidatos.sort((x,y) => y.peso - x.peso);
+  if(candidatos.length > 0){
+    insights.push({n:'B', t: candidatos[0].t});
+  }
+
+  // Render
+  document.getElementById('t-insights').innerHTML = insights.map(i => `
+    <div class="thank-insight">
+      <div class="thank-insight-ico">${i.n}</div>
+      <div class="thank-insight-txt">${i.t}</div>
+    </div>
+  `).join('');
+
+  // CTA WhatsApp
+  const cta = document.getElementById('t-cta');
+  const firstName = (clienteNome || '').split(' ')[0];
+  const msg = encodeURIComponent(`Olá Maicon, acabei de preencher o diagnóstico (protocolo ${clienteSubmissionId}, score ${score.total}/100). Gostaria de conversar.`);
+  cta.href = `https://wa.me/${CLIENTE_WA_MAICON}?text=${msg}`;
+
+  _showScreen('sT');
+}
+
+/* ═════════════════════════════════════════════════════
    INIT
    ═════════════════════════════════════════════════════ */
 renderProg();
-// foca no primeiro input
-setTimeout(()=>document.getElementById('i-nome')?.focus(), 200);
 // inicializa slider de aposentadoria
 updApos(document.getElementById('i-apos'));
 
+if(MODO_CLIENTE){
+  // Cliente: começa pela tela de boas-vindas
+  _showScreen('sV');
+  _setupCodeInputs();
+  setTimeout(() => document.getElementById('w-nome')?.focus(), 200);
+
+  // Esconde botão "Fechar" (que faz postMessage pra iframe)
+  const closeBtn = document.querySelector('[onclick*="fecharDiagnostico"]');
+  if(closeBtn) closeBtn.style.display = 'none';
+
+  // Troca texto do botão final do wizard pra refletir modo cliente
+  const btnGerarTxt = document.getElementById('btn-gerar-txt');
+  if(btnGerarTxt) btnGerarTxt.textContent = 'Enviar diagnóstico';
+} else {
+  // Consultor: começa direto no wizard (comportamento original)
+  setTimeout(() => document.getElementById('i-nome')?.focus(), 200);
+}
+
 // Atalhos: Enter avança, Esc fecha
 document.addEventListener('keydown', e => {
-  if(e.key==='Escape'){ fecharDiagnostico(); }
+  if(e.key==='Escape' && !MODO_CLIENTE){ fecharDiagnostico(); }
   if(e.key==='Enter' && document.activeElement?.tagName==='INPUT' && step<8){
     e.preventDefault();
     wNext(step);
