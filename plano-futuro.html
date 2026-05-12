@@ -11183,7 +11183,7 @@ async function fiiStart(){
     // 1/5 SNAPSHOT
     fiiSt("fundo","loading");
     var sn=await acoesCallJSON({system:FSYS,user:'FII '+tk+' na B3. Busque dados atuais. JSON:{"nome":"nome completo","ticker":"'+tk+'","segmento":"Lajes|Logistica|Shopping|Papel|FoF","gestora":"gestora","admin":"admin","pvp":0.00,"dy12m":0.0,"cotacao":0.00,"pl":"R$ X","cotistas":0,"liquidez":"R$ X/dia","taxaAdm":"%","dataBase":"AAAA-MM-DD"}',useSearch:true});
-    fii$("fii-hero-name").textContent=sn.nome||tk;fii$("fii-hero-segmento").textContent=sn.segmento||"";fii$("fii-hero-gestora").textContent=sn.gestora||"";fii$("fii-hero-data-base").textContent=sn.dataBase||"";
+    fii$("fii-hero-name").textContent=sn.nome||tk;fii$("fii-hero-segmento").textContent=sn.segmento||"";fii$("fii-hero-gestora").textContent=sn.gestora||"";fii$("fii-hero-data-base").textContent="data-base " + (sn.dataBase||"—");
     fii$("fii-kpi-dy").textContent=sn.dy12m?sn.dy12m.toFixed(1)+"%":"\u2014";fii$("fii-kpi-dy").classList.remove("acoes-skeleton");
     fii$("fii-kpi-dy-sub").textContent="\u00falt. 12m";
     fii$("fii-kpi-pvp").textContent=sn.pvp?sn.pvp.toFixed(2):"\u2014";fii$("fii-kpi-pvp").classList.remove("acoes-skeleton");
