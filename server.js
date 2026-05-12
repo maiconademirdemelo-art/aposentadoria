@@ -6,7 +6,19 @@ const crypto = require('crypto');
 const { Client } = require('pg');
 
 const PORT = process.env.PORT || 3000;
-const PIN = '1943';
+
+// ═════════════════════════════════════════════════════
+// CONFIGURAÇÃO DE SEGURANÇA
+// ═════════════════════════════════════════════════════
+const PIN = process.env.WEALTH_PIN || '1943';
+if(!process.env.WEALTH_PIN){
+  console.warn('[security] WEALTH_PIN não definido em env! Usando fallback. RECOMENDAÇÃO: defina WEALTH_PIN no Railway para evitar exposição via código-fonte.');
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn('[security] JWT_SECRET não definido em env! Tokens permanecerão válidos só durante a vida deste processo. RECOMENDAÇÃO: defina JWT_SECRET no Railway (string aleatória >= 32 chars).');
+  return crypto.randomBytes(32).toString('hex');
+})();
 
 // Twilio (lidos do .env do Railway)
 const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID;
@@ -22,12 +34,92 @@ const MIME = {
 };
 
 // ═════════════════════════════════════════════════════
-// AUTH (PIN do consultor)
+// AUTH (PIN do consultor) — JWT assinado HMAC-SHA256
 // ═════════════════════════════════════════════════════
-function makeToken(){return Buffer.from(PIN+':'+Date.now()).toString('base64')}
-function validToken(t){try{var d=Buffer.from(t,'base64').toString(),p=d.split(':');return p[0]===PIN&&(Date.now()-parseInt(p[1]))<86400000}catch(e){return false}}
+function b64url(buf){
+  return (Buffer.isBuffer(buf) ? buf : Buffer.from(buf))
+    .toString('base64').replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+}
+function b64urlDecode(s){
+  // pad base64url back to standard
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length % 4) s += '=';
+  return Buffer.from(s, 'base64');
+}
+function makeToken(){
+  const header = b64url(JSON.stringify({alg:'HS256', typ:'JWT'}));
+  const now = Math.floor(Date.now()/1000);
+  const payload = b64url(JSON.stringify({
+    iat: now,
+    exp: now + 86400,  // 24 horas
+    scope: 'consultor'
+  }));
+  const sig = b64url(crypto.createHmac('sha256', JWT_SECRET).update(header+'.'+payload).digest());
+  return `${header}.${payload}.${sig}`;
+}
+function validToken(t){
+  if(!t || typeof t !== 'string') return false;
+  const parts = t.split('.');
+  if(parts.length !== 3) return false;
+  const [header, payload, sig] = parts;
+  // Verifica assinatura com timing-safe compare
+  const expectedSig = b64url(crypto.createHmac('sha256', JWT_SECRET).update(header+'.'+payload).digest());
+  try {
+    if(!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) return false;
+  } catch(e){ return false; }
+  // Verifica expiração
+  try {
+    const data = JSON.parse(b64urlDecode(payload).toString());
+    if(!data.exp || data.exp < Math.floor(Date.now()/1000)) return false;
+    if(data.scope !== 'consultor') return false;
+    return true;
+  } catch(e){ return false; }
+}
 
-const PIN_HTML = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WealthPlanning</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',system-ui,sans-serif;background:#080e1a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.login{text-align:center;max-width:360px;padding:40px}.logo{font-size:28px;font-weight:800;margin-bottom:8px}.logo span{color:#4c8bf5}.sub{font-size:13px;color:#8b949e;margin-bottom:32px}.pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:24px}.pi{width:56px;height:64px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:24px;font-weight:700;text-align:center;outline:none;-webkit-text-security:disc}.pi:focus{border-color:#4c8bf5}.btn{width:100%;padding:16px;background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer}.btn:disabled{opacity:.4}.err{color:#f07070;font-size:13px;margin-top:16px;min-height:20px}</style></head><body><div class="login"><div class="logo">Wealth<span>Planning</span></div><div class="sub">Área restrita do consultor</div><div class="pin-row"><input class="pi" type="tel" maxlength="1" inputmode="numeric" autofocus><input class="pi" type="tel" maxlength="1" inputmode="numeric"><input class="pi" type="tel" maxlength="1" inputmode="numeric"><input class="pi" type="tel" maxlength="1" inputmode="numeric"></div><button class="btn" id="b" disabled>Entrar</button><div class="err" id="e"></div></div><script>var ii=document.querySelectorAll(".pi"),b=document.getElementById("b"),e=document.getElementById("e");ii.forEach(function(n,i){n.addEventListener("input",function(){if(n.value.length===1&&i<3)ii[i+1].focus();ck()});n.addEventListener("keydown",function(ev){if(ev.key==="Backspace"&&n.value===""&&i>0)ii[i-1].focus();if(ev.key==="Enter")go()})});function ck(){b.disabled=Array.from(ii).map(function(n){return n.value}).join("").length<4}b.onclick=go;function go(){var p=Array.from(ii).map(function(n){return n.value}).join("");if(p.length<4)return;fetch("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:p})}).then(function(r){return r.json()}).then(function(d){if(d.ok){window.location.href="/painel?t="+d.token}else{e.textContent="PIN incorreto";ii.forEach(function(n){n.value=""});ii[0].focus();setTimeout(function(){e.textContent=""},2000)}})}</script></body></html>`;
+// ═════════════════════════════════════════════════════
+// RATE LIMIT no /api/auth (5 tentativas em 15min → bloqueio 1h)
+// ═════════════════════════════════════════════════════
+const authRateLimit = new Map();
+function checkAuthRateLimit(ip){
+  const now = Date.now();
+  const entry = authRateLimit.get(ip) || { tentativas: 0, primeiraTent: now, bloqueadoAte: 0 };
+
+  // Se está bloqueado, nega
+  if(entry.bloqueadoAte > now){
+    const restante = Math.ceil((entry.bloqueadoAte - now) / 60000);
+    return { ok: false, motivo: `Bloqueado por ${restante} minuto(s) devido a tentativas excessivas.` };
+  }
+
+  // Janela de 15 minutos expirou — reseta
+  if(now - entry.primeiraTent > 15*60*1000){
+    entry.tentativas = 0;
+    entry.primeiraTent = now;
+    entry.bloqueadoAte = 0;
+  }
+
+  entry.tentativas++;
+
+  // 5 tentativas → bloqueia 1 hora
+  if(entry.tentativas > 5){
+    entry.bloqueadoAte = now + 60*60*1000;
+    authRateLimit.set(ip, entry);
+    return { ok: false, motivo: 'Tentativas excessivas. Conta bloqueada por 1 hora.' };
+  }
+
+  authRateLimit.set(ip, entry);
+  return { ok: true, restante: 5 - entry.tentativas };
+}
+function resetAuthRateLimit(ip){
+  authRateLimit.delete(ip);
+}
+setInterval(()=>{
+  const now = Date.now();
+  for(const [ip, e] of authRateLimit){
+    if(e.bloqueadoAte < now && now - e.primeiraTent > 16*60*1000) authRateLimit.delete(ip);
+  }
+}, 30*60*1000);
+
+const PIN_HTML = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WealthPlanning</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',system-ui,sans-serif;background:#080e1a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.login{text-align:center;max-width:360px;padding:40px}.logo{font-size:28px;font-weight:800;margin-bottom:8px}.logo span{color:#4c8bf5}.sub{font-size:13px;color:#8b949e;margin-bottom:32px}.pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:24px}.pi{width:56px;height:64px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:24px;font-weight:700;text-align:center;outline:none;-webkit-text-security:disc}.pi:focus{border-color:#4c8bf5}.btn{width:100%;padding:16px;background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer}.btn:disabled{opacity:.4}.err{color:#f07070;font-size:13px;margin-top:16px;min-height:20px;line-height:1.4}</style></head><body><div class="login"><div class="logo">Wealth<span>Planning</span></div><div class="sub">Área restrita do consultor</div><div class="pin-row"><input class="pi" type="tel" maxlength="1" inputmode="numeric" autofocus><input class="pi" type="tel" maxlength="1" inputmode="numeric"><input class="pi" type="tel" maxlength="1" inputmode="numeric"><input class="pi" type="tel" maxlength="1" inputmode="numeric"></div><button class="btn" id="b" disabled>Entrar</button><div class="err" id="e"></div></div><script>var ii=document.querySelectorAll(".pi"),b=document.getElementById("b"),e=document.getElementById("e");ii.forEach(function(n,i){n.addEventListener("input",function(){if(n.value.length===1&&i<3)ii[i+1].focus();ck()});n.addEventListener("keydown",function(ev){if(ev.key==="Backspace"&&n.value===""&&i>0)ii[i-1].focus();if(ev.key==="Enter")go()})});function ck(){b.disabled=Array.from(ii).map(function(n){return n.value}).join("").length<4}b.onclick=go;function go(){var p=Array.from(ii).map(function(n){return n.value}).join("");if(p.length<4)return;fetch("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:p})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d}})}).then(function(o){if(o.data.ok){window.location.href="/painel?t="+o.data.token}else{e.textContent=o.data.error||"PIN incorreto";ii.forEach(function(n){n.value=""});ii[0].focus();setTimeout(function(){e.textContent=""},4000)}})}</script></body></html>`;
 
 // ═════════════════════════════════════════════════════
 // POSTGRES
@@ -50,9 +142,14 @@ async function initDb(){
       ia_consultiva JSONB,
       ia_institucional JSONB,
       criado_em TIMESTAMPTZ DEFAULT NOW(),
-      analisado_em TIMESTAMPTZ
+      analisado_em TIMESTAMPTZ,
+      lgpd_aceito_em TIMESTAMPTZ,
+      lgpd_ip TEXT
     );
   `);
+  // Migration idempotente: garante colunas LGPD em bases pré-existentes
+  await db.query(`ALTER TABLE submissoes ADD COLUMN IF NOT EXISTS lgpd_aceito_em TIMESTAMPTZ;`);
+  await db.query(`ALTER TABLE submissoes ADD COLUMN IF NOT EXISTS lgpd_ip TEXT;`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_submissoes_criado ON submissoes(criado_em DESC);`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_submissoes_status ON submissoes(status);`);
   console.log('[db] conectado · schema OK');
@@ -231,11 +328,25 @@ const server = http.createServer(async function(req,res){
     }
 
     // ───────────────────────────────────────────────────
-    // AUTH do consultor (PIN) — endpoint existente
+    // AUTH do consultor (PIN) — com rate-limit por IP
     // ───────────────────────────────────────────────────
     if(p==='/api/auth' && req.method==='POST'){
+      const ip = req.socket.remoteAddress || (req.headers['x-forwarded-for']||'').split(',')[0].trim() || 'unknown';
+      const rl = checkAuthRateLimit(ip);
+      if(!rl.ok){
+        console.warn('[auth] rate-limit hit', ip, rl.motivo);
+        return sendErr(res, rl.motivo, 429);
+      }
       const d = await readBody(req);
-      return sendJson(res, d.pin===PIN ? {ok:true, token:makeToken()} : {ok:false});
+      if(d.pin === PIN){
+        resetAuthRateLimit(ip);
+        console.log('[auth] login OK', ip);
+        return sendJson(res, {ok:true, token: makeToken()});
+      }
+      const restante = typeof rl.restante === 'number' ? rl.restante : 0;
+      const sufixo = restante > 0 ? ` (${restante} tentativa${restante === 1 ? '' : 's'} restante${restante === 1 ? '' : 's'})` : '';
+      console.warn('[auth] login FAIL', ip);
+      return sendErr(res, 'PIN incorreto' + sufixo, 401);
     }
 
     // ───────────────────────────────────────────────────
@@ -331,16 +442,22 @@ const server = http.createServer(async function(req,res){
       if(!d.nome || !d.dados){
         return sendErr(res, 'Dados incompletos.');
       }
+      // LGPD: exige consentimento registrado no client
+      const lgpdAceitoEm = d.lgpdAceitoEm ? new Date(d.lgpdAceitoEm) : null;
+      if(!lgpdAceitoEm || isNaN(lgpdAceitoEm.getTime())){
+        return sendErr(res, 'Aceite da Política de Privacidade não registrado.', 400);
+      }
+      const ipLgpd = req.socket.remoteAddress || (req.headers['x-forwarded-for']||'').split(',')[0].trim() || 'unknown';
       const id = novoId();
       try {
         await db.query(
-          `INSERT INTO submissoes (id, nome, whatsapp, status, score, dados)
-           VALUES ($1, $2, $3, 'pendente', $4, $5)`,
-          [id, String(d.nome).trim().slice(0,120), wa, Number(d.score)||null, d.dados]
+          `INSERT INTO submissoes (id, nome, whatsapp, status, score, dados, lgpd_aceito_em, lgpd_ip)
+           VALUES ($1, $2, $3, 'pendente', $4, $5, $6, $7)`,
+          [id, String(d.nome).trim().slice(0,120), wa, Number(d.score)||null, d.dados, lgpdAceitoEm.toISOString(), ipLgpd]
         );
         // invalida sessão pra evitar duplo envio
         sessoes.delete(d.sessionToken);
-        console.log('[submit] nova submissão', id, 'de', d.nome, wa);
+        console.log('[submit] nova submissão', id, 'de', d.nome, wa, '· LGPD aceito em', lgpdAceitoEm.toISOString());
         return sendJson(res, {ok:true, id});
       } catch(err){
         console.error('[submit]', err);
