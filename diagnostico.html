@@ -270,6 +270,53 @@ a{text-decoration:none;color:inherit}
 .disc{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;margin-top:24px;padding:0 16px;opacity:.6;animation:fadeUp .6s ease .45s both}
 
 /* ═══════════════════════════════════════════════════════════
+   COMPONENTES DA CAMADA DE IA (resumo, tese, script, riscos, callout)
+   ═══════════════════════════════════════════════════════════ */
+.ia-status{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;margin:6px 0 18px;opacity:.7}
+
+.resumo-tese-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-bottom:24px;animation:fadeUp .6s ease .15s both}
+@media(max-width:820px){.resumo-tese-grid{grid-template-columns:1fr}}
+.resumo-box{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:24px 26px}
+.rs-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:inline-flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--bdr);width:100%}
+.rs-text{font-family:'Instrument Sans',sans-serif;font-size:14px;color:var(--text);line-height:1.7}
+.tese-box{background:linear-gradient(135deg,rgba(76,139,245,.08),rgba(76,139,245,.02));border:1px solid rgba(76,139,245,.25);border-radius:14px;padding:24px 26px}
+.ts-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(76,139,245,.18);width:100%}
+.ts-text{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;color:var(--white);line-height:1.6;font-weight:500;letter-spacing:-.005em}
+
+/* Callout "Visão do consultor" inserido em cada seção de módulo */
+.ia-callout{margin:18px 0 22px;padding:18px 22px;background:rgba(76,139,245,.04);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;display:flex;gap:14px;align-items:flex-start;animation:fadeUp .5s ease both}
+.ia-cal-ico{flex-shrink:0;width:30px;height:30px;border-radius:8px;background:rgba(76,139,245,.12);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.ia-cal-body{flex:1}
+.ia-cal-lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ia-cal-txt{font-family:'Instrument Sans',sans-serif;font-size:13.5px;color:var(--text);line-height:1.7}
+
+/* Script do consultor */
+.script-box{background:linear-gradient(135deg,rgba(46,204,138,.06),rgba(46,204,138,.02));border:1px solid rgba(46,204,138,.22);border-radius:14px;padding:24px 28px;margin-bottom:28px;position:relative;overflow:hidden}
+.script-box::before{content:'';position:absolute;top:14px;left:14px;font-size:120px;color:rgba(46,204,138,.05);font-family:Georgia,serif;line-height:.6;pointer-events:none}
+.sc-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#2ecc8a;margin-bottom:14px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid rgba(46,204,138,.15)}
+.sc-text{font-family:'Instrument Sans',sans-serif;font-size:14.5px;color:var(--text);line-height:1.85;font-style:italic;letter-spacing:.005em;position:relative;z-index:1}
+
+/* Riscos */
+.riscos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:28px}
+.risco-card{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;transition:border-color .2s}
+.risco-card:hover{border-color:rgba(76,139,245,.3)}
+.rc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.rc-cat{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--white);letter-spacing:-.005em}
+.rc-flags{display:flex;gap:5px}
+.rc-flag{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:3px 7px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;border:1px solid;background:rgba(255,255,255,.02)}
+.rc-desc{font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:10px}
+.rc-mit{font-size:12px;color:var(--text);line-height:1.5;padding-top:10px;border-top:1px dashed var(--bdr)}
+.rc-mit strong{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+/* Plano de ação enriquecido (com metadados da IA) */
+.action-meta{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em}
+.action-meta-item{display:flex;align-items:center;gap:5px}
+.action-meta-item strong{color:var(--text);font-family:'Bricolage Grotesque',sans-serif;font-size:11px}
+.action-meta-item.imp strong{color:#2ecc8a}
+.action-meta-item.prazo strong{color:#f5c842}
+
+
+/* ═══════════════════════════════════════════════════════════
    SEÇÕES EXPANDIDAS POR MÓDULO (replica visual das telas individuais)
    ═══════════════════════════════════════════════════════════ */
 .mod-sec{margin:40px 0;padding-top:32px;border-top:1px solid var(--bdr);animation:fadeUp .6s ease both}
@@ -1515,6 +1562,12 @@ a{text-decoration:none;color:inherit}
     <!-- 4 DIMENSÕES -->
     <div class="dims" id="dims-grid"></div>
 
+    <!-- IA Status -->
+    <div id="ia-status" class="ia-status">—</div>
+
+    <!-- RESUMO EXECUTIVO + TESE CENTRAL (gerado pela IA) -->
+    <div id="resumo-tese" class="resumo-tese-grid"></div>
+
     <!-- BANNER DA PRINCIPAL OPORTUNIDADE -->
     <div class="r-banner" id="r-banner">
       <div>
@@ -1536,6 +1589,9 @@ a{text-decoration:none;color:inherit}
     </div>
     <div id="sections-host"></div>
 
+    <!-- SCRIPT DO CONSULTOR (gerado pela IA) -->
+    <div id="script-host"></div>
+
     <!-- PLANO DE AÇÃO -->
     <div class="r-sec-h">
       <div class="r-sec-t">Plano de ação priorizado</div>
@@ -1543,6 +1599,9 @@ a{text-decoration:none;color:inherit}
       <div class="r-sec-c">passos numerados</div>
     </div>
     <div class="action-list" id="action-list"></div>
+
+    <!-- RISCOS DO PLANO (gerado pela IA) -->
+    <div id="riscos-host"></div>
 
     <div class="disc">
       Diagnóstico baseado em premissas estatísticas de longo prazo (CDI/IPCA históricos), tabelas tributárias vigentes em 2026 e reforma tributária (EC 132/2023). Não constitui recomendação de investimento. Os valores apresentados são projeções estimativas e podem variar conforme o cenário macroeconômico real.
@@ -2069,30 +2128,281 @@ function calcScore(aps, pgbl, hld, vgbl, renda){
 }
 
 /* ═════════════════════════════════════════════════════
-   GERAR DIAGNÓSTICO (animação + cálculo)
+   CAMADA DE IA · ANÁLISE CONSULTIVA SÊNIOR
+   Reutiliza /api/analise-acoes/messages (proxy já existente no server.js)
    ═════════════════════════════════════════════════════ */
-function gerarDiagnostico(){
+const DIAG_BACKEND = '/api/analise-acoes/messages';
+
+const DIAG_SYS = `Você é consultor financeiro sênior brasileiro com experiência em wealth management — perfil de quem trabalha em family office, private bank ou consultoria patrimonial independente. Sua linguagem é técnica e precisa, mas humana e consultiva: você fala como se estivesse sentado em frente ao cliente, com clareza, convicção e respeito pela inteligência dele.
+
+Sua tarefa: analisar o diagnóstico patrimonial calculado de um cliente brasileiro e produzir uma análise consultiva personalizada, integrada e estratégica.
+
+Princípios da análise:
+- NÃO trate cada módulo isoladamente — busque conexões cruzadas. Ex: gap de aposentadoria + holding ausente = oportunidade de reestruturação combinada; PGBL não aplicável + VGBL viável = pivô tributário-sucessório.
+- Use 2ª pessoa direta ("você", "seu patrimônio", "sua família") — como o consultor falaria com o cliente em uma reunião.
+- Cite valores específicos sempre que possível (R$, %, anos, idades).
+- Sem alarmismo, sem promessas de retorno, sem hype.
+- Reconheça incertezas (cenário macro, mudanças regulatórias, reforma tributária) sem afundar a tese.
+- Linguagem direta e técnica. Sem jargão desnecessário. Sem markdown. Sem cercas. Sem emojis.
+- Lembre que a reforma tributária (EC 132/2023) já mudou a tributação de aluguéis em PF (CBS/IBS 7,95%).
+
+Retorne APENAS um objeto JSON válido — nada antes, nada depois, sem cercas markdown.`;
+
+function _diagBuildPrompt(D, calc){
+  const aps = calc.aps, pgbl = calc.pgbl, hld = calc.hld, vgbl = calc.vgbl, renda = calc.renda, score = calc.score;
+  const fr = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+  const fp = v => (v||0).toFixed(1).replace('.',',') + '%';
+
+  const linhas = [];
+  linhas.push(`Cliente: ${D.nome}, ${D.idade} anos${D.prof?', '+D.prof:''}.`);
+  linhas.push(`Renda mensal bruta: ${fr(D.renda)} | Regime: ${({clt:'CLT',pj:'PJ',empresario:'Empresário'})[D.regime]} | INSS: ${D.inss==='sim'?'Sim':'Não'} | IR: ${D.ir==='completa'?'Declaração completa':'Simplificada/Isento'}.`);
+  linhas.push(`Patrimônio financeiro: ${fr(D.patrim)} | Aporte mensal: ${fr(D.aporte)} | Perfil de risco: ${D.perfil}.`);
+  linhas.push(`Idade-alvo aposentadoria: ${D.aposAge} anos | Estratégia: ${D.estrat==='renda'?'renda vitalícia (preserva capital)':'consumir patrimônio até 99 anos'}.`);
+  if(D.tempr==='sim'){
+    linhas.push(`Previdência já contratada: PGBL saldo ${fr(D.pgblSaldo)}, aporte anual atual ${fr(D.pgblAporte)} | VGBL saldo ${fr(D.vgblSaldo)}.`);
+  }
+  linhas.push(`Imóveis: ${D.temimo==='sim'?`${D.qtdimo} unidade(s), valor total ${fr(D.valimo)}, aluguel ${fr(D.alug)}/mês, ${D.cvqtd} venda(s)/ano, holding ${D.temhld==='sim'?'já estruturada':'sem holding'}`:'não possui'}.`);
+  linhas.push(`Sucessão: ${D.depend==='sim'?`${D.qtddep} dependente(s) direto(s)`:'sem dependentes diretos'} | Objetivo principal: ${({acumular:'acumular patrimônio',proteger:'proteger sucessão',renda:'gerar renda mensal',equilibrio:'equilíbrio entre tudo'})[D.objet]}.`);
+
+  linhas.push('');
+  linhas.push('RESULTADOS CALCULADOS:');
+  linhas.push('');
+  linhas.push('1) APOSENTADORIA:');
+  linhas.push(`- Patrimônio projetado aos ${D.aposAge} anos: ${fr(aps.totalFuturo)} (em valor real, descontada inflação)`);
+  linhas.push(`- ${aps.isRenda?'Renda passiva mensal vitalícia':'Retirada mensal até 99 anos'}: ${fr(aps.rendaMes)}`);
+  linhas.push(`- Renda-alvo (80% da renda atual): ${fr(aps.rendaIdeal)} | Cobertura: ${aps.cobertura.toFixed(0)}%`);
+  linhas.push(`- Taxa real anual usada: ${fp(aps.taxaAnual*100)} | ${aps.anos} anos de acumulação`);
+  if(aps.esgoto) linhas.push(`- ALERTA: estratégia escolhida esgota patrimônio aos ${aps.esgoto.age} anos`);
+
+  linhas.push('');
+  linhas.push('2) PGBL:');
+  if(pgbl.aplica){
+    linhas.push(`- Teto de dedução (12% renda): ${fr(pgbl.tetoDeducao)}/ano`);
+    linhas.push(`- Aporte atual: ${fr(pgbl.aporteAtual)} | Aporte adicional possível: ${fr(pgbl.aporteAdicional)}`);
+    linhas.push(`- Economia tributária capturada atualmente: ${fr(pgbl.economiaAtual)}/ano`);
+    linhas.push(`- Economia adicional acessível: ${fr(pgbl.economiaAdicional)}/ano`);
+    linhas.push(`- Patrimônio adicional em 15 anos reaplicando restituição: ${fr(pgbl.patrimonio15Anos)}`);
+  } else {
+    linhas.push(`- NÃO SE APLICA: ${pgbl.motivo}`);
+  }
+
+  linhas.push('');
+  linhas.push('3) HOLDING PATRIMONIAL:');
+  if(hld.aplica){
+    linhas.push(`- Status atual: ${hld.jaTem?'holding JÁ estruturada':'SEM holding'}`);
+    linhas.push(`- Custo sucessório se mantiver na PF: ${fr(hld.pfSucessao)}`);
+    linhas.push(`- Economia sucessória estimada com holding: ${fr(hld.economiaSucessao)}`);
+    linhas.push(`- Economia tributária anual (aluguel+vendas): ${fr(hld.economiaAnual)}`);
+    linhas.push(`- Economia total acumulada em ${hld.horizonte} anos: ${fr(hld.economiaTotal)}`);
+    linhas.push(`- Custo de abertura: ${fr(hld.custoAbertura)} | Manutenção anual: ${fr(hld.manutAnual)}`);
+  } else {
+    linhas.push(`- NÃO SE APLICA: ${hld.motivo}`);
+  }
+
+  linhas.push('');
+  linhas.push('4) VGBL SUCESSÓRIO:');
+  if(vgbl.aplica){
+    linhas.push(`- Status atual: ${vgbl.jaTem?'já tem VGBL ('+fr(D.vgblSaldo)+')':'sem VGBL'}`);
+    linhas.push(`- Patrimônio financeiro protegível: ${fr(vgbl.patProtegivel)}`);
+    linhas.push(`- Economia sucessória direta (sem ITCMD/inventário): ${fr(vgbl.economiaSucessao)}`);
+    linhas.push(`- Alpha tributário 15 anos (ausência de come-cotas): ${fr(vgbl.alpha15Anos)}`);
+  } else {
+    linhas.push(`- NÃO SE APLICA: ${vgbl.motivo}`);
+  }
+
+  linhas.push('');
+  linhas.push('5) RENDA PASSIVA:');
+  linhas.push(`- Renda passiva atual gerada pelo patrimônio: ${fr(renda.rendaAtualMes)}/mês`);
+  linhas.push(`- Cobertura da renda salarial atual: ${renda.coberturaAtual.toFixed(0)}%`);
+  linhas.push(`- Patrimônio necessário para 100% de cobertura: ${fr(renda.patNecessario)}`);
+  linhas.push(`- Gap a acumular: ${fr(renda.gap)}`);
+
+  linhas.push('');
+  linhas.push('SCORE GERAL: ' + score.total + '/100');
+  score.dims.forEach(d => linhas.push(`- ${d.n}: ${d.v}/${d.max}`));
+
+  linhas.push('');
+  linhas.push(`Premissas macro: CDI ${fp(CDI*100)} a.a., IPCA ${fp(INFL*100)} a.a. (medianas históricas 30a).`);
+
+  linhas.push('');
+  linhas.push(`Produza este JSON (sem markdown, sem cercas, sem texto fora do objeto):
+
+{
+  "resumoExecutivo": "3-4 frases descrevendo o perfil patrimonial em termos institucionais: faixa de patrimônio, fase do ciclo de vida (acumulação/preservação/distribuição), principal característica do plano, principal lacuna identificada. Tom institucional, conciso.",
+  "teseCentral": "3-4 frases com a tese estratégica integrada do diagnóstico. Não enumere os módulos — traga a visão de conjunto. Termine com a ação central que define o diagnóstico. Você fala diretamente com o cliente.",
+  "analise": {
+    "aposentadoria": "4-5 frases técnico-consultivas sobre o plano de aposentadoria deste cliente específico. Comente o gap (se houver), a estratégia escolhida (renda vitalícia vs consumir), a adequação da idade-alvo e da alocação. Cite valores. Termine com a recomendação prática.",
+    "pgbl": "4-5 frases. Se aplicável, recomende ação concreta sobre PGBL com números do cliente; se não, explique tecnicamente por que não se aplica e qual o instrumento alternativo (VGBL, declaração completa, etc).",
+    "holding": "4-5 frases sobre holding para este cliente. Avalie viabilidade, retorno em anos, complexidade de gestão e perfil do cliente. Para quem já tem, foque em manutenção e revisão; para quem não tem, foque na decisão de constituir.",
+    "vgbl": "4-5 frases. Avalie o caso específico considerando perfil sucessório, integração com PGBL/holding existentes, alpha tributário esperado e horizonte.",
+    "renda": "4-5 frases sobre a estratégia de renda passiva. Composição adequada para o perfil, prazo realista até cobertura, e como conciliar com a fase atual."
+  },
+  "planoAcao": [
+    {
+      "ordem": 1,
+      "titulo": "Título curto e acionável (4-7 palavras)",
+      "descricao": "1-2 frases técnicas explicando o que fazer e por quê.",
+      "prazo": "Imediato OU 30 dias OU 90 dias OU 6 meses OU 1 ano OU 2-3 anos",
+      "impactoEstimado": "Quantificado quando possível: R$ X em N anos OU N% de eficiência tributária",
+      "responsavel": "Cliente OU Consultor OU Advogado tributário OU Contador OU Família"
+    }
+  ],
+  "script": "8-10 frases. Voz do consultor falando diretamente com o cliente em primeira pessoa singular. Apresentação completa do diagnóstico, tese, principais pontos e próximos passos. Tom institucional reservado, com convicção e clareza. Sem hype.",
+  "riscos": [
+    {
+      "categoria": "Macro OU Tributário OU Concentração OU Liquidez OU Regulatório OU Familiar/Sucessório OU Comportamental",
+      "probabilidade": "Baixa OU Média OU Alta",
+      "impacto": "Baixo OU Médio OU Alto",
+      "descricao": "1 frase descrevendo o risco específico para este plano.",
+      "mitigacao": "1 frase com a ação concreta de mitigação."
+    }
+  ]
+}
+
+Use exatamente 5-7 ações no planoAcao (priorizadas por impacto, ordem crescente do mais importante) e 4-5 riscos.`);
+
+  return linhas.join('\n');
+}
+
+async function _diagCallClaude(systemPrompt, userPrompt, retries=3){
+  const body = {
+    model: 'claude-sonnet-4-5-20250929',
+    max_tokens: 6000,
+    system: systemPrompt,
+    messages: [{role:'user', content: userPrompt}]
+  };
+  let lastErr;
+  for(let i=0; i<=retries; i++){
+    try {
+      const r = await fetch(DIAG_BACKEND, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      if(r.status === 429){
+        const retryAfter = r.headers.get('retry-after');
+        const waitSec = retryAfter ? Math.min(parseInt(retryAfter) || 60, 120) : 60;
+        for(let c=waitSec; c>0; c--){
+          _setLoadingTxt('Análise sênior · aguardando rate limit', c + 's…');
+          await new Promise(res => setTimeout(res, 1000));
+        }
+        continue;
+      }
+      if(!r.ok){
+        const t = await r.text();
+        throw new Error('HTTP '+r.status+': '+t.slice(0,200));
+      }
+      const data = await r.json();
+      const blocks = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text);
+      return blocks[blocks.length-1] || blocks.join('\n');
+    } catch(err){
+      lastErr = err;
+      if(i === retries) break;
+      await new Promise(res => setTimeout(res, 2000*(i+1)));
+    }
+  }
+  throw lastErr;
+}
+
+function _diagExtractJSON(text){
+  if(!text) throw new Error('resposta vazia da IA');
+  let s = text.replace(/```json\s*/gi,'').replace(/```/g,'').trim();
+  try { return JSON.parse(s); } catch(e){}
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if(a>=0 && b>a){
+    try { return JSON.parse(s.substring(a,b+1)); } catch(e){}
+  }
+  // Tentativa de recuperar JSON truncado
+  if(a>=0){
+    const body = s.substring(a);
+    let stack=[], inStr=false, esc=false, lastSafe=0, lastStack=[];
+    for(let i=0; i<body.length; i++){
+      const c = body[i];
+      if(esc){ esc=false; continue; }
+      if(c==='\\'){ esc=true; continue; }
+      if(c==='"'){ inStr=!inStr; continue; }
+      if(inStr) continue;
+      if(c==='{'||c==='[') stack.push(c);
+      else if(c==='}'||c===']'){ stack.pop(); lastSafe=i+1; lastStack=stack.slice(); }
+      else if(c===','){ lastSafe=i; lastStack=stack.slice(); }
+    }
+    if(lastSafe>0){
+      let r = body.substring(0,lastSafe).replace(/[,\s]+$/,'');
+      for(let i=lastStack.length-1; i>=0; i--) r += lastStack[i]==='{'?'}':']';
+      try { return JSON.parse(r); } catch(e){}
+    }
+  }
+  throw new Error('JSON não encontrado na resposta da IA');
+}
+
+function _setLoadingTxt(titulo, sub){
+  const t = document.getElementById('loading-txt');
+  const s = document.getElementById('loading-sub');
+  if(t) t.textContent = titulo;
+  if(s) s.textContent = sub;
+}
+
+/* ═════════════════════════════════════════════════════
+   GERAR DIAGNÓSTICO (cálculo + IA + render)
+   ═════════════════════════════════════════════════════ */
+async function gerarDiagnostico(){
   const lo = document.getElementById('loading');
   lo.classList.add('show');
-  const txts = [
+
+  // Fase 1: cálculos (rápido, ~3 segundos só pro visual)
+  const txtsCalc = [
     ['Rodando módulo de Aposentadoria…','Projetando patrimônio futuro com taxa real do CDI'],
     ['Calculando PGBL…','Aplicando tabela INSS + IR progressiva e dedução de 12%'],
     ['Avaliando Holding…','Comparando PF vs PJ na tributação de aluguel e sucessão'],
     ['Simulando VGBL…','Calculando alpha tributário e proteção sucessória'],
     ['Compondo plano de ação…','Priorizando oportunidades por impacto financeiro']
   ];
-  let i = 0;
-  const tick = setInterval(()=>{
-    if(i<txts.length){
-      document.getElementById('loading-txt').textContent = txts[i][0];
-      document.getElementById('loading-sub').textContent = txts[i][1];
-      i++;
-    } else {
-      clearInterval(tick);
-      lo.classList.remove('show');
-      renderRelatorio();
+  for(let i=0; i<txtsCalc.length; i++){
+    _setLoadingTxt(txtsCalc[i][0], txtsCalc[i][1]);
+    await new Promise(r => setTimeout(r, 450));
+  }
+
+  // Calcula tudo
+  const calc = {
+    aps:   calcAposentadoria(),
+    pgbl:  calcPGBL(),
+    hld:   calcHolding(),
+    vgbl:  calcVGBL(),
+    renda: calcRendaPassiva()
+  };
+  calc.score = calcScore(calc.aps, calc.pgbl, calc.hld, calc.vgbl, calc.renda);
+
+  // Fase 2: chamada à IA (~30-45s)
+  _setLoadingTxt('Análise sênior em andamento…', 'Consultor sênior está revisando seu diagnóstico — pode levar até 45 segundos. Não feche a janela.');
+  let analiseIA = null;
+  const t0 = Date.now();
+  // Indicador de tempo decorrido
+  const tickerInterval = setInterval(()=>{
+    const segs = Math.floor((Date.now()-t0)/1000);
+    const subEl = document.getElementById('loading-sub');
+    if(subEl){
+      subEl.textContent = `Consultor sênior revisando seu diagnóstico · ${segs}s · pode levar até 45 segundos.`;
     }
-  }, 600);
+  }, 1000);
+
+  try {
+    const userPrompt = _diagBuildPrompt(D, calc);
+    const respText = await _diagCallClaude(DIAG_SYS, userPrompt, 2);
+    analiseIA = _diagExtractJSON(respText);
+    clearInterval(tickerInterval);
+    _setLoadingTxt('Análise concluída', 'Compondo relatório institucional…');
+    await new Promise(r => setTimeout(r, 600));
+  } catch(err) {
+    clearInterval(tickerInterval);
+    console.warn('[diag] IA falhou, usando fallback canned:', err);
+    _setLoadingTxt('Análise sênior indisponível', 'Usando análise padrão como fallback. Erro: ' + (err.message||'desconhecido').slice(0,80));
+    await new Promise(r => setTimeout(r, 1800));
+    analiseIA = null;
+  }
+
+  // Fase 3: renderiza relatório
+  lo.classList.remove('show');
+  renderRelatorio(calc, analiseIA);
 }
 
 /* ═════════════════════════════════════════════════════
@@ -2101,15 +2411,19 @@ function gerarDiagnostico(){
 let reportChart = null;
 let lastReport = null;
 
-function renderRelatorio(){
-  const aps   = calcAposentadoria();
-  const pgbl  = calcPGBL();
-  const hld   = calcHolding();
-  const vgbl  = calcVGBL();
-  const renda = calcRendaPassiva();
-  const score = calcScore(aps, pgbl, hld, vgbl, renda);
+function renderRelatorio(calcArg, analiseIA){
+  // Calcula novamente se não foi passado (fallback)
+  const calc = calcArg || {
+    aps:   calcAposentadoria(),
+    pgbl:  calcPGBL(),
+    hld:   calcHolding(),
+    vgbl:  calcVGBL(),
+    renda: calcRendaPassiva()
+  };
+  if(!calc.score) calc.score = calcScore(calc.aps, calc.pgbl, calc.hld, calc.vgbl, calc.renda);
+  const {aps, pgbl, hld, vgbl, renda, score} = calc;
 
-  lastReport = { aps, pgbl, hld, vgbl, renda, score };
+  lastReport = { aps, pgbl, hld, vgbl, renda, score, ia: analiseIA };
 
   // HERO
   const today = new Date();
@@ -2136,23 +2450,126 @@ function renderRelatorio(){
   `).join('');
   setTimeout(()=>document.querySelectorAll('.dim-fill').forEach(el=>el.style.width=el.dataset.w), 500);
 
-  // BANNER — principal oportunidade
+  // RESUMO EXECUTIVO + TESE CENTRAL (via IA, ou fallback)
+  renderResumoEtese(analiseIA, aps, pgbl, hld, vgbl, renda);
+
+  // BANNER — principal oportunidade (canned, ou substituído pela tese)
   const opp = pickMainOpportunity(aps, pgbl, hld, vgbl, renda);
-  document.getElementById('rb-t').textContent = opp.title;
-  document.getElementById('rb-d').textContent = opp.desc;
+  document.getElementById('rb-t').textContent = (analiseIA && analiseIA.teseCentral) ? 'Recomendação central' : opp.title;
+  document.getElementById('rb-d').textContent = (analiseIA && analiseIA.teseCentral) ? analiseIA.teseCentral : opp.desc;
   document.getElementById('rb-v').textContent = opp.value;
   document.getElementById('rb-vl').textContent = opp.label;
 
-  // MÓDULOS — seções expandidas (replicam cada simulador individual)
-  renderSections(aps, pgbl, hld, vgbl, renda);
+  // MÓDULOS — seções expandidas (replicam cada simulador individual, agora com callout IA)
+  renderSections(aps, pgbl, hld, vgbl, renda, analiseIA);
 
-  // PLANO DE AÇÃO
-  renderActions(aps, pgbl, hld, vgbl, renda);
+  // SCRIPT do consultor (se IA disponível)
+  renderScriptConsultor(analiseIA);
+
+  // PLANO DE AÇÃO (IA ou canned)
+  renderActions(aps, pgbl, hld, vgbl, renda, analiseIA);
+
+  // RISCOS DO PLANO (só se IA disponível)
+  renderRiscosPlano(analiseIA);
+
+  // Indicador discreto se IA não estiver disponível
+  document.getElementById('ia-status').innerHTML = analiseIA
+    ? '<span style="color:#2ecc8a">●</span> Análise consultiva gerada por IA sênior'
+    : '<span style="color:#f5c842">●</span> Análise padrão (IA indisponível neste momento)';
 
   // Trocar de tela
   document.getElementById('sW').classList.remove('active');
   document.getElementById('sR').classList.add('active');
   window.scrollTo({top:0, behavior:'instant'});
+}
+
+/* ──────────────────────────────────────────────────────
+   Resumo executivo + Tese central (no topo do relatório)
+   ────────────────────────────────────────────────────── */
+function renderResumoEtese(ia, aps, pgbl, hld, vgbl, renda){
+  const host = document.getElementById('resumo-tese');
+  if(!host) return;
+
+  let resumo, tese;
+  if(ia && ia.resumoExecutivo){
+    resumo = ia.resumoExecutivo;
+    tese = ia.teseCentral;
+  } else {
+    // Fallback canned
+    const faixa = D.patrim > 5e6 ? 'patrimônio de alta renda' : D.patrim > 1e6 ? 'patrimônio consolidado' : D.patrim > 200000 ? 'patrimônio em formação avançada' : 'patrimônio em fase inicial';
+    const fase = D.idade < 40 ? 'acumulação inicial' : D.idade < 55 ? 'acumulação madura' : D.idade < 65 ? 'pré-aposentadoria' : 'distribuição';
+    resumo = `Cliente em fase de ${fase} com ${faixa}. Cobertura projetada para a aposentadoria de ${aps.cobertura.toFixed(0)}% da renda atual. ${pgbl.aplica && pgbl.economiaAdicional>0 ? 'Oportunidade tributária identificada em PGBL.' : ''} ${hld.aplica && !hld.jaTem && hld.economiaTotal>50000 ? 'Estrutura societária pode reduzir custos sucessórios.' : ''}`.trim();
+    tese = pickMainOpportunity(aps, pgbl, hld, vgbl, renda).desc;
+  }
+
+  host.innerHTML = `
+    <div class="resumo-box">
+      <div class="rs-eyebrow">Resumo Executivo</div>
+      <div class="rs-text">${resumo}</div>
+    </div>
+    <div class="tese-box">
+      <div class="ts-eyebrow">Tese Central</div>
+      <div class="ts-text">${tese}</div>
+    </div>
+  `;
+}
+
+/* ──────────────────────────────────────────────────────
+   Script do consultor (voz do consultor para o cliente)
+   ────────────────────────────────────────────────────── */
+function renderScriptConsultor(ia){
+  const host = document.getElementById('script-host');
+  if(!host) return;
+  if(!ia || !ia.script){ host.innerHTML = ''; return; }
+  host.innerHTML = `
+    <div class="r-sec-h">
+      <div class="r-sec-t">Apresentação para o cliente</div>
+      <div class="r-sec-l"></div>
+      <div class="r-sec-c">script do consultor</div>
+    </div>
+    <div class="script-box">
+      <div class="sc-eyebrow">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10v6H8l-3 3v-3H3V4z" stroke="#4c8bf5" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        Voz do consultor · apresentação institucional
+      </div>
+      <div class="sc-text">${ia.script}</div>
+    </div>
+  `;
+}
+
+/* ──────────────────────────────────────────────────────
+   Riscos do plano (só se IA disponível)
+   ────────────────────────────────────────────────────── */
+function renderRiscosPlano(ia){
+  const host = document.getElementById('riscos-host');
+  if(!host) return;
+  if(!ia || !ia.riscos || !ia.riscos.length){ host.innerHTML = ''; return; }
+
+  const probColor = p => p==='Alta'?'#f07070':(p==='Média'?'#f5c842':'#2ecc8a');
+  const impColor  = i => i==='Alto'?'#f07070':(i==='Médio'?'#f5c842':'#2ecc8a');
+
+  host.innerHTML = `
+    <div class="r-sec-h">
+      <div class="r-sec-t">Análise de riscos</div>
+      <div class="r-sec-l"></div>
+      <div class="r-sec-c">${ia.riscos.length} categorias mapeadas</div>
+    </div>
+    <div class="riscos-grid">
+      ${ia.riscos.map(r => `
+        <div class="risco-card">
+          <div class="rc-h">
+            <div class="rc-cat">${r.categoria}</div>
+            <div class="rc-flags">
+              <span class="rc-flag" style="border-color:${probColor(r.probabilidade)}55;color:${probColor(r.probabilidade)}">P: ${r.probabilidade}</span>
+              <span class="rc-flag" style="border-color:${impColor(r.impacto)}55;color:${impColor(r.impacto)}">I: ${r.impacto}</span>
+            </div>
+          </div>
+          <div class="rc-desc">${r.descricao}</div>
+          <div class="rc-mit"><strong>Mitigação:</strong> ${r.mitigacao}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 function animateScore(target){
@@ -2242,14 +2659,15 @@ function pickMainOpportunity(aps, pgbl, hld, vgbl, renda){
 let _aposChart = null;
 let _diagState = null; // estado para simulador customizado de retirada
 
-function renderSections(aps, pgbl, hld, vgbl, renda){
+function renderSections(aps, pgbl, hld, vgbl, renda, ia){
   const host = document.getElementById('sections-host');
+  const a = ia && ia.analise ? ia.analise : {};
   let html = '';
-  html += _buildSecApos(aps);
-  html += _buildSecPgbl(pgbl);
-  html += _buildSecHld(hld);
-  html += _buildSecVgbl(vgbl);
-  html += _buildSecRenda(renda);
+  html += _buildSecApos(aps,  a.aposentadoria);
+  html += _buildSecPgbl(pgbl, a.pgbl);
+  html += _buildSecHld(hld,   a.holding);
+  html += _buildSecVgbl(vgbl, a.vgbl);
+  html += _buildSecRenda(renda, a.renda);
   host.innerHTML = html;
 
   // Hidratar gráficos e interações
@@ -2264,10 +2682,28 @@ function renderSections(aps, pgbl, hld, vgbl, renda){
   if(cnt) cnt.textContent = '5 módulos';
 }
 
+/* Helper: callout reutilizável para inserir texto da IA em cada seção */
+function _iaCallout(textoIA, corHex){
+  if(!textoIA) return '';
+  const cor = corHex || '#4c8bf5';
+  return `
+    <div class="ia-callout" style="border-left-color:${cor};background:${cor}0F">
+      <div class="ia-cal-ico" style="background:${cor}22">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 3h8M3 7h8M3 11h5" stroke="${cor}" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="ia-cal-body">
+        <div class="ia-cal-lbl" style="color:${cor}">Visão do consultor</div>
+        <div class="ia-cal-txt">${textoIA}</div>
+      </div>
+    </div>`;
+}
+
 /* ──────────────────────────────────────────────────────
    SEÇÃO APOSENTADORIA (replica tela s3 do plano-futuro)
    ────────────────────────────────────────────────────── */
-function _buildSecApos(aps){
+function _buildSecApos(aps, textoIA){
   const perfilLbl = D.perfil[0].toUpperCase()+D.perfil.slice(1);
   const fatorCDI = (FAT[D.perfil]*100).toFixed(0);
   const isRenda = aps.isRenda;
@@ -2401,6 +2837,8 @@ function _buildSecApos(aps){
       </div>
 
       <div class="kgrid">${kpiHtml}</div>
+
+      ${_iaCallout(textoIA, '#4c8bf5')}
 
       <!-- Gráfico de projeção -->
       <div class="cc">
@@ -2602,7 +3040,7 @@ let _rendaEvolChart = null;
 /* ──────────────────────────────────────────────────────
    SEÇÃO 2 · PGBL — Otimização Tributária
    ────────────────────────────────────────────────────── */
-function _buildSecPgbl(pgbl){
+function _buildSecPgbl(pgbl, textoIA){
   if(!pgbl.aplica){
     return `
       <section class="mod-sec pgbl">
@@ -2658,6 +3096,8 @@ function _buildSecPgbl(pgbl){
           <p>Teto de dedução: <strong>12% da renda bruta anual</strong> (R$ ${pgbl.tetoDeducao.toLocaleString('pt-BR',{maximumFractionDigits:0})}). Renda anual considerada: R$ ${(D.renda*12).toLocaleString('pt-BR',{maximumFractionDigits:0})} · INSS: ${D.inss==='sim'?'Sim':'Não'} · IR: Declaração completa.</p>
         </div>
       </div>
+
+      ${_iaCallout(textoIA, '#2ecc8a')}
 
       <!-- Resultados principais (3 cards) -->
       <div class="pgbl-results-main">
@@ -2823,7 +3263,7 @@ function _renderPgblChart(pgbl){
 /* ──────────────────────────────────────────────────────
    SEÇÃO 3 · HOLDING PATRIMONIAL
    ────────────────────────────────────────────────────── */
-function _buildSecHld(hld){
+function _buildSecHld(hld, textoIA){
   if(!hld.aplica){
     return `
       <section class="mod-sec hld">
@@ -2903,6 +3343,8 @@ function _buildSecHld(hld){
             <div class="holding-savings-period" style="font-size:11px;color:var(--muted);margin-top:2px">em ${HORIZONTE} anos</div>
           </div>` : ''}
       </div>
+
+      ${_iaCallout(textoIA, '#f8d75e')}
 
       ${D.alug>0 ? `
       <!-- Mini-comparativo: aluguel -->
@@ -3101,7 +3543,7 @@ function _renderHldChart(hld){
 /* ──────────────────────────────────────────────────────
    SEÇÃO 4 · VGBL SUCESSÓRIO
    ────────────────────────────────────────────────────── */
-function _buildSecVgbl(vgbl){
+function _buildSecVgbl(vgbl, textoIA){
   if(!vgbl.aplica){
     return `
       <section class="mod-sec vgbl">
@@ -3164,6 +3606,8 @@ function _buildSecVgbl(vgbl){
           <p>O VGBL <strong>não entra em inventário</strong>: é transferido diretamente aos beneficiários em até 30 dias, <strong>sem ITCMD, sem advogado, sem burocracia</strong>. Pode migrar até R$ 600.000/ano sem pagar IOF. Não tem come-cotas (a maior vantagem fiscal no longo prazo).</p>
         </div>
       </div>
+
+      ${_iaCallout(textoIA, '#9b8bf5')}
 
       <!-- Número impactante -->
       <div style="margin-top:18px;text-align:center;padding:28px 24px;background:linear-gradient(135deg,rgba(155,139,245,.1),rgba(155,139,245,.03));border:1.5px solid rgba(155,139,245,.25);border-radius:16px">
@@ -3297,7 +3741,7 @@ function _renderVgblChart(vgbl){
 /* ──────────────────────────────────────────────────────
    SEÇÃO 5 · RENDA PASSIVA
    ────────────────────────────────────────────────────── */
-function _buildSecRenda(renda){
+function _buildSecRenda(renda, textoIA){
   // Composição de carteira recomendada (com yields aproximados)
   const carteiraRecomendada = [
     {nome:'Tesouro IPCA+',     p: D.perfil==='conservador'?40:(D.perfil==='moderado'?25:10), yieldAa:0.0625, cor:'#2ecc8a'},
@@ -3372,6 +3816,8 @@ function _buildSecRenda(renda){
         </div>
         <div class="b-val ${cobertura<100?'w':''}">${cobertura.toFixed(0)}%<br><span style="font-size:11px;opacity:.6;font-weight:500;color:var(--muted)">cobertura</span></div>
       </div>
+
+      ${_iaCallout(textoIA, '#22c5d6')}
 
       <!-- 4 KPIs -->
       <div class="kgrid">
@@ -3519,7 +3965,27 @@ function _renderRendaCharts(){
 /* ═════════════════════════════════════════════════════
    PLANO DE AÇÃO PRIORIZADO
    ═════════════════════════════════════════════════════ */
-function renderActions(aps, pgbl, hld, vgbl, renda){
+function renderActions(aps, pgbl, hld, vgbl, renda, ia){
+  // Se IA forneceu plano de ação estruturado, usar; senão usar canned
+  if(ia && ia.planoAcao && Array.isArray(ia.planoAcao) && ia.planoAcao.length > 0){
+    document.getElementById('action-list').innerHTML = ia.planoAcao.map(a => `
+      <div class="action-item">
+        <div class="action-num">${a.ordem || '•'}</div>
+        <div class="action-body">
+          <div class="action-t">${a.titulo || '—'}</div>
+          <div class="action-d">${a.descricao || ''}</div>
+          <div class="action-meta">
+            ${a.prazo ? `<div class="action-meta-item prazo">prazo: <strong>${a.prazo}</strong></div>` : ''}
+            ${a.responsavel ? `<div class="action-meta-item">responsável: <strong>${a.responsavel}</strong></div>` : ''}
+            ${a.impactoEstimado ? `<div class="action-meta-item imp">impacto: <strong>${a.impactoEstimado}</strong></div>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+    return;
+  }
+
+  // Fallback canned
   const acts = [];
 
   if(hld.aplica && !hld.jaTem && hld.economiaTotal > 50000){
