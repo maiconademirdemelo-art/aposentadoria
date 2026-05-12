@@ -115,6 +115,13 @@ a{text-decoration:none;color:inherit}
 /* ─── TOGGLES (sim/não) ─── */
 .toggle-group{display:flex;flex-direction:column;gap:10px;width:100%}
 
+/* Botão Pular (clientes podem enviar dados depois) */
+.skip-btn{background:rgba(240,168,104,.08);border:1px solid rgba(240,168,104,.25);color:#f0a868;padding:6px 14px;border-radius:999px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .15s;letter-spacing:.02em}
+.skip-btn:hover{background:rgba(240,168,104,.15);border-color:#f0a868;color:#fff}
+.skipped-msg{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;background:rgba(240,168,104,.06);border:1px solid rgba(240,168,104,.2);border-radius:10px;color:var(--text);font-size:12.5px;line-height:1.55;font-family:'Instrument Sans',sans-serif;margin-top:8px}
+.skipped-msg a{color:#f0a868;font-weight:600;text-decoration:none}
+.skipped-msg a:hover{text-decoration:underline}
+
 /* Grid de composição da carteira / idades filhos (2 colunas responsivas) */
 .comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:560px){.comp-grid{grid-template-columns:1fr}}
@@ -1138,6 +1145,62 @@ a{text-decoration:none;color:inherit}
 .thank-doc{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:24px;letter-spacing:.06em}
 .thank-doc strong{color:var(--text);font-weight:600}
 
+/* ═══════════════════════════════════════════════════════════
+   SIMULADOR ANTES/DEPOIS · score interativo + impacto financeiro
+   ═══════════════════════════════════════════════════════════ */
+.sim-wrap{display:flex;flex-direction:column;gap:20px;margin-top:16px}
+.sim-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:680px){.sim-stats{grid-template-columns:1fr}}
+.sim-stat{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:24px;position:relative;overflow:hidden}
+.sim-stat.score-card{background:linear-gradient(135deg,rgba(76,139,245,.08),rgba(76,139,245,.02));border-color:rgba(76,139,245,.25)}
+.sim-stat.money-card{background:linear-gradient(135deg,rgba(46,204,138,.08),rgba(46,204,138,.02));border-color:rgba(46,204,138,.25)}
+.sim-stat-lbl{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.sim-stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:48px;font-weight:200;color:var(--white);line-height:1;letter-spacing:-.03em;transition:all .5s cubic-bezier(.2,.8,.2,1)}
+.sim-stat.score-card .sim-stat-val{color:var(--accent)}
+.sim-stat.money-card .sim-stat-val{color:#2ecc8a;font-size:38px}
+@media(max-width:560px){.sim-stat.money-card .sim-stat-val{font-size:30px}}
+.sim-stat-sub{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+.sim-stat-diff{display:inline-block;padding:3px 9px;background:rgba(46,204,138,.15);color:#2ecc8a;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;margin-left:8px;letter-spacing:.04em;transition:opacity .3s}
+
+.sim-cards{display:flex;flex-direction:column;gap:10px}
+.sim-card{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:18px 22px;display:grid;grid-template-columns:1fr 100px 140px 140px;gap:18px;align-items:center;transition:all .25s}
+@media(max-width:920px){.sim-card{grid-template-columns:1fr;gap:12px;padding:16px}}
+.sim-card:hover{border-color:rgba(76,139,245,.3)}
+.sim-card.applied{border-color:rgba(46,204,138,.4);background:linear-gradient(135deg,rgba(46,204,138,.04),transparent)}
+.sim-card-body{display:flex;flex-direction:column;gap:5px;min-width:0}
+.sim-card-tag{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.sim-card.applied .sim-card-tag{color:#2ecc8a}
+.sim-card-title{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;color:var(--white);letter-spacing:-.01em}
+.sim-card-desc{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+.sim-card-metric{text-align:right}
+@media(max-width:920px){.sim-card-metric{text-align:left}}
+.sim-card-metric-lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.sim-card-metric-val{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:600;color:var(--white);letter-spacing:-.01em}
+.sim-card-metric-val.score{color:var(--accent)}
+.sim-card-metric-val.money{color:#2ecc8a}
+.sim-card-btn{background:rgba(76,139,245,.1);border:1.5px solid rgba(76,139,245,.3);color:#4c8bf5;padding:10px 18px;border-radius:10px;font-size:12.5px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;letter-spacing:-.005em;transition:all .15s;white-space:nowrap}
+.sim-card-btn:hover{background:rgba(76,139,245,.2);border-color:#4c8bf5;color:#fff}
+.sim-card-btn.applied{background:rgba(46,204,138,.15);border-color:#2ecc8a;color:#2ecc8a;cursor:default;pointer-events:none}
+
+.sim-controls{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 18px;background:var(--surf);border:1px solid var(--bdr);border-radius:12px;flex-wrap:wrap}
+.sim-controls-info{font-size:13px;color:var(--text);line-height:1.5}
+.sim-controls-info strong{color:var(--white);font-weight:700}
+.sim-controls-btns{display:flex;gap:8px}
+.sim-mini-btn{background:rgba(255,255,255,.04);border:1px solid var(--bdr);color:var(--text);padding:8px 16px;border-radius:8px;font-size:12.5px;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .15s}
+.sim-mini-btn:hover{background:rgba(76,139,245,.1);border-color:var(--accent);color:var(--white)}
+.sim-mini-btn.primary{background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;color:#fff;font-weight:600}
+
+.sim-grand-total{background:linear-gradient(135deg,#0d4d2f,#1a6b3f);border:1px solid rgba(46,204,138,.4);border-radius:18px;padding:32px 28px;text-align:center;position:relative;overflow:hidden;margin-top:6px}
+.sim-grand-total::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(46,204,138,.18),transparent 60%);pointer-events:none}
+.sim-grand-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2ecc8a;margin-bottom:10px;position:relative}
+.sim-grand-val{font-family:'Bricolage Grotesque',sans-serif;font-size:54px;font-weight:300;color:#fff;line-height:1;letter-spacing:-.035em;margin-bottom:10px;position:relative;transition:all .5s cubic-bezier(.2,.8,.2,1)}
+@media(max-width:560px){.sim-grand-val{font-size:38px}}
+.sim-grand-sub{font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.6;max-width:520px;margin:0 auto;position:relative}
+.sim-grand-sub strong{color:#fff;font-weight:600}
+
+.bump{animation:bumpAnim .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes bumpAnim{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+
 </style>
 </head>
 <body>
@@ -1405,54 +1468,72 @@ a{text-decoration:none;color:inherit}
             </div>
           </div>
 
-          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Renda complementar e fluxo de caixa</div>
-            <div class="input-grid">
-              <div>
-                <label class="inp-lbl">Renda extra anual <span style="color:var(--muted);font-weight:400">(bônus, PLR, dividendos)</span></label>
-                <div class="iw">
-                  <div class="ipfx">R$</div>
-                  <input class="inp" id="i-rendaExtra" type="tel" inputmode="numeric" placeholder="0" oninput="fmtMoeda(this)">
+          <div id="sec-despesas" style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+              <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Renda complementar e fluxo de caixa</div>
+              <button type="button" class="skip-btn" onclick="pularSecao('despesas')" id="btn-pular-despesas" title="Pule esta seção e envie os dados depois (extratos, contracheque, etc)">Pular · enviarei depois</button>
+            </div>
+            <div id="conteudo-despesas">
+              <div class="input-grid">
+                <div>
+                  <label class="inp-lbl">Renda extra anual <span style="color:var(--muted);font-weight:400">(bônus, PLR, dividendos)</span></label>
+                  <div class="iw">
+                    <div class="ipfx">R$</div>
+                    <input class="inp" id="i-rendaExtra" type="tel" inputmode="numeric" placeholder="0" oninput="fmtMoeda(this)">
+                  </div>
+                </div>
+                <div>
+                  <label class="inp-lbl">Despesa mensal média</label>
+                  <div class="iw">
+                    <div class="ipfx">R$</div>
+                    <input class="inp" id="i-despesaMensal" type="tel" inputmode="numeric" placeholder="8.000,00" oninput="fmtMoeda(this)">
+                  </div>
                 </div>
               </div>
-              <div>
-                <label class="inp-lbl">Despesa mensal média</label>
+              <div style="margin-top:14px">
+                <label class="inp-lbl">Reserva de emergência atual <span style="color:var(--muted);font-weight:400">(em meses de despesa)</span></label>
                 <div class="iw">
-                  <div class="ipfx">R$</div>
-                  <input class="inp" id="i-despesaMensal" type="tel" inputmode="numeric" placeholder="8.000,00" oninput="fmtMoeda(this)">
+                  <input class="inp np" id="i-reservaMeses" type="tel" inputmode="numeric" placeholder="ex.: 6" maxlength="3">
                 </div>
               </div>
             </div>
-            <div style="margin-top:14px">
-              <label class="inp-lbl">Reserva de emergência atual <span style="color:var(--muted);font-weight:400">(em meses de despesa)</span></label>
-              <div class="iw">
-                <input class="inp np" id="i-reservaMeses" type="tel" inputmode="numeric" placeholder="ex.: 6" maxlength="3">
-              </div>
+            <div id="skipped-despesas" class="skipped-msg" style="display:none">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px"><path d="M3 8l3.5 3.5L13 5" stroke="#f0a868" stroke-width="2.2" stroke-linecap="round"/></svg>
+              <div>Seção pulada. Envie os dados ao consultor via WhatsApp (extratos, contracheque, planilha) para análise complementar. <a href="#" onclick="event.preventDefault();desfazerPular('despesas')">Reativar campos</a></div>
             </div>
           </div>
 
-          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
-            <label class="inp-lbl">Possui dívidas ou financiamentos em aberto?</label>
-            <div class="pgrid" style="grid-template-columns:1fr 1fr;margin-top:8px">
-              <div class="pc" data-val="sim" onclick="pickP(this,'temDivida');toggleDivida(true)"><div class="pn" style="font-size:13px">Sim</div></div>
-              <div class="pc" data-val="nao" onclick="pickP(this,'temDivida');toggleDivida(false)"><div class="pn" style="font-size:13px">Não</div></div>
+          <div id="sec-dividas" style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px;flex-wrap:wrap">
+              <label class="inp-lbl" style="margin-bottom:0">Possui dívidas ou financiamentos em aberto?</label>
+              <button type="button" class="skip-btn" onclick="pularSecao('dividas')" id="btn-pular-dividas" title="Pule esta seção e envie os dados depois">Pular · enviarei depois</button>
             </div>
-            <div id="bloco-divida" style="display:none;margin-top:14px">
-              <div class="input-grid">
-                <div>
-                  <label class="inp-lbl">Valor total das dívidas</label>
-                  <div class="iw">
-                    <div class="ipfx">R$</div>
-                    <input class="inp" id="i-dividaTotal" type="tel" inputmode="numeric" placeholder="0,00" oninput="fmtMoeda(this)">
+            <div id="conteudo-dividas">
+              <div class="pgrid" style="grid-template-columns:1fr 1fr">
+                <div class="pc" data-val="sim" onclick="pickP(this,'temDivida');toggleDivida(true)"><div class="pn" style="font-size:13px">Sim</div></div>
+                <div class="pc" data-val="nao" onclick="pickP(this,'temDivida');toggleDivida(false)"><div class="pn" style="font-size:13px">Não</div></div>
+              </div>
+              <div id="bloco-divida" style="display:none;margin-top:14px">
+                <div class="input-grid">
+                  <div>
+                    <label class="inp-lbl">Valor total das dívidas</label>
+                    <div class="iw">
+                      <div class="ipfx">R$</div>
+                      <input class="inp" id="i-dividaTotal" type="tel" inputmode="numeric" placeholder="0,00" oninput="fmtMoeda(this)">
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label class="inp-lbl">Prazo médio restante <span style="color:var(--muted);font-weight:400">(anos)</span></label>
-                  <div class="iw">
-                    <input class="inp np" id="i-dividaPrazo" type="tel" inputmode="numeric" placeholder="ex.: 8" maxlength="3">
+                  <div>
+                    <label class="inp-lbl">Prazo médio restante <span style="color:var(--muted);font-weight:400">(anos)</span></label>
+                    <div class="iw">
+                      <input class="inp np" id="i-dividaPrazo" type="tel" inputmode="numeric" placeholder="ex.: 8" maxlength="3">
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+            <div id="skipped-dividas" class="skipped-msg" style="display:none">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:2px"><path d="M3 8l3.5 3.5L13 5" stroke="#f0a868" stroke-width="2.2" stroke-linecap="round"/></svg>
+              <div>Seção pulada. Envie a relação de dívidas/financiamentos ao consultor depois. <a href="#" onclick="event.preventDefault();desfazerPular('dividas')">Reativar campos</a></div>
             </div>
           </div>
 
@@ -1915,6 +1996,14 @@ a{text-decoration:none;color:inherit}
     </div>
     <div class="action-list" id="action-list"></div>
 
+    <!-- SIMULADOR ANTES/DEPOIS -->
+    <div class="r-sec-h" style="margin-top:48px">
+      <div class="r-sec-t">Simulador de impacto · antes vs depois</div>
+      <div class="r-sec-l"></div>
+      <div class="r-sec-c">aplique para visualizar</div>
+    </div>
+    <div id="sim-host"></div>
+
     <!-- RISCOS DO PLANO (gerado pela IA) -->
     <div id="riscos-host"></div>
 
@@ -1986,6 +2075,7 @@ const D = {
   regime:null, inss:null, ir:null, renda:0,
   rendaExtra:0, despesaMensal:0, reservaMeses:0,
   temDivida:null, dividaTotal:0, dividaPrazo:0,
+  pulouDespesas:false, pulouDividas:false,
   // Passo 3 — Patrimônio
   patrim:0, aporte:0, tempr:null,
   pgblSaldo:0, pgblAporte:0, vgblSaldo:0,
@@ -2103,6 +2193,39 @@ function pickT(el, key){
 }
 
 /* ═════════════════════════════════════════════════════
+   PULAR SEÇÃO (cliente envia extratos depois)
+   ═════════════════════════════════════════════════════ */
+function pularSecao(secao){
+  if(secao === 'despesas'){
+    D.pulouDespesas = true;
+    D.rendaExtra = 0; D.despesaMensal = 0; D.reservaMeses = 0;
+    document.getElementById('conteudo-despesas').style.display = 'none';
+    document.getElementById('skipped-despesas').style.display = 'flex';
+    document.getElementById('btn-pular-despesas').style.display = 'none';
+  } else if(secao === 'dividas'){
+    D.pulouDividas = true;
+    D.temDivida = 'pulou'; D.dividaTotal = 0; D.dividaPrazo = 0;
+    document.getElementById('conteudo-dividas').style.display = 'none';
+    document.getElementById('skipped-dividas').style.display = 'flex';
+    document.getElementById('btn-pular-dividas').style.display = 'none';
+  }
+}
+function desfazerPular(secao){
+  if(secao === 'despesas'){
+    D.pulouDespesas = false;
+    document.getElementById('conteudo-despesas').style.display = 'block';
+    document.getElementById('skipped-despesas').style.display = 'none';
+    document.getElementById('btn-pular-despesas').style.display = 'inline-block';
+  } else if(secao === 'dividas'){
+    D.pulouDividas = false;
+    D.temDivida = null;
+    document.getElementById('conteudo-dividas').style.display = 'block';
+    document.getElementById('skipped-dividas').style.display = 'none';
+    document.getElementById('btn-pular-dividas').style.display = 'inline-block';
+  }
+}
+
+/* ═════════════════════════════════════════════════════
    PILLS (Passo 1: estado civil + condicional cônjuge)
    ═════════════════════════════════════════════════════ */
 function selPill(key, val, el){
@@ -2214,20 +2337,25 @@ function validate(n){
   if(n===2){
     D.renda = pMoney('i-renda');
     if(!D.regime || !D.inss || !D.ir || D.renda<=0){ showErr(2); return false; }
-    // Novos campos (opcionais mas capturados)
-    D.rendaExtra     = pMoney('i-rendaExtra');
-    D.despesaMensal  = pMoney('i-despesaMensal');
-    D.reservaMeses   = pNum('i-reservaMeses');
-    if(!D.temDivida){
-      showErr(2, 'Responda se possui dívidas para continuar.');
-      return false;
+    // Despesas/reserva: só captura se NÃO pulou
+    if(!D.pulouDespesas){
+      D.rendaExtra     = pMoney('i-rendaExtra');
+      D.despesaMensal  = pMoney('i-despesaMensal');
+      D.reservaMeses   = pNum('i-reservaMeses');
     }
-    if(D.temDivida === 'sim'){
-      D.dividaTotal = pMoney('i-dividaTotal');
-      D.dividaPrazo = pNum('i-dividaPrazo');
-      if(D.dividaTotal <= 0){
-        showErr(2, 'Informe o valor total das dívidas.');
+    // Dívidas: validação só se NÃO pulou
+    if(!D.pulouDividas){
+      if(!D.temDivida){
+        showErr(2, 'Responda se possui dívidas ou pule esta seção para enviar dados depois.');
         return false;
+      }
+      if(D.temDivida === 'sim'){
+        D.dividaTotal = pMoney('i-dividaTotal');
+        D.dividaPrazo = pNum('i-dividaPrazo');
+        if(D.dividaTotal <= 0){
+          showErr(2, 'Informe o valor total das dívidas ou pule esta seção.');
+          return false;
+        }
       }
     }
     return true;
@@ -2953,6 +3081,9 @@ function renderRelatorio(calcArg, analiseIA){
 
   // PLANO DE AÇÃO (IA ou canned)
   renderActions(aps, pgbl, hld, vgbl, renda, analiseIA);
+
+  // SIMULADOR ANTES/DEPOIS (sempre disponível)
+  renderSimulador(score, aps, pgbl, hld, vgbl, renda);
 
   // RISCOS DO PLANO (só se IA disponível)
   renderRiscosPlano(analiseIA);
@@ -4552,6 +4683,277 @@ function renderActions(aps, pgbl, hld, vgbl, renda, ia){
 }
 
 /* ═════════════════════════════════════════════════════
+   SIMULADOR ANTES/DEPOIS
+   Mostra cada melhoria possível com:
+   - Impacto no score (+X pontos)
+   - Impacto financeiro anual (R$ Y)
+   - Botão "Aplicar" que atualiza visual em tempo real
+   Total consolidado em destaque ENORME.
+   ═════════════════════════════════════════════════════ */
+let SIM_STATE = {
+  base: {score: 0, melhorias: []},
+  aplicadas: new Set()
+};
+
+function fmtMoneyShort(v){
+  const a = Math.abs(v);
+  if(a >= 1e6) return 'R$ ' + (v/1e6).toFixed(2).replace('.',',') + ' mi';
+  if(a >= 1e3) return 'R$ ' + (v/1e3).toFixed(0).replace('.',',') + ' mil';
+  return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+}
+
+function renderSimulador(score, aps, pgbl, hld, vgbl, renda){
+  const host = document.getElementById('sim-host');
+  if(!host) return;
+  const baseScore = score.total;
+  const horizonte = Math.max(5, (D.aposAge || 65) - (D.idade || 40));
+
+  // Monta lista de melhorias relevantes com impacto em score + financeiro
+  const melhorias = [];
+
+  // 1. PGBL - se aplica e tem espaço de otimização
+  if(pgbl.aplica && pgbl.economiaAdicional > 100){
+    const econAnual = pgbl.economiaAdicional;
+    const econTotal = econAnual * horizonte;
+    const impScore = Math.min(12, Math.max(3, Math.round(econAnual / 800)));
+    melhorias.push({
+      id: 'pgbl',
+      tag: 'TRIBUTAÇÃO',
+      titulo: 'Ajustar aporte em PGBL ao teto de 12%',
+      desc: `Aproveitar dedução máxima da renda bruta tributável. Aporte anual sugerido: ${fmtMoneyShort(pgbl.tetoAporte)}.`,
+      impactoScore: impScore,
+      ganhoAnual: econAnual,
+      ganhoTotal: econTotal
+    });
+  }
+
+  // 2. VGBL - se aplica e ainda não usa (proteção sucessória)
+  if(vgbl.aplica && !vgbl.jaTem && (vgbl.economiaSucessao > 5000 || vgbl.alpha15Anos > 5000)){
+    const ganhoSuc = vgbl.economiaSucessao || 0;
+    const alphaTotal = vgbl.alpha15Anos || 0;
+    const ganhoAnual = Math.round(alphaTotal / 15) + Math.round(ganhoSuc / 30); // anualizado conservador
+    const ganhoTotal = ganhoSuc + alphaTotal;
+    const impScore = D.qtddep > 0 ? 8 : 5;
+    melhorias.push({
+      id: 'vgbl',
+      tag: 'SUCESSÃO',
+      titulo: 'Estruturar VGBL para proteção sucessória',
+      desc: `Liquidez imediata aos herdeiros, fora do inventário. Alpha tributário acumulado em 15 anos: ${fmtMoneyShort(alphaTotal)}.`,
+      impactoScore: impScore,
+      ganhoAnual: ganhoAnual,
+      ganhoTotal: ganhoTotal
+    });
+  }
+
+  // 3. Holding - se aplica e ainda não tem
+  if(hld.aplica && !hld.jaTem && hld.economiaTotal > 30000){
+    const ganhoAnual = (hld.economiaAnual || 0);
+    const ganhoSucess = hld.economiaSucessao || 0;
+    const ganhoTotal = hld.economiaTotal || (ganhoAnual * horizonte + ganhoSucess);
+    const impScore = Math.min(10, Math.max(4, Math.round(ganhoTotal / 100000)));
+    melhorias.push({
+      id: 'holding',
+      tag: 'ESTRUTURA',
+      titulo: 'Constituir holding patrimonial',
+      desc: `Tributação reduzida em aluguel + economia em ITCMD sucessório. Horizonte: ${horizonte} anos.`,
+      impactoScore: impScore,
+      ganhoAnual: ganhoAnual + Math.round(ganhoSucess / horizonte),
+      ganhoTotal: ganhoTotal
+    });
+  }
+
+  // 4. Reforço da reserva de emergência (se baixa)
+  if(!D.pulouDespesas && D.despesaMensal > 0 && D.reservaMeses < 6){
+    const gapMeses = 6 - D.reservaMeses;
+    const valorGap = gapMeses * D.despesaMensal;
+    melhorias.push({
+      id: 'reserva',
+      tag: 'LIQUIDEZ',
+      titulo: 'Atingir reserva de emergência de 6 meses',
+      desc: `Aporte único de ${fmtMoneyShort(valorGap)} em Tesouro Selic ou CDB liquidez diária. Proteção contra imprevistos.`,
+      impactoScore: 4,
+      ganhoAnual: 0, // proteção, não ganho
+      ganhoTotal: valorGap // valor protegido
+    });
+  }
+
+  // 5. Aumentar aporte na aposentadoria (se cobertura < 80%)
+  if(aps.cobertura < 80 && D.aposAge > D.idade){
+    const aporteAtualAnual = (D.aporte || 0) * 12;
+    const aporteIdealAnual = aporteAtualAnual * 1.5; // sugestão: 50% a mais
+    const aporteAdicional = aporteIdealAnual - aporteAtualAnual;
+    const projAdicional = aporteAdicional * Math.pow(1.053, horizonte) * (horizonte / 2);
+    const impScore = aps.cobertura < 50 ? 10 : 6;
+    melhorias.push({
+      id: 'aposentadoria',
+      tag: 'APOSENTADORIA',
+      titulo: 'Aumentar aporte mensal em 50%',
+      desc: `Cobertura atual ${aps.cobertura.toFixed(0)}% → projetada ~${Math.min(100, aps.cobertura + 25).toFixed(0)}%. Aporte adicional sugerido: ${fmtMoneyShort(aporteAdicional/12)}/mês.`,
+      impactoScore: impScore,
+      ganhoAnual: Math.round(projAdicional / horizonte),
+      ganhoTotal: Math.round(projAdicional)
+    });
+  }
+
+  // 6. Rebalanceamento de carteira (se composição muito concentrada)
+  const totalComp = (D.compRF||0) + (D.compAcoes||0) + (D.compFII||0) + (D.compInter||0) + (D.compOutros||0);
+  if(totalComp >= 95){
+    const intExposure = D.compInter || 0;
+    const acoesExposure = D.compAcoes || 0;
+    // Se internacional < 15% E perfil não é conservador, sugerir aumentar
+    if(intExposure < 15 && D.perfil !== 'conservador'){
+      const novaAlocacaoInter = 20;
+      const gapInter = novaAlocacaoInter - intExposure;
+      const valorRealoc = (D.patrim || 0) * (gapInter / 100);
+      // estimativa de alpha: ~1.5% ao ano de retorno adicional em USD vs BRL (longo prazo)
+      const alphaAnual = valorRealoc * 0.015;
+      melhorias.push({
+        id: 'rebalanceamento',
+        tag: 'CARTEIRA',
+        titulo: 'Aumentar exposição internacional para 20%',
+        desc: `Realocar ${fmtMoneyShort(valorRealoc)} para BDRs e ETFs globais. Diversificação cambial e geográfica.`,
+        impactoScore: 4,
+        ganhoAnual: Math.round(alphaAnual),
+        ganhoTotal: Math.round(alphaAnual * horizonte)
+      });
+    }
+  }
+
+  // Se não houver melhorias, mostra mensagem positiva
+  if(melhorias.length === 0){
+    host.innerHTML = `
+      <div style="background:linear-gradient(135deg,rgba(46,204,138,.08),rgba(46,204,138,.02));border:1px solid rgba(46,204,138,.25);border-radius:14px;padding:32px;text-align:center">
+        <div style="font-size:36px;margin-bottom:10px">✓</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:8px">Carteira otimizada</div>
+        <div style="font-size:13.5px;color:var(--muted);line-height:1.6;max-width:480px;margin:0 auto">Não identificamos oportunidades quantificáveis de melhoria com os dados informados. Seu planejamento já está bem estruturado no horizonte adotado.</div>
+      </div>`;
+    return;
+  }
+
+  // Inicializa estado
+  SIM_STATE = {
+    base: {score: baseScore, melhorias},
+    aplicadas: new Set()
+  };
+
+  // Render
+  _atualizarSimulador();
+}
+
+function _atualizarSimulador(){
+  const host = document.getElementById('sim-host');
+  if(!host) return;
+  const {base, aplicadas} = SIM_STATE;
+  const ganhoScore = base.melhorias.filter(m => aplicadas.has(m.id)).reduce((sum, m) => sum + m.impactoScore, 0);
+  const scoreAtual = Math.min(100, base.score + ganhoScore);
+  const ganhoTotalAnual = base.melhorias.filter(m => aplicadas.has(m.id)).reduce((sum, m) => sum + (m.ganhoAnual || 0), 0);
+  const ganhoTotalGrandSum = base.melhorias.filter(m => aplicadas.has(m.id)).reduce((sum, m) => sum + (m.ganhoTotal || 0), 0);
+  const aplicadasN = aplicadas.size;
+  const totalN = base.melhorias.length;
+  const horizonte = Math.max(5, (D.aposAge || 65) - (D.idade || 40));
+
+  const cards = base.melhorias.map(m => {
+    const isApplied = aplicadas.has(m.id);
+    return `
+      <div class="sim-card ${isApplied ? 'applied' : ''}" data-sim-id="${m.id}">
+        <div class="sim-card-body">
+          <div class="sim-card-tag">${m.tag}</div>
+          <div class="sim-card-title">${m.titulo}</div>
+          <div class="sim-card-desc">${m.desc}</div>
+        </div>
+        <div class="sim-card-metric">
+          <div class="sim-card-metric-lbl">Score</div>
+          <div class="sim-card-metric-val score">+${m.impactoScore}</div>
+        </div>
+        <div class="sim-card-metric">
+          <div class="sim-card-metric-lbl">Ganho ${m.ganhoAnual > 0 ? 'anual' : 'protegido'}</div>
+          <div class="sim-card-metric-val money">${fmtMoneyShort(m.ganhoAnual || m.ganhoTotal)}</div>
+        </div>
+        <button class="sim-card-btn ${isApplied ? 'applied' : ''}" onclick="aplicarSim('${m.id}')">
+          ${isApplied ? '✓ Aplicado' : 'Aplicar'}
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  host.innerHTML = `
+    <div class="sim-wrap">
+
+      <!-- ANTES vs DEPOIS (score + ganho mensal) -->
+      <div class="sim-stats">
+        <div class="sim-stat score-card">
+          <div class="sim-stat-lbl">Score Patrimonial · após melhorias</div>
+          <div class="sim-stat-val" id="sim-score-val">${scoreAtual}<span style="font-size:24px;color:var(--muted);font-weight:300">/100</span>${ganhoScore > 0 ? `<span class="sim-stat-diff">+${ganhoScore} pts</span>` : ''}</div>
+          <div class="sim-stat-sub">Score atual: <strong>${base.score}/100</strong> · meta institucional: 85+</div>
+        </div>
+        <div class="sim-stat money-card">
+          <div class="sim-stat-lbl">Ganho anual estimado · após melhorias</div>
+          <div class="sim-stat-val" id="sim-money-val">${fmtMoneyShort(ganhoTotalAnual)}</div>
+          <div class="sim-stat-sub">${aplicadasN}/${totalN} melhorias aplicadas · projeção conservadora</div>
+        </div>
+      </div>
+
+      <!-- LISTA DE MELHORIAS -->
+      <div class="sim-cards">${cards}</div>
+
+      <!-- CONTROLES -->
+      <div class="sim-controls">
+        <div class="sim-controls-info">${aplicadasN === 0 ? 'Clique em <strong>"Aplicar"</strong> em cada melhoria para ver o impacto.' : `<strong>${aplicadasN} de ${totalN}</strong> melhorias aplicadas.`}</div>
+        <div class="sim-controls-btns">
+          ${aplicadasN < totalN ? '<button class="sim-mini-btn primary" onclick="aplicarTodas()">Aplicar todas</button>' : ''}
+          ${aplicadasN > 0 ? '<button class="sim-mini-btn" onclick="resetarSim()">Resetar</button>' : ''}
+        </div>
+      </div>
+
+      <!-- DESTAQUE GRAND TOTAL -->
+      <div class="sim-grand-total" id="sim-grand">
+        <div class="sim-grand-eyebrow">${aplicadasN === totalN ? 'POTENCIAL TOTAL CONSOLIDADO' : 'POTENCIAL ATUAL · AO APLICAR AS MELHORIAS SELECIONADAS'}</div>
+        <div class="sim-grand-val" id="sim-grand-val">${fmtMoneyShort(ganhoTotalGrandSum)}</div>
+        <div class="sim-grand-sub">${
+          aplicadasN === 0
+            ? `Ao aplicar <strong>todas as ${totalN} melhorias</strong> identificadas, o cliente pode capturar até <strong>${fmtMoneyShort(base.melhorias.reduce((s,m) => s + (m.ganhoTotal || 0), 0))}</strong> em economia tributária, proteção sucessória e ganho de eficiência no horizonte de ${horizonte} anos.`
+            : aplicadasN === totalN
+              ? `Valor total potencial entre ganhos tributários, proteção sucessória e eficiência patrimonial em <strong>${horizonte} anos</strong>. Esse é o impacto consolidado da estratégia completa.`
+              : `Continue aplicando melhorias para ver o potencial total cresce. Restam ${totalN - aplicadasN} oportunidades para capturar.`
+        }</div>
+      </div>
+
+    </div>
+  `;
+}
+
+function aplicarSim(id){
+  if(SIM_STATE.aplicadas.has(id)) return;
+  SIM_STATE.aplicadas.add(id);
+  _atualizarSimulador();
+  // Animação de "bump" nos valores principais
+  setTimeout(() => {
+    document.getElementById('sim-score-val')?.classList.add('bump');
+    document.getElementById('sim-money-val')?.classList.add('bump');
+    document.getElementById('sim-grand-val')?.classList.add('bump');
+    setTimeout(() => {
+      document.getElementById('sim-score-val')?.classList.remove('bump');
+      document.getElementById('sim-money-val')?.classList.remove('bump');
+      document.getElementById('sim-grand-val')?.classList.remove('bump');
+    }, 600);
+  }, 30);
+}
+
+function aplicarTodas(){
+  SIM_STATE.base.melhorias.forEach(m => SIM_STATE.aplicadas.add(m.id));
+  _atualizarSimulador();
+  setTimeout(() => {
+    document.getElementById('sim-grand-val')?.classList.add('bump');
+    setTimeout(() => document.getElementById('sim-grand-val')?.classList.remove('bump'), 600);
+  }, 30);
+}
+
+function resetarSim(){
+  SIM_STATE.aplicadas.clear();
+  _atualizarSimulador();
+}
+
+/* ═════════════════════════════════════════════════════
    CAMADA IA INSTITUCIONAL · específica para o PDF
    Segunda chamada, mais densa, persona "head wealth"
    ═════════════════════════════════════════════════════ */
@@ -4970,16 +5372,27 @@ async function gerarPDF(){
   ]);
 
   // Sub-grupo 3: Fluxo de caixa e passivos
-  h += dossieGrupo('FLUXO DE CAIXA E PASSIVOS', [
-    tr('Despesa mensal média', D.despesaMensal > 0 ? fr(D.despesaMensal) : 'Não informada', false),
-    tr('Sobra mensal estimada', D.despesaMensal > 0 ? fr((D.renda||0) - (D.despesaMensal||0)) : 'Não calculada', true),
-    tr('Reserva de emergência', D.reservaMeses > 0 ? D.reservaMeses + ' meses de despesa' : 'Não declarada', false),
-    tr('Possui dívidas em aberto', D.temDivida === 'sim' ? 'Sim' : 'Não', true),
-    ...(D.temDivida === 'sim' ? [
-      tr('Valor total das dívidas', fr(D.dividaTotal||0), false),
-      tr('Prazo médio restante', (D.dividaPrazo||0) + ' anos', true),
-    ] : []),
-  ]);
+  const linhasFluxo = [];
+  if(D.pulouDespesas){
+    linhasFluxo.push(tr('Renda extra anual', 'Cliente enviará extratos separadamente', false));
+    linhasFluxo.push(tr('Despesa mensal', 'Pendente — aguardando documentação', true));
+    linhasFluxo.push(tr('Reserva de emergência', 'A confirmar com cliente', false));
+  } else {
+    linhasFluxo.push(tr('Renda extra anual (bônus, PLR, dividendos)', D.rendaExtra > 0 ? fr(D.rendaExtra) : 'Não declarada', false));
+    linhasFluxo.push(tr('Despesa mensal média', D.despesaMensal > 0 ? fr(D.despesaMensal) : 'Não informada', true));
+    linhasFluxo.push(tr('Sobra mensal estimada', D.despesaMensal > 0 ? fr((D.renda||0) - (D.despesaMensal||0)) : 'Não calculada', false));
+    linhasFluxo.push(tr('Reserva de emergência', D.reservaMeses > 0 ? D.reservaMeses + ' meses de despesa' : 'Não declarada', true));
+  }
+  if(D.pulouDividas){
+    linhasFluxo.push(tr('Dívidas em aberto', 'Cliente enviará relação separadamente', D.pulouDespesas ? false : true));
+  } else {
+    linhasFluxo.push(tr('Possui dívidas em aberto', D.temDivida === 'sim' ? 'Sim' : 'Não', D.pulouDespesas ? false : true));
+    if(D.temDivida === 'sim'){
+      linhasFluxo.push(tr('Valor total das dívidas', fr(D.dividaTotal||0), false));
+      linhasFluxo.push(tr('Prazo médio restante', (D.dividaPrazo||0) + ' anos', true));
+    }
+  }
+  h += dossieGrupo('FLUXO DE CAIXA E PASSIVOS', linhasFluxo);
 
   // Sub-grupo 4: Patrimônio e aportes
   const linhasPatr = [
