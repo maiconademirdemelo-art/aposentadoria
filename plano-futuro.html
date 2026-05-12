@@ -9373,7 +9373,10 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
         <div class="acoes-section"><div class="acoes-section-head" onclick="acoesToggleSection(this)"><div class="acoes-section-left"><span class="acoes-section-num">05</span><span class="acoes-section-title">Perfil de Risco</span></div><div class="acoes-section-right"><span class="acoes-section-status" id="fii-st-risco">aguardando</span><svg class="acoes-section-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div></div><div class="acoes-section-body"><div class="acoes-section-content" id="fii-body-risco"></div></div></div>
         <div class="acoes-section"><div class="acoes-section-head" onclick="acoesToggleSection(this)"><div class="acoes-section-left"><span class="acoes-section-num">06</span><span class="acoes-section-title">Veredicto Final</span></div><div class="acoes-section-right"><span class="acoes-section-status" id="fii-st-veredicto">aguardando</span><svg class="acoes-section-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div></div><div class="acoes-section-body"><div class="acoes-section-content" id="fii-body-veredicto"></div></div></div>
       </div>
-      <div style="text-align:center;margin-top:28px"><button class="acoes-mode-btn" style="display:inline-flex;max-width:300px;background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.2)" onclick="fiiResetState()"><span class="acoes-mode-icon">🔄</span><span class="acoes-mode-info"><strong style="color:#2ecc8a">Nova análise</strong></span></button></div>
+      <div style="text-align:center;margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="acoes-mode-btn" style="display:inline-flex;max-width:260px;background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.2)" onclick="fiiResetState()"><span class="acoes-mode-icon">🔄</span><span class="acoes-mode-info"><strong style="color:#2ecc8a">Nova análise</strong></span></button>
+        <button id="fii-pdf-btn" class="acoes-mode-btn" style="display:none;max-width:260px;background:rgba(76,139,245,.08);border:1px solid rgba(76,139,245,.2)" onclick="fiiGerarPDF()"><span class="acoes-mode-icon">📄</span><span class="acoes-mode-info"><strong style="color:#4c8bf5">Gerar Relatório PDF</strong></span></button>
+      </div>
     </div>
 
     <!-- Botão próxima etapa (fila de execução) -->
@@ -11244,7 +11247,207 @@ async function fiiStart(){
     if(rv.script)vH+='<div style="margin-top:16px;padding:14px;background:rgba(46,204,138,.04);border:1px solid rgba(46,204,138,.12);border-radius:8px"><div style="font-size:11px;color:#2ecc8a;font-weight:700;margin-bottom:6px">Script para o assessor</div><div style="font-size:13px;color:#e6edf3;line-height:1.6">'+rv.script+'</div></div>';
     fii$("fii-body-veredicto").innerHTML=vH;fiiSt("veredicto","done");
     fiiProg(null);
+    // Salvar dados pra PDF
+    window._fiiData={sn:sn,mc:mc,fd:fd,pv:pv,rv:rv,tk:tk};
+    var pdfBtn=document.getElementById("fii-pdf-btn");if(pdfBtn)pdfBtn.style.display="inline-flex";
   }catch(err){console.error("FII:",err);fiiProg("Erro: "+err.message);["macro","fundo","fund","pvp","risco","veredicto"].forEach(function(k){var e=fii$("fii-st-"+k);if(e&&e.textContent==="carregando")fiiSt(k,"error")})}
-}</script>
+}
+async function fiiGerarPDF(){
+  var d=window._fiiData;if(!d){alert("Execute a análise primeiro");return}
+  var btn=document.getElementById("fii-pdf-btn");
+  btn.querySelector("strong").textContent="Gerando PDF...";
+
+  // Cores do relatório
+  var C={navy:"#0D1F2D",dark:"#1C3A4A",petrol:"#2E5D6E",body:"#3D3D3D",muted:"#6B6B6B",light:"#A8A8A8",green:"#1A7A4A",red:"#8B1A1A",amber:"#7A5C00",bg:"#FFFFFF",alt:"#F4F5F6",sub:"#EAF0F3"};
+  var vc=d.rv.veredicto==="ALOCAR"?C.green:d.rv.veredicto==="EVITAR"?C.red:C.amber;
+
+  function kpiBox(label,value,sub,color){
+    return '<div style="flex:1;padding:16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:9px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:22px;font-weight:300;color:'+(color||C.navy)+'">'+value+'</div><div style="font-size:9px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>';
+  }
+  function secHeader(num,title){
+    return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:9px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:16px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>';
+  }
+  function tRow(label,value,highlight){
+    var bg=highlight?C.alt:C.bg;
+    return '<tr><td style="padding:6px 10px;font-size:10px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+label+'</td><td style="padding:6px 10px;font-size:10px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+value+'</td></tr>';
+  }
+  function prose(text){
+    return '<p style="font-size:10.5px;color:'+C.body+';line-height:1.5;margin:8px 0">'+text+'</p>';
+  }
+  function callout(text,color){
+    return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:8px 12px;margin:8px 0;font-size:10px;color:'+C.body+';line-height:1.5">'+text+'</div>';
+  }
+
+  var sn=d.sn,mc=d.mc,fd=d.fd,pv=d.pv,rv=d.rv;
+  var hoje=new Date().toLocaleDateString("pt-BR");
+
+  // Montar HTML do relatório
+  var h='<div id="fii-pdf-container" style="width:794px;font-family:Helvetica,Arial,sans-serif;color:'+C.body+';background:white">';
+
+  // ═══ CAPA ═══
+  h+='<div style="background:'+C.navy+';padding:40px 36px 30px;color:white">';
+  h+='<div style="font-size:28px;font-weight:300;letter-spacing:-.02em">Relatório de Análise de FII</div>';
+  h+='<div style="display:inline-block;background:'+C.dark+';padding:3px 10px;border-radius:3px;font-size:10px;color:'+C.petrol+';margin-top:10px">Análise Fundamentalista</div>';
+  h+='<div style="width:40px;height:1px;background:'+C.petrol+';margin:14px 0"></div>';
+  h+='<div style="font-size:14px;color:'+C.light+'">'+(sn.nome||d.tk)+' ('+d.tk+') — '+(sn.segmento||"")+'</div>';
+  h+='<div style="font-size:11px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Data-base: '+(sn.dataBase||hoje)+'</div>';
+  h+='</div>';
+
+  // KPIs
+  h+='<div style="background:'+C.alt+';display:flex;border-bottom:1px solid #ddd">';
+  h+=kpiBox("Dividend Yield",sn.dy12m?sn.dy12m.toFixed(1)+"%":"—","últ. 12 meses");
+  h+=kpiBox("P/VP Atual",sn.pvp?sn.pvp.toFixed(2):"—",sn.pvp<1?"Desconto":"Prêmio");
+  h+=kpiBox("P/VP Justo",pv.pvpJusto?pv.pvpJusto.toFixed(2):"—",pv.desvio||"—","#4c8bf5");
+  h+=kpiBox("Veredicto",rv.veredicto||"—",rv.perfil||"",vc);
+  h+='</div>';
+
+  // Disclaimer
+  h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:8px;color:'+C.light+'">';
+  h+='<span>'+(sn.nome||d.tk)+' ('+d.tk+')</span>';
+  h+='<span>Este relatório tem finalidade informativa e não constitui oferta ou recomendação.</span>';
+  h+='</div>';
+
+  // ═══ SEÇÕES ═══
+  h+='<div style="padding:0 36px 30px">';
+
+  // S01 MACRO
+  h+=secHeader("01","Macro View — Cenário e Mercado de FIIs");
+  h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">INDICADOR</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>';
+  h+=tRow("Selic Meta",mc.selic||"—",false);
+  h+=tRow("IPCA 12 meses",mc.ipca12m||"—",true);
+  h+=tRow("IGP-M 12 meses",mc.igpm12m||"—",false);
+  h+=tRow("NTN-B 10 anos",mc.ntnb10y||"—",true);
+  h+=tRow("Prêmio de Risco IFIX",mc.premioIFIX||"—",false);
+  h+=tRow("Ciclo de Juros",mc.cicloJuros||"—",true);
+  h+=tRow("Ciclo Imobiliário",mc.cicloImob||"—",false);
+  h+=tRow("Inflação (impacto)",mc.inflacao||"—",true);
+  h+='</table>';
+  if(mc.visao)h+=callout(mc.visao);
+
+  // S02 FUNDO
+  h+=secHeader("02","Caracterização do Fundo");
+  h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">ITEM</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">DADO</td></tr>';
+  h+=tRow("Nome",sn.nome||"—",false);
+  h+=tRow("Ticker",d.tk,true);
+  h+=tRow("Segmento",sn.segmento||"—",false);
+  h+=tRow("Gestora",sn.gestora||"—",true);
+  h+=tRow("Administrador",sn.admin||"—",false);
+  h+=tRow("Cotação","R$ "+(sn.cotacao?Number(sn.cotacao).toFixed(2):"—"),true);
+  h+=tRow("Patrimônio Líquido",sn.pl||"—",false);
+  h+=tRow("Cotistas",sn.cotistas?Number(sn.cotistas).toLocaleString("pt-BR"):"—",true);
+  h+=tRow("Liquidez Diária",sn.liquidez||"—",false);
+  h+=tRow("Taxa de Administração",sn.taxaAdm||"—",true);
+  h+='</table>';
+
+  // S03 FUNDAMENTALISTA
+  h+=secHeader("03","Análise Fundamentalista");
+  h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">INDICADOR</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>';
+  h+=tRow("Dividend Yield 12m",fd.dy12m?fd.dy12m.toFixed(1)+"%":"—",false);
+  h+=tRow("DY Média 3 anos",fd.dyMedia3a?fd.dyMedia3a.toFixed(1)+"%":"—",true);
+  h+=tRow("FFO Yield",fd.ffoYield?fd.ffoYield.toFixed(1)+"%":"—",false);
+  h+=tRow("Consistência",fd.consistencia||"—",true);
+  h+=tRow("Reserva de Resultado",fd.reserva||"—",false);
+  h+=tRow("Taxa Total",fd.taxaTotal||"—",true);
+  if(fd.vacancia!=null)h+=tRow("Vacância",fd.vacancia+"%",false);
+  if(fd.inadimplencia!=null)h+=tRow("Inadimplência",fd.inadimplencia+"%",true);
+  h+=tRow("Nº de Ativos",fd.nAtivos||"—",fd.vacancia==null);
+  h+=tRow("Concentração",fd.concentracao||"—",true);
+  h+=tRow("Qualidade",fd.qualidade||"—",false);
+  h+='</table>';
+  if(fd.analise)h+=callout(fd.analise);
+
+  // S04 P/VP
+  h+=secHeader("04","P/VP — Desconto, Prêmio e Valor Justo");
+  h+='<div style="background:'+C.sub+';border:1px solid '+C.dark+';padding:14px;margin:10px 0;border-radius:4px">';
+  h+='<div style="display:flex;gap:20px;justify-content:center;text-align:center">';
+  h+='<div><div style="font-size:9px;color:'+C.muted+'">P/VP ATUAL</div><div style="font-size:20px;font-weight:300;color:'+C.navy+'">'+(pv.pvpAtual?pv.pvpAtual.toFixed(2):"—")+'</div></div>';
+  h+='<div><div style="font-size:9px;color:'+C.muted+'">P/VP JUSTO</div><div style="font-size:20px;font-weight:300;color:#4c8bf5">'+(pv.pvpJusto?pv.pvpJusto.toFixed(2):"—")+'</div></div>';
+  var dvColor=pv.desvioDir==="desconto"?C.green:pv.desvioDir==="premio"?C.red:C.amber;
+  h+='<div><div style="font-size:9px;color:'+C.muted+'">DESVIO</div><div style="font-size:20px;font-weight:300;color:'+dvColor+'">'+(pv.desvio||"—")+'</div></div>';
+  h+='</div>';
+  if(pv.metodologia)h+='<div style="margin-top:10px;font-size:9px;color:'+C.muted+';text-align:center"><strong>Metodologia:</strong> '+pv.metodologia+'</div>';
+  h+='</div>';
+  if(pv.pares&&pv.pares.length){
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+    h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">TICKER</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">P/VP</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">DY</td></tr>';
+    pv.pares.forEach(function(p,i){if(p.ticker)h+='<tr><td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.ticker+(p.nome?" — "+p.nome:"")+'</td><td style="padding:6px 10px;font-size:10px;text-align:right;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.pvp.toFixed(2)+'</td><td style="padding:6px 10px;font-size:10px;text-align:right;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.dy.toFixed(1)+'%</td></tr>'});
+    h+='</table>';
+  }
+  if(pv.analise)h+=callout(pv.analise);
+
+  // S05 RISCOS
+  h+=secHeader("05","Perfil de Risco");
+  if(rv.riscos&&rv.riscos.length){
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+    h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">RISCO</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:center">PROB.</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:center">IMPACTO</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">STATUS</td></tr>';
+    rv.riscos.forEach(function(r,i){
+      var sc=r.status==="Normal"?C.green:r.status==="Alerta"?C.red:C.amber;
+      h+='<tr style="background:'+(i%2?C.alt:C.bg)+'"><td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #eee">'+r.cat+'</td><td style="padding:6px 10px;font-size:10px;text-align:center;border-bottom:1px solid #eee">'+r.prob+'</td><td style="padding:6px 10px;font-size:10px;text-align:center;border-bottom:1px solid #eee">'+r.imp+'</td><td style="padding:6px 10px;font-size:10px;text-align:right;border-bottom:1px solid #eee;color:'+sc+';font-weight:600">'+r.status+'</td></tr>';
+    });
+    h+='</table>';
+  }
+  h+='<div style="display:flex;gap:1px;background:#ddd;border-radius:4px;overflow:hidden;margin:12px 0">';
+  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:8px;color:'+C.muted+'">PERFIL</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.perfil||"—")+'</div></div>';
+  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:8px;color:'+C.muted+'">HORIZONTE</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.horizonte||"—")+'</div></div>';
+  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:8px;color:'+C.muted+'">PESO MÁX.</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.pesoMax||"—")+'</div></div>';
+  h+='</div>';
+
+  // S06 VEREDICTO
+  h+=secHeader("06","Veredicto Final");
+  h+='<div style="background:'+C.navy+';padding:20px;border-radius:6px;text-align:center;margin:12px 0">';
+  h+='<div style="font-size:24px;font-weight:600;color:'+vc+'">'+(rv.veredicto||"—")+'</div>';
+  if(rv.tese)h+='<div style="font-size:10.5px;color:white;margin-top:10px;line-height:1.5;text-align:left">'+rv.tese+'</div>';
+  h+='</div>';
+  if(rv.condicoes&&rv.condicoes.length){
+    h+='<div style="margin:8px 0"><div style="font-size:9px;font-weight:700;color:'+C.amber+';margin-bottom:4px">CONDIÇÕES PARA REVISÃO:</div>';
+    rv.condicoes.forEach(function(c){h+='<div style="font-size:10px;color:'+C.body+';padding:2px 0">• '+c+'</div>'});
+    h+='</div>';
+  }
+  if(rv.script){
+    h+='<div style="background:'+C.sub+';border:1px solid '+C.dark+';padding:12px;border-radius:4px;margin:12px 0">';
+    h+='<div style="font-size:9px;font-weight:700;color:'+C.green+';margin-bottom:6px">SCRIPT PARA O ASSESSOR</div>';
+    h+='<div style="font-size:10.5px;color:'+C.body+';line-height:1.5">'+rv.script+'</div>';
+    h+='</div>';
+  }
+
+  // Nota final
+  h+='<div style="margin-top:24px;padding-top:12px;border-top:1px solid #eee;font-size:8px;color:'+C.light+';line-height:1.5">';
+  h+='Este relatório é gerado com base em dados públicos disponíveis na data de geração. O P/VP Justo é uma referência analítica — não constitui garantia de valorização nem preço-alvo formal. O assessor é responsável por validar as informações com o cliente e adequar qualquer recomendação ao perfil de risco e ao objetivo financeiro de cada investidor.';
+  h+='</div>';
+
+  h+='</div>'; // padding
+  h+='</div>'; // container
+
+  // Inserir no DOM
+  var container=document.createElement("div");
+  container.innerHTML=h;
+  container.style.cssText="position:fixed;left:-9999px;top:0";
+  document.body.appendChild(container);
+  var el=container.firstChild;
+
+  try{
+    var canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:"#ffffff"});
+    var imgData=canvas.toDataURL("image/jpeg",0.95);
+    var pdf=new jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    var pW=210,pH_=297;
+    var imgW=pW;var imgH=canvas.height*pW/canvas.width;
+    var pages=Math.ceil(imgH/pH_);
+    for(var pg=0;pg<pages;pg++){
+      if(pg>0)pdf.addPage();
+      pdf.addImage(imgData,"JPEG",0,-(pg*pH_),imgW,imgH);
+    }
+    pdf.save("analise_fii_"+d.tk+"_"+new Date().toISOString().slice(0,10)+".pdf");
+  }catch(err){
+    console.error("PDF error:",err);
+    alert("Erro ao gerar PDF: "+err.message);
+  }
+  container.remove();
+  btn.querySelector("strong").textContent="Gerar Relatório PDF";
+}
+
+</script>
 </body>
 </html>
