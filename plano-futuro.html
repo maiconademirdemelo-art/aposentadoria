@@ -1431,6 +1431,9 @@ body.has-rxp{padding-top:48px}
 .acoes-info-label{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:4px}
 .acoes-info-value{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text);font-weight:600;letter-spacing:.02em}
 .acoes-callout-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+
+.fii-callout{font-size:13px;background:rgba(255,255,255,.03);padding:9px 14px;border-left:3px solid #2ecc8a;border-radius:0 6px 6px 0;color:var(--text);margin:8px 0}
+.fii-section-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#2ecc8a;font-weight:700;margin:20px 0 8px}
 .acoes-callout{font-size:13px;background:rgba(255,255,255,.03);padding:9px 14px;border-left:3px solid var(--acoes-cyan);border-radius:0 6px 6px 0;color:var(--text)}
 .acoes-callout strong{font-weight:600;color:var(--muted)}
 .acoes-prose{font-size:14px;line-height:1.7;color:var(--text);max-width:780px}
@@ -6026,8 +6029,10 @@ async function acoesCallClaude({system, user, useSearch=true, retries=5}){
         // Rate limit: espera o tempo indicado e mostra progresso
         const wait = err.waitSec * 1000;
         console.warn('[ações] rate limit, aguardando', err.waitSec, 's (tentativa', i+1, 'de', retries+1, ')');
-        acoesSetProgress('Limite de taxa atingido — aguardando ' + err.waitSec + 's...');
-        await new Promise(res=>setTimeout(res, wait));
+        for(var _c=err.waitSec;_c>0;_c--){
+          acoesSetProgress('Limite de taxa atingido \u2014 aguardando ' + _c + 's...');
+          await new Promise(function(res){setTimeout(res, 1000)});
+        }
       } else {
         // Outros erros: retry curto
         await new Promise(res=>setTimeout(res, 2000*(i+1)));
@@ -6331,7 +6336,7 @@ async function acoesIniciarAnalise(modo){
   console.log('[ações] iniciando análise', modoLabel, 'de', ticker);
 
   // Delays: 20s entre chamadas com search para respeitar 30K tokens/min
-  const DELAY = useSearch ? 20000 : 3000;
+  const DELAY = useSearch ? 5000 : 2000;
   async function delayWithCountdown(ms, nextStep) {
     if(ms <= 3000) { await new Promise(r => setTimeout(r, ms)); return; }
     const secs = Math.ceil(ms / 1000);
@@ -11145,19 +11150,33 @@ var fii$=function(id){return document.getElementById(id)};
 function fiiSt(k,s){var el=fii$("fii-st-"+k);if(!el)return;el.textContent={pending:"aguardando",loading:"carregando",done:"pronto",error:"erro"}[s]||s;el.className="acoes-section-status "+(s==="pending"?"":"acoes-"+s)}
 function fiiProg(msg){var p=fii$("fii-progress");if(!msg){p.classList.add("acoes-hidden");return}p.classList.remove("acoes-hidden");fii$("fii-progress-text").textContent=msg}
 function fiiResetState(){fii$("fii-input-state").style.display="";fii$("fii-results-state").style.display="none";fii$("fii-ticker").value="";["dy","pvp","pvpjusto","veredicto"].forEach(function(k){var e=fii$("fii-kpi-"+k);if(e){e.textContent="\u2014";e.classList.add("acoes-skeleton")}})}
-function fKV(l,v,c){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:#8b949e;font-size:13px">'+l+'</span><span style="color:'+(c||"#e6edf3")+';font-weight:600;font-size:13px">'+v+'</span></div>'}
+function fKV(l,v,c){return '<div class="acoes-info-item"><span class="acoes-info-label">'+l+'</span><span class="acoes-info-value" style="color:'+(c||"var(--text)")+'">'+v+'</span></div>'}
+function fRow(items){return '<div class="acoes-info-row" style="grid-template-columns:repeat('+Math.min(items.length,4)+',1fr)">'+items.join("")+'</div>'}
+function fCallout(text){return '<div class="fii-callout">'+text+'</div>'}
+function fTitle(t){return '<div class="fii-section-title">'+t+'</div>'}
 
 var FSYS="Analista sênior de FIIs brasileiros. Linguagem técnica para assessor. Sem markdown. APENAS JSON sem cercas. Use web_search para dados reais.";
 
 async function fiiStart(){
   var tk=(fii$("fii-ticker").value||"").trim().toUpperCase();
-  if(!/^[A-Z]{4}\d{2}$/.test(tk)){alert("Ticker inválido (ex: HGLG11)");return}
+  if(!/^[A-Z]{4}\d{2}$/.test(tk)){alert("Ticker inv\u00e1lido (ex: HGLG11)");return}
   fii$("fii-input-state").style.display="none";fii$("fii-results-state").style.display="";
   fii$("fii-hero-ticker").textContent=tk;
   ["macro","fundo","fund","pvp","risco","veredicto"].forEach(function(k){fiiSt(k,"pending")});
+
+  var FD=5000; // 12s entre steps (FII precisa menos tokens)
+  async function fiiDelay(ms,label){
+    if(ms<=3000){await new Promise(function(r){setTimeout(r,ms)});return}
+    var secs=Math.ceil(ms/1000);
+    for(var s=secs;s>0;s--){
+      fiiProg(label+" em "+s+"s...");
+      await new Promise(function(r){setTimeout(r,1000)});
+    }
+  }
+
   fiiProg("Buscando dados do fundo...");
   try{
-    // 1. SNAPSHOT
+    // 1/5 SNAPSHOT
     fiiSt("fundo","loading");
     var sn=await acoesCallJSON({system:FSYS,user:'FII '+tk+' na B3. Busque dados atuais. JSON:{"nome":"nome completo","ticker":"'+tk+'","segmento":"Lajes|Logistica|Shopping|Papel|FoF","gestora":"gestora","admin":"admin","pvp":0.00,"dy12m":0.0,"cotacao":0.00,"pl":"R$ X","cotistas":0,"liquidez":"R$ X/dia","taxaAdm":"%","dataBase":"AAAA-MM-DD"}',useSearch:true});
     fii$("fii-hero-name").textContent=sn.nome||tk;fii$("fii-hero-segmento").textContent=sn.segmento||"";fii$("fii-hero-gestora").textContent=sn.gestora||"";fii$("fii-hero-data-base").textContent=sn.dataBase||"";
@@ -11165,49 +11184,55 @@ async function fiiStart(){
     fii$("fii-kpi-dy-sub").textContent="\u00falt. 12m";
     fii$("fii-kpi-pvp").textContent=sn.pvp?sn.pvp.toFixed(2):"\u2014";fii$("fii-kpi-pvp").classList.remove("acoes-skeleton");
     fii$("fii-kpi-pvp-sub").textContent=sn.pvp<1?"Desconto":sn.pvp>1?"Pr\u00eamio":"Par";
-    fii$("fii-body-fundo").innerHTML=fKV("Nome",sn.nome||"\u2014")+fKV("Ticker",tk)+fKV("Segmento",sn.segmento||"\u2014")+fKV("Gestora",sn.gestora||"\u2014")+fKV("Admin",sn.admin||"\u2014")+fKV("Cota\u00e7\u00e3o",sn.cotacao?"R$ "+Number(sn.cotacao).toFixed(2):"\u2014")+fKV("P/VP",sn.pvp?sn.pvp.toFixed(2):"\u2014")+fKV("DY 12m",sn.dy12m?sn.dy12m.toFixed(1)+"%":"\u2014","#2ecc8a")+fKV("PL",sn.pl||"\u2014")+fKV("Liquidez",sn.liquidez||"\u2014")+fKV("Taxa",sn.taxaAdm||"\u2014");
+    fii$("fii-body-fundo").innerHTML=fTitle("Identifica\u00e7\u00e3o")+fRow([fKV("Ticker",tk),fKV("Segmento",sn.segmento||"\u2014"),fKV("Gestora",sn.gestora||"\u2014"),fKV("Admin",sn.admin||"\u2014")])+fTitle("Indicadores")+fRow([fKV("Cota\u00e7\u00e3o",sn.cotacao?"R$ "+Number(sn.cotacao).toFixed(2):"\u2014"),fKV("P/VP",sn.pvp?sn.pvp.toFixed(2):"\u2014"),fKV("DY 12m",sn.dy12m?sn.dy12m.toFixed(1)+"%":"\u2014","#2ecc8a"),fKV("PL",sn.pl||"\u2014")])+fRow([fKV("Liquidez",sn.liquidez||"\u2014"),fKV("Taxa Adm",sn.taxaAdm||"\u2014"),fKV("Cotistas",sn.cotistas?Number(sn.cotistas).toLocaleString("pt-BR"):"\u2014")]);
     fiiSt("fundo","done");
 
-    // 2. MACRO
-    fiiProg("Cen\u00e1rio macro...");fiiSt("macro","loading");
+    // 2/5 MACRO
+    await fiiDelay(FD,"Cen\u00e1rio macro");
+    fiiProg("Analisando cen\u00e1rio macro...");fiiSt("macro","loading");
     var mc=await acoesCallJSON({system:FSYS,user:'Cenario macro atual e impacto em FIIs segmento '+(sn.segmento||"geral")+'. Busque Selic, IPCA, IGP-M, NTN-B. JSON:{"selic":"taxa","ipca12m":"%","igpm12m":"%","ntnb10y":"taxa%","premioIFIX":"spread","cicloJuros":"Alta|Estabilidade|Queda","cicloImob":"Pro-locador|Neutro|Pro-inquilino","inflacao":"Favoravel|Neutro|Desfavoravel","visao":"5 frases com dados concretos","fatores":["3 fatores do segmento"]}',useSearch:true});
-    var mH=fKV("Selic",mc.selic||"\u2014")+fKV("IPCA 12m",mc.ipca12m||"\u2014")+fKV("IGP-M 12m",mc.igpm12m||"\u2014")+fKV("NTN-B 10a",mc.ntnb10y||"\u2014")+fKV("Pr\u00eamio IFIX",mc.premioIFIX||"\u2014")+fKV("Ciclo juros",mc.cicloJuros||"\u2014")+fKV("Ciclo imob.",mc.cicloImob||"\u2014")+fKV("Infla\u00e7\u00e3o",mc.inflacao||"\u2014");
-    if(mc.visao)mH+='<div style="margin-top:16px;padding:14px;background:rgba(76,139,245,.06);border-left:3px solid #4c8bf5;border-radius:0 8px 8px 0;font-size:13px;color:#e6edf3;line-height:1.6">'+mc.visao+'</div>';
-    if(mc.fatores&&mc.fatores.length){mH+='<div style="margin-top:12px;font-size:12px;color:#8b949e"><strong style="color:#e6edf3">Fatores:</strong>';mc.fatores.forEach(function(f){mH+='<div style="padding:3px 0">\u2022 '+f+'</div>'});mH+='</div>'}
+    var mH=fTitle("Indicadores Macro")+fRow([fKV("Selic",mc.selic||"\u2014"),fKV("IPCA 12m",mc.ipca12m||"\u2014"),fKV("IGP-M 12m",mc.igpm12m||"\u2014"),fKV("NTN-B 10a",mc.ntnb10y||"\u2014")])+fRow([fKV("Pr\u00eamio IFIX",mc.premioIFIX||"\u2014"),fKV("Ciclo Juros",mc.cicloJuros||"\u2014"),fKV("Ciclo Imob.",mc.cicloImob||"\u2014"),fKV("Infla\u00e7\u00e3o",mc.inflacao||"\u2014")]);
+    if(mc.visao)mH+=fCallout(mc.visao);
+    if(mc.fatores&&mc.fatores.length){mH+=fTitle("Fatores do Segmento");mc.fatores.forEach(function(f){mH+=fCallout("\u2022 "+f)})}
     fii$("fii-body-macro").innerHTML=mH;fiiSt("macro","done");
 
-    // 3. FUNDAMENTALISTA
-    fiiProg("Fundamentos...");fiiSt("fund","loading");
+    // 3/5 FUNDAMENTALISTA
+    await fiiDelay(FD,"An\u00e1lise fundamentalista");
+    fiiProg("Analisando fundamentos...");fiiSt("fund","loading");
     var fd=await acoesCallJSON({system:FSYS,user:'Fundamentalista do FII '+tk+' ('+sn.segmento+'). Busque indicadores reais. JSON:{"dy12m":0,"dyMedia3a":0,"ffoYield":null,"consistencia":"X/12","reserva":"R$ X/cota","taxaTotal":"%","vacancia":null,"inadimplencia":null,"nAtivos":0,"concentracao":"%","capRate":null,"spread":null,"ltv":null,"qualidade":"Alta|Media|Baixa","analise":"5 frases profundas","inquilinos":["top 3"]}',useSearch:true});
-    var fH=fKV("DY 12m",fd.dy12m?fd.dy12m.toFixed(1)+"%":"\u2014","#2ecc8a")+fKV("DY m\u00e9dia 3a",fd.dyMedia3a?fd.dyMedia3a.toFixed(1)+"%":"\u2014")+fKV("FFO Yield",fd.ffoYield?fd.ffoYield.toFixed(1)+"%":"\u2014")+fKV("Consist\u00eancia",fd.consistencia||"\u2014")+fKV("Reserva",fd.reserva||"\u2014")+fKV("Taxa total",fd.taxaTotal||"\u2014");
-    if(fd.vacancia!=null)fH+=fKV("Vac\u00e2ncia",fd.vacancia+"%",fd.vacancia>10?"#f07070":"#2ecc8a");
-    if(fd.inadimplencia!=null)fH+=fKV("Inadimpl\u00eancia",fd.inadimplencia+"%");
-    fH+=fKV("Ativos",fd.nAtivos||"\u2014")+fKV("Concentra\u00e7\u00e3o",fd.concentracao||"\u2014")+fKV("Qualidade",fd.qualidade||"\u2014",fd.qualidade==="Alta"?"#2ecc8a":"#f8d75e");
+    var fH=fTitle("Rendimentos")+fRow([fKV("DY 12m",fd.dy12m?fd.dy12m.toFixed(1)+"%":"\u2014","#2ecc8a"),fKV("DY 3 anos",fd.dyMedia3a?fd.dyMedia3a.toFixed(1)+"%":"\u2014"),fKV("FFO Yield",fd.ffoYield?fd.ffoYield.toFixed(1)+"%":"\u2014"),fKV("Consist.",fd.consistencia||"\u2014")])+fTitle("Estrutura")+fRow([fKV("Reserva",fd.reserva||"\u2014"),fKV("Taxa total",fd.taxaTotal||"\u2014")]);
+    var opItems=[];
+    if(fd.vacancia!=null)opItems.push(fKV("Vac\u00e2ncia",fd.vacancia+"%",fd.vacancia>10?"#f07070":"#2ecc8a"));
+    if(fd.inadimplencia!=null)opItems.push(fKV("Inadimpl.",fd.inadimplencia+"%"));
+    opItems.push(fKV("Ativos",fd.nAtivos||"\u2014"));opItems.push(fKV("Concentr.",fd.concentracao||"\u2014"));
+    fH+=fTitle("Operacional")+fRow(opItems)+fRow([fKV("Qualidade",fd.qualidade||"\u2014",fd.qualidade==="Alta"?"#2ecc8a":"#f8d75e")]);
     if(fd.capRate)fH+=fKV("Cap Rate",fd.capRate+"%");
     if(fd.spread)fH+=fKV("Spread",fd.spread);
     if(fd.ltv!=null)fH+=fKV("LTV",fd.ltv+"%",fd.ltv>70?"#f07070":"#2ecc8a");
     if(fd.inquilinos&&fd.inquilinos.length){fH+='<div style="margin-top:12px;font-size:12px;color:#8b949e"><strong style="color:#e6edf3">Top inquilinos:</strong>';fd.inquilinos.forEach(function(t){fH+='<div style="padding:3px 0">\u2022 '+t+'</div>'});fH+='</div>'}
-    if(fd.analise)fH+='<div style="margin-top:16px;padding:14px;background:rgba(248,215,94,.04);border-left:3px solid #f8d75e;border-radius:0 8px 8px 0;font-size:13px;color:#e6edf3;line-height:1.6">'+fd.analise+'</div>';
+    if(fd.analise)fH+=fCallout(fd.analise);
     fii$("fii-body-fund").innerHTML=fH;fiiSt("fund","done");
 
-    // 4. P/VP
-    fiiProg("P/VP justo...");fiiSt("pvp","loading");
+    // 4/5 P/VP
+    await fiiDelay(FD,"P/VP justo");
+    fiiProg("Calculando P/VP justo...");fiiSt("pvp","loading");
     var pv=await acoesCallJSON({system:FSYS,user:'P/VP do FII '+tk+' (seg:'+sn.segmento+', pvp:'+sn.pvp+', dy:'+sn.dy12m+'). Busque historico e pares. JSON:{"pvpAtual":0.00,"pvpJusto":0.00,"desvio":"+X% ou -X%","desvioDir":"desconto|premio|em linha","pvpMin24m":0.00,"pvpMax24m":0.00,"pvpMediaSeg":0.00,"pares":[{"ticker":"","nome":"","pvp":0.00,"dy":0.0}],"metodologia":"2 frases","analise":"5 frases"}',useSearch:true});
     fii$("fii-kpi-pvpjusto").textContent=pv.pvpJusto?pv.pvpJusto.toFixed(2):"\u2014";fii$("fii-kpi-pvpjusto").classList.remove("acoes-skeleton");
     var dc=pv.desvioDir==="desconto"?"#2ecc8a":pv.desvioDir==="premio"?"#f07070":"#f8d75e";
     fii$("fii-kpi-pvpjusto-sub").innerHTML='<span style="color:'+dc+'">'+(pv.desvio||"\u2014")+'</span>';
-    var pH=fKV("P/VP atual",pv.pvpAtual?pv.pvpAtual.toFixed(2):"\u2014")+fKV("P/VP justo",pv.pvpJusto?pv.pvpJusto.toFixed(2):"\u2014","#4c8bf5")+fKV("Desvio",pv.desvio||"\u2014",dc)+fKV("M\u00edn 24m",pv.pvpMin24m?pv.pvpMin24m.toFixed(2):"\u2014")+fKV("M\u00e1x 24m",pv.pvpMax24m?pv.pvpMax24m.toFixed(2):"\u2014")+fKV("M\u00e9dia seg.",pv.pvpMediaSeg?pv.pvpMediaSeg.toFixed(2):"\u2014");
-    if(pv.pares&&pv.pares.length){pH+='<div style="margin-top:16px;font-size:12px"><strong style="color:#e6edf3">Pares:</strong></div>';pv.pares.forEach(function(p){if(p.ticker)pH+=fKV(p.ticker+(p.nome?" \u00b7 "+p.nome:""),"P/VP "+p.pvp.toFixed(2)+" \u00b7 DY "+p.dy.toFixed(1)+"%")})}
+    var pH=fTitle("Valuation")+fRow([fKV("P/VP Atual",pv.pvpAtual?pv.pvpAtual.toFixed(2):"\u2014"),fKV("P/VP Justo",pv.pvpJusto?pv.pvpJusto.toFixed(2):"\u2014","#4c8bf5"),fKV("Desvio",pv.desvio||"\u2014",dc)])+fTitle("Faixa Hist\u00f3rica")+fRow([fKV("M\u00edn 24m",pv.pvpMin24m?pv.pvpMin24m.toFixed(2):"\u2014"),fKV("M\u00e1x 24m",pv.pvpMax24m?pv.pvpMax24m.toFixed(2):"\u2014"),fKV("M\u00e9dia Seg.",pv.pvpMediaSeg?pv.pvpMediaSeg.toFixed(2):"\u2014")]);
+    if(pv.pares&&pv.pares.length){var pareItems=[];pv.pares.forEach(function(p){if(p.ticker)pareItems.push(fKV(p.ticker,"P/VP "+p.pvp.toFixed(2)+" \u00b7 DY "+p.dy.toFixed(1)+"%"))});pH+=fTitle("Compara\u00e7\u00e3o com Pares")+fRow(pareItems)}
     if(pv.metodologia)pH+='<div style="margin-top:12px;padding:10px;background:rgba(255,255,255,.02);border-radius:8px;font-size:11px;color:#8b949e"><strong>Metodologia:</strong> '+pv.metodologia+'</div>';
-    if(pv.analise)pH+='<div style="margin-top:12px;padding:14px;background:rgba(76,139,245,.06);border-left:3px solid #4c8bf5;border-radius:0 8px 8px 0;font-size:13px;color:#e6edf3;line-height:1.6">'+pv.analise+'</div>';
+    if(pv.analise)pH+=fCallout(pv.analise);
     fii$("fii-body-pvp").innerHTML=pH;fiiSt("pvp","done");
 
-    // 5. RISCOS + VEREDICTO
-    fiiProg("Riscos e veredicto...");fiiSt("risco","loading");fiiSt("veredicto","loading");
+    // 5/5 RISCOS + VEREDICTO
+    await fiiDelay(FD,"Veredicto final");
+    fiiProg("Consolidando riscos e veredicto...");fiiSt("risco","loading");fiiSt("veredicto","loading");
     var rv=await acoesCallJSON({system:FSYS,user:'Riscos e veredicto do FII '+tk+' (seg:'+sn.segmento+',pvp:'+(pv.pvpAtual||0)+',dy:'+(fd.dy12m||0)+',justo:'+(pv.pvpJusto||0)+'). JSON:{"riscos":[{"cat":"nome","prob":"Baixa|Media|Alta","imp":"Baixo|Medio|Alto","status":"Normal|Monitorar|Alerta","como":"monitorar"}],"perfil":"Conservador|Moderado|Arrojado","horizonte":"X meses","pesoMax":"%","veredicto":"ALOCAR|MONITORAR|EVITAR","tese":"3-4 frases","condicoes":["2 eventos"],"script":"5 frases para o assessor apresentar ao cliente"}',useSearch:true});
-    var rH="";
-    if(rv.riscos)rv.riscos.forEach(function(r){var sc=r.status==="Normal"?"#2ecc8a":r.status==="Alerta"?"#f07070":"#f8d75e";rH+='<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)"><div style="display:flex;justify-content:space-between"><span style="color:#e6edf3;font-weight:600;font-size:13px">'+r.cat+'</span><span style="color:'+sc+';font-size:11px;font-weight:700">'+r.status+'</span></div><div style="font-size:11px;color:#8b949e;margin-top:4px">'+r.prob+' \u00b7 '+r.imp+' \u00b7 '+r.como+'</div></div>'});
-    rH+=fKV("Perfil",rv.perfil||"\u2014")+fKV("Horizonte",rv.horizonte||"\u2014")+fKV("Peso m\u00e1x.",rv.pesoMax||"\u2014");
+    var rH=fTitle("Mapa de Riscos");
+    if(rv.riscos)rv.riscos.forEach(function(r){var sc=r.status==="Normal"?"#2ecc8a":r.status==="Alerta"?"#f07070":"#f8d75e";rH+='<div class="acoes-callout" style="border-left-color:'+sc+';margin:6px 0"><div style="display:flex;justify-content:space-between;align-items:center"><strong>'+r.cat+'</strong><span style="color:'+sc+';font-size:11px;font-weight:700;font-family:JetBrains Mono,monospace">'+r.status+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+r.prob+' \u00b7 '+r.imp+' \u00b7 '+r.como+'</div></div>'});
+    rH+=fTitle("Adequa\u00e7\u00e3o")+fRow([fKV("Perfil",rv.perfil||"\u2014"),fKV("Horizonte",rv.horizonte||"\u2014"),fKV("Peso M\u00e1x.",rv.pesoMax||"\u2014")]);
     fii$("fii-body-risco").innerHTML=rH;fiiSt("risco","done");
 
     var vc=rv.veredicto==="ALOCAR"?"#2ecc8a":rv.veredicto==="EVITAR"?"#f07070":"#f8d75e";
@@ -11220,7 +11245,6 @@ async function fiiStart(){
     fii$("fii-body-veredicto").innerHTML=vH;fiiSt("veredicto","done");
     fiiProg(null);
   }catch(err){console.error("FII:",err);fiiProg("Erro: "+err.message);["macro","fundo","fund","pvp","risco","veredicto"].forEach(function(k){var e=fii$("fii-st-"+k);if(e&&e.textContent==="carregando")fiiSt(k,"error")})}
-}
-</script>
+}</script>
 </body>
 </html>
