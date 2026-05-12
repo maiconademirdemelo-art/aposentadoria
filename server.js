@@ -32,6 +32,58 @@ http.createServer(function(req,res){
     });return;
   }
 
+
+  // ═══ PROXY API ANTHROPIC ═══
+  if(p==='/api/analise-acoes/messages'&&req.method==='POST'){
+    var body='';
+    req.on('data',function(c){body+=c});
+    req.on('end',function(){
+      var https=require('https');
+      var apiKey=process.env.ANTHROPIC_API_KEY||'';
+      if(!apiKey){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'ANTHROPIC_API_KEY not set'}));return}
+      var opts={
+        hostname:'api.anthropic.com',
+        path:'/v1/messages',
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':apiKey,
+          'anthropic-version':'2023-06-01'
+        }
+      };
+      var proxyReq=https.request(opts,function(proxyRes){
+        var chunks=[];
+        proxyRes.on('data',function(c){chunks.push(c)});
+        proxyRes.on('end',function(){
+          var data=Buffer.concat(chunks);
+          res.writeHead(proxyRes.statusCode,{
+            'Content-Type':'application/json',
+            'Access-Control-Allow-Origin':'*'
+          });
+          res.end(data);
+        });
+      });
+      proxyReq.on('error',function(e){
+        res.writeHead(502,{'Content-Type':'application/json'});
+        res.end(JSON.stringify({error:e.message}));
+      });
+      proxyReq.write(body);
+      proxyReq.end();
+    });
+    return;
+  }
+
+  // CORS preflight
+  if(req.method==='OPTIONS'){
+    res.writeHead(204,{
+      'Access-Control-Allow-Origin':'*',
+      'Access-Control-Allow-Methods':'POST,OPTIONS',
+      'Access-Control-Allow-Headers':'Content-Type'
+    });
+    res.end();
+    return;
+  }
+
   // Raiz → LP se existe, senão plano-futuro
   if(p==='/'){
     if(fs.existsSync(path.join(__dirname,'raio-x.html')))
