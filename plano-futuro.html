@@ -11024,113 +11024,82 @@ window.initRendaSimulator=function(){
   var w=document.getElementById("renda-next-wrap");if(w&&typeof fluxoAtual!=="undefined"&&fluxoAtual!=="pontual")w.style.display="block";
 };
 })();
+</script>
+<script>
+/* === MODULO ATIVOS + DIAGNOSTICO === */
+console.log("[WP] Script ativos carregado");
 
-function abrirDiagnostico(){var o=document.createElement("div");o.id="diag-overlay";o.style.cssText="position:fixed;inset:0;z-index:99999;background:#080e1a";var f=document.createElement("iframe");f.src="diagnostico.html";f.style.cssText="width:100%;height:100%;border:none";o.appendChild(f);document.body.appendChild(o);document.body.style.overflow="hidden";window.addEventListener("message",function h(e){if(e.data==="fechar-diagnostico"){var x=document.getElementById("diag-overlay");if(x)x.remove();document.body.style.overflow="";window.removeEventListener("message",h)}})}
-
-// DEBUG: Monitorar quando s-acoes fica visível
-var _origShow = typeof showScreen === 'function' ? showScreen : null;
-if(_origShow){
-  console.log("[DEBUG] showScreen encontrado, sobrescrevendo...");
-} else {
-  console.log("[DEBUG] showScreen NAO encontrado ainda");
+function abrirDiagnostico(){
+  var o=document.createElement("div");o.id="diag-overlay";
+  o.style.cssText="position:fixed;inset:0;z-index:99999;background:#080e1a";
+  var f=document.createElement("iframe");f.src="diagnostico.html";
+  f.style.cssText="width:100%;height:100%;border:none";
+  o.appendChild(f);document.body.appendChild(o);
+  document.body.style.overflow="hidden";
+  window.addEventListener("message",function h(e){
+    if(e.data==="fechar-diagnostico"){
+      var x=document.getElementById("diag-overlay");
+      if(x)x.remove();document.body.style.overflow="";
+      window.removeEventListener("message",h);
+    }
+  });
 }
 
-// Injetar abas quando s-acoes ficar visível
-var _ativosInjetado = false;
-function injetarAtivos(){
-  if(_ativosInjetado) return;
-  console.log("[DEBUG] injetarAtivos() chamado");
+var _wpInjetado=false;
+function _wpInjetar(){
+  if(_wpInjetado)return;
+  var hdr=document.querySelector("#s-acoes .acoes-header");
+  var inp=document.getElementById("acoes-input-state");
+  if(!hdr||!inp){console.log("[WP] header ou input nao encontrado");return}
   
-  var screen = document.getElementById("s-acoes");
-  if(!screen){console.log("[DEBUG] s-acoes NAO encontrado");return}
-  console.log("[DEBUG] s-acoes encontrado, display=" + getComputedStyle(screen).display);
+  console.log("[WP] Injetando abas...");
   
-  var header = screen.querySelector(".acoes-header");
-  if(!header){console.log("[DEBUG] .acoes-header NAO encontrado");return}
-  console.log("[DEBUG] header encontrado");
-  
-  var inputState = document.getElementById("acoes-input-state");
-  if(!inputState){console.log("[DEBUG] acoes-input-state NAO encontrado");return}
-  console.log("[DEBUG] inputState encontrado, display=" + getComputedStyle(inputState).display);
-  console.log("[DEBUG] inputState.parentNode=" + (inputState.parentNode?inputState.parentNode.className:"null"));
+  var t=hdr.querySelector(".acoes-title");
+  if(t)t.innerHTML='Análise de <span class="acoes-title-accent">Ativos</span>';
+  var s=hdr.querySelector(".acoes-sub");
+  if(s)s.textContent="Diagnóstico fundamentalista de ações e FIIs listados na B3.";
 
-  // Titulo
-  var t = header.querySelector(".acoes-title");
-  if(t) t.innerHTML = "An\u00e1lise de <span class=\"acoes-title-accent\">Ativos</span>";
-  var sub = header.querySelector(".acoes-sub");
-  if(sub) sub.textContent = "Diagn\u00f3stico fundamentalista de a\u00e7\u00f5es e FIIs listados na B3.";
+  var css=document.createElement("style");
+  css.textContent=".ativos-tabs{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:28px}.ativos-tab{flex:1;padding:12px;background:0;border:0;border-radius:9px;color:rgba(255,255,255,.4);font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s}.ativos-tab:hover{color:#fff}.ativos-tab.active{background:rgba(76,139,245,.12);color:#4c8bf5;border:1px solid rgba(76,139,245,.25)}.ativos-tab .badge{font-size:8px;padding:2px 6px;border-radius:99px;background:rgba(168,94,255,.15);color:#a85eff;font-weight:700;margin-left:6px}";
+  document.head.appendChild(css);
 
-  // CSS
-  var sty = document.createElement("style");
-  sty.textContent = ".ativos-tabs{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:28px}.ativos-tab{flex:1;padding:12px;background:transparent;border:none;border-radius:9px;color:rgba(255,255,255,.4);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}.ativos-tab:hover{color:#fff}.ativos-tab.active{background:rgba(76,139,245,.12);color:#4c8bf5;border:1px solid rgba(76,139,245,.25)}.ativos-tab .tb{font-size:8px;padding:2px 6px;border-radius:99px;background:rgba(168,94,255,.15);color:#a85eff;font-weight:700;margin-left:6px}";
-  document.head.appendChild(sty);
-  
-  // Abas
-  var tabs = document.createElement("div");
-  tabs.className = "ativos-tabs";
-  var b1 = document.createElement("button");
-  b1.className = "ativos-tab active";
-  b1.id = "tab-btn-acoes";
-  b1.textContent = "\ud83d\udcc8 A\u00e7\u00f5es";
-  b1.onclick = function(){switchAtivosTab("acoes")};
-  var b2 = document.createElement("button");
-  b2.className = "ativos-tab";
-  b2.id = "tab-btn-fiis";
-  b2.innerHTML = "\ud83c\udfe2 FIIs <span class=\"tb\">NOVO</span>";
-  b2.onclick = function(){switchAtivosTab("fiis")};
-  tabs.appendChild(b1);
-  tabs.appendChild(b2);
-  
-  // Inserir tabs antes do inputState
-  inputState.parentNode.insertBefore(tabs, inputState);
-  console.log("[DEBUG] Abas inseridas com sucesso");
-  
-  // FII input
-  var fi = document.createElement("div");
-  fi.id = "fii-input-state";
-  fi.style.display = "none";
-  fi.innerHTML = "<div class=\"acoes-input-card\" style=\"border-color:rgba(46,204,138,.25)\"><label class=\"acoes-input-label\" style=\"color:#2ecc8a\">Ticker do FII</label><div class=\"acoes-input-row\"><input type=\"text\" id=\"fii-ticker\" placeholder=\"HGLG11\" maxlength=\"8\" autocomplete=\"off\" style=\"border-color:rgba(46,204,138,.3)\"></div><div class=\"acoes-btn-row\" style=\"grid-template-columns:1fr\"><button class=\"acoes-mode-btn\" style=\"background:linear-gradient(135deg,rgba(46,204,138,.15),rgba(46,204,138,.08));border-color:rgba(46,204,138,.3)\" onclick=\"fiiIniciarAnalise()\"><span class=\"acoes-mode-icon\">\ud83c\udfe2</span><span class=\"acoes-mode-info\"><strong style=\"color:#2ecc8a\">Iniciar An\u00e1lise de FII</strong><small>Macro, fundamentos, P/VP e veredicto</small></span></button></div><div class=\"acoes-examples\"><span class=\"acoes-examples-lab\">Exemplos:</span><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">HGLG11</button><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">KNRI11</button><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">MXRF11</button><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">XPML11</button></div></div><div class=\"acoes-meta-grid\"><div class=\"acoes-meta-col\"><div class=\"acoes-meta-num\" style=\"color:#2ecc8a\">01</div><h3>An\u00e1lise</h3><p>Macro, fundo, P/VP, riscos e veredicto.</p></div><div class=\"acoes-meta-col\"><div class=\"acoes-meta-num\" style=\"color:#2ecc8a\">02</div><h3>Segmenta\u00e7\u00e3o</h3><p>Lajes, log\u00edstica, shopping, papel ou FoF.</p></div><div class=\"acoes-meta-col\"><div class=\"acoes-meta-num\" style=\"color:#2ecc8a\">03</div><h3>Aviso</h3><p>Informativo. N\u00e3o constitui recomenda\u00e7\u00e3o.</p></div></div>";
-  inputState.parentNode.insertBefore(fi, inputState.nextSibling);
-  console.log("[DEBUG] FII input inserido");
-  
-  _ativosInjetado = true;
-  console.log("[DEBUG] Injecao completa");
+  var tabs=document.createElement("div");
+  tabs.className="ativos-tabs";
+  tabs.innerHTML='<button class="ativos-tab active" id="tab-btn-acoes">📈 Ações</button><button class="ativos-tab" id="tab-btn-fiis">🏢 FIIs <span class="badge">NOVO</span></button>';
+  tabs.children[0].onclick=function(){switchAtivosTab("acoes")};
+  tabs.children[1].onclick=function(){switchAtivosTab("fiis")};
+  inp.parentNode.insertBefore(tabs,inp);
+
+  var fi=document.createElement("div");
+  fi.id="fii-input-state";fi.style.display="none";
+  fi.innerHTML='<div class="acoes-input-card" style="border-color:rgba(46,204,138,.25)"><label class="acoes-input-label" style="color:#2ecc8a">Ticker do FII</label><div class="acoes-input-row"><input type="text" id="fii-ticker" placeholder="HGLG11" maxlength="8" autocomplete="off" style="border-color:rgba(46,204,138,.3)"></div><div class="acoes-btn-row" style="grid-template-columns:1fr"><button class="acoes-mode-btn" style="background:linear-gradient(135deg,rgba(46,204,138,.15),rgba(46,204,138,.08));border-color:rgba(46,204,138,.3)" onclick="fiiStart()"><span class="acoes-mode-icon">🏢</span><span class="acoes-mode-info"><strong style="color:#2ecc8a">Iniciar Análise de FII</strong><small>Macro, fundamentos, P/VP e veredicto</small></span></button></div><div class="acoes-examples"><span class="acoes-examples-lab">Exemplos:</span><button class="acoes-ex-btn" onclick="document.getElementById(\x27fii-ticker\x27).value=this.textContent">HGLG11</button><button class="acoes-ex-btn" onclick="document.getElementById(\x27fii-ticker\x27).value=this.textContent">KNRI11</button><button class="acoes-ex-btn" onclick="document.getElementById(\x27fii-ticker\x27).value=this.textContent">MXRF11</button><button class="acoes-ex-btn" onclick="document.getElementById(\x27fii-ticker\x27).value=this.textContent">XPML11</button></div></div><div class="acoes-meta-grid"><div class="acoes-meta-col"><div class="acoes-meta-num" style="color:#2ecc8a">01</div><h3>Análise</h3><p>Macro, fundo, P/VP, riscos e veredicto.</p></div><div class="acoes-meta-col"><div class="acoes-meta-num" style="color:#2ecc8a">02</div><h3>Segmentação</h3><p>Lajes, logística, shopping, papel ou FoF.</p></div><div class="acoes-meta-col"><div class="acoes-meta-num" style="color:#2ecc8a">03</div><h3>Aviso</h3><p>Informativo. Não constitui recomendação.</p></div></div>';
+  inp.parentNode.insertBefore(fi,inp.nextSibling);
+
+  _wpInjetado=true;
+  console.log("[WP] Injecao OK");
 }
 
 function switchAtivosTab(tab){
-  console.log("[DEBUG] switchAtivosTab: " + tab);
+  console.log("[WP] Tab: "+tab);
   document.querySelectorAll(".ativos-tab").forEach(function(b){b.classList.remove("active")});
-  var btn = document.getElementById("tab-btn-"+tab);
-  if(btn) btn.classList.add("active");
-  var ai=document.getElementById("acoes-input-state");
-  var ar=document.getElementById("acoes-results-state");
-  var fi=document.getElementById("fii-input-state");
-  if(tab==="acoes"){
-    if(ai)ai.style.display="";
-    if(ar)ar.style.display="";
-    if(fi)fi.style.display="none";
-  } else {
-    if(ai)ai.style.display="none";
-    if(ar)ar.style.display="none";
-    if(fi)fi.style.display="";
-    setTimeout(function(){var t=document.getElementById("fii-ticker");if(t)t.focus()},200);
-  }
+  var btn=document.getElementById("tab-btn-"+tab);if(btn)btn.classList.add("active");
+  var ai=document.getElementById("acoes-input-state"),ar=document.getElementById("acoes-results-state"),fi=document.getElementById("fii-input-state");
+  if(tab==="acoes"){if(ai)ai.style.display="";if(ar)ar.style.display="";if(fi)fi.style.display="none"}
+  else{if(ai)ai.style.display="none";if(ar)ar.style.display="none";if(fi)fi.style.display="";setTimeout(function(){var t=document.getElementById("fii-ticker");if(t)t.focus()},200)}
 }
 
-function fiiIniciarAnalise(){alert("FII: em construcao")}
-function fiiResetState(){}
+function fiiStart(){alert("Analise FII em construcao - sera implementada na proxima versao")}
 
-// Observar navegação para s-acoes e injetar
-var _obs = new MutationObserver(function(){
-  var s = document.getElementById("s-acoes");
-  if(s && getComputedStyle(s).display !== "none" && !_ativosInjetado){
-    console.log("[DEBUG] s-acoes ficou visivel, injetando...");
-    setTimeout(injetarAtivos, 50);
+// Observer pra injetar quando s-acoes aparecer
+new MutationObserver(function(){
+  var s=document.getElementById("s-acoes");
+  if(s&&getComputedStyle(s).display!=="none"&&!_wpInjetado){
+    console.log("[WP] s-acoes visivel");
+    setTimeout(_wpInjetar,100);
   }
-});
-_obs.observe(document.body, {attributes:true, subtree:true, attributeFilter:["style","class"]});
-console.log("[DEBUG] Observer ativo, aguardando s-acoes");
+}).observe(document.documentElement,{attributes:true,subtree:true,childList:true});
 
+console.log("[WP] Observer ativo");
 </script>
 </body>
 </html>
