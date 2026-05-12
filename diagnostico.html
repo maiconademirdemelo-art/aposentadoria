@@ -1215,6 +1215,61 @@ a{text-decoration:none;color:inherit}
 .bump{animation:bumpAnim .6s cubic-bezier(.2,.8,.2,1)}
 @keyframes bumpAnim{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
 
+/* ═══════════════════════════════════════════════════════════
+   MELHORIAS COMPORTAMENTAIS · tooltips, feedback inline, ancoragens
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tooltip — círculo (?) ao lado de labels com termos técnicos */
+.tip-trigger{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid var(--bdr);border-radius:50%;background:rgba(76,139,245,.06);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;cursor:help;margin-left:5px;transition:all .2s;position:relative;line-height:1;vertical-align:middle}
+.tip-trigger:hover{background:var(--accent);color:#fff;border-color:var(--accent);transform:scale(1.1)}
+.tip-trigger::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:#080e1a;color:var(--text);padding:10px 14px;border-radius:8px;border:1px solid var(--bdr);font-size:12px;font-weight:400;font-family:'Instrument Sans',sans-serif;text-transform:none;letter-spacing:0;white-space:normal;width:260px;line-height:1.5;opacity:0;visibility:hidden;pointer-events:none;transition:all .2s;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.4);text-align:left}
+.tip-trigger:hover::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.tip-trigger::before{content:'';position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--bdr);opacity:0;transition:opacity .2s;z-index:99}
+.tip-trigger:hover::before{opacity:1}
+@media(max-width:560px){.tip-trigger::after{width:200px;left:auto;right:0;transform:translateY(4px)}.tip-trigger:hover::after{transform:translateY(0)}}
+
+/* Bolhas de feedback inline (Camada B — reage ao input) */
+.fb-bubble{display:none;align-items:flex-start;gap:10px;margin-top:10px;padding:10px 14px;background:rgba(76,139,245,.06);border:1px solid rgba(76,139,245,.18);border-left:3px solid var(--accent);border-radius:8px;font-size:12.5px;color:var(--text);line-height:1.5;font-family:'Instrument Sans',sans-serif;animation:fbFade .4s ease both}
+.fb-bubble.show{display:flex}
+.fb-bubble.positive{background:rgba(46,204,138,.06);border-color:rgba(46,204,138,.18);border-left-color:#2ecc8a}
+.fb-bubble.warning{background:rgba(240,168,104,.06);border-color:rgba(240,168,104,.18);border-left-color:#f0a868}
+.fb-bubble .fb-ico{flex-shrink:0;margin-top:1px;font-size:14px}
+.fb-bubble strong{color:var(--white);font-weight:600}
+@keyframes fbFade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Mensagem de transição entre passos (Camada A) */
+.transicao-msg{padding:14px 18px;background:linear-gradient(135deg,rgba(76,139,245,.08),rgba(76,139,245,.02));border:1px solid rgba(76,139,245,.2);border-radius:10px;font-family:'Instrument Sans',sans-serif;font-size:13.5px;color:var(--text);line-height:1.6;margin-bottom:18px;display:flex;align-items:center;gap:12px;animation:fbFade .5s ease both}
+.transicao-msg-ico{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:rgba(76,139,245,.15);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px}
+.transicao-msg strong{color:var(--white);font-weight:600}
+
+/* Síntese conclusiva (Camada C) — flash de feedback ao avançar */
+.sintese-flash{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,#0d4d2f,#1a6b3f);border:1px solid rgba(46,204,138,.4);border-radius:14px;padding:16px 22px;color:#fff;font-family:'Instrument Sans',sans-serif;font-size:13.5px;line-height:1.5;max-width:460px;box-shadow:0 18px 50px rgba(0,0,0,.5);opacity:0;visibility:hidden;transition:all .35s cubic-bezier(.2,.8,.2,1);z-index:300;display:flex;gap:12px;align-items:flex-start}
+.sintese-flash.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.sintese-flash-ico{flex-shrink:0;font-size:18px;line-height:1}
+.sintese-flash strong{color:#fff;font-weight:700}
+
+/* Benchmark do score (item #2) */
+.score-benchmark{margin-top:14px;padding:14px 18px;background:var(--surf);border:1px solid var(--bdr);border-radius:10px;font-size:13px;color:var(--text);line-height:1.55;display:flex;gap:12px;align-items:flex-start}
+.score-benchmark-bar{flex-shrink:0;width:6px;border-radius:3px;align-self:stretch;background:var(--accent)}
+.score-benchmark strong{color:var(--white);font-weight:700}
+
+/* Campo "maior preocupação" textarea (item #3) */
+.preocupacao-textarea{width:100%;background:rgba(255,255,255,.03);border:1.5px solid var(--bdr);border-radius:12px;padding:14px 16px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;line-height:1.6;outline:none;transition:border-color .2s;resize:vertical;min-height:90px}
+.preocupacao-textarea:focus{border-color:var(--accent);background:rgba(76,139,245,.03)}
+.preocupacao-textarea::placeholder{color:var(--light);font-style:italic}
+
+/* Reforço positivo na tela "obrigado" do cliente (item #5) */
+.reforco-positivo{padding:14px 18px;background:linear-gradient(135deg,rgba(46,204,138,.08),rgba(46,204,138,.02));border:1px solid rgba(46,204,138,.25);border-radius:12px;font-size:13.5px;color:var(--text);line-height:1.65;margin:20px 0;display:flex;gap:12px;align-items:flex-start;text-align:left;animation:fbFade .5s ease .4s both;opacity:0;animation-fill-mode:forwards}
+.reforco-positivo strong{color:#2ecc8a;font-weight:700}
+.reforco-positivo-ico{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(46,204,138,.18);display:flex;align-items:center;justify-content:center;color:#2ecc8a;font-size:14px;line-height:1}
+
+/* Disclaimer no simulador (item #6) */
+.sim-disclaimer{font-size:11.5px;color:rgba(255,255,255,.55);line-height:1.55;margin-top:14px;font-style:italic;position:relative;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+
+/* Welcome do cliente — texto introdutório Passo 7 (item #4) */
+.passo7-intro{padding:16px 20px;background:linear-gradient(135deg,rgba(217,168,90,.08),rgba(217,168,90,.02));border:1px solid rgba(217,168,90,.2);border-left:3px solid #d9a85a;border-radius:10px;font-family:'Instrument Sans',sans-serif;font-size:13.5px;color:var(--text);line-height:1.65;margin-bottom:20px}
+.passo7-intro strong{color:#d9a85a;font-weight:600}
+
 </style>
 </head>
 <body>
@@ -1328,6 +1383,14 @@ a{text-decoration:none;color:inherit}
 
     <div class="thank-insights" id="t-insights"></div>
 
+    <!-- Item #5 · Reforço positivo (fideliza quem terminou) -->
+    <div class="reforco-positivo">
+      <div class="reforco-positivo-ico">✓</div>
+      <div>
+        <strong>Você está entre os 12% das pessoas</strong> que param para olhar honestamente o próprio patrimônio. Essa decisão de transparência consigo mesmo já é, por si só, um diferencial em relação à média — e é o ponto de partida para qualquer otimização real.
+      </div>
+    </div>
+
     <a class="welcome-btn welcome-btn-cta" id="t-cta" href="#" target="_blank" rel="noopener">
       Falar agora com Maicon no WhatsApp
     </a>
@@ -1395,7 +1458,7 @@ a{text-decoration:none;color:inherit}
             <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Dados do cônjuge</div>
             <div class="input-grid">
               <div>
-                <label class="inp-lbl">Regime de bens</label>
+                <label class="inp-lbl">Regime de bens<span class="tip-trigger" data-tip="Define como o patrimônio é dividido em caso de separação ou falecimento. Comunhão parcial (mais comum hoje): partilha apenas o adquirido após o casamento. Universal: tudo é compartilhado. Separação total: cada um mantém seu patrimônio. Em dúvida, consulte sua certidão de casamento.">?</span></label>
                 <select class="inp np" id="i-regbens">
                   <option value="">— selecione —</option>
                   <option value="parcial">Comunhão parcial</option>
@@ -1454,11 +1517,11 @@ a{text-decoration:none;color:inherit}
               <label class="inp-lbl">Renda mensal bruta</label>
               <div class="iw">
                 <div class="ipfx">R$</div>
-                <input class="inp" id="i-renda" type="tel" inputmode="numeric" placeholder="15.000,00" oninput="fmtMoeda(this)">
+                <input class="inp" id="i-renda" type="tel" inputmode="numeric" placeholder="15.000,00" oninput="fmtMoeda(this)" onblur="reagirRenda()">
               </div>
             </div>
             <div>
-              <label class="inp-lbl">Contribui para INSS?</label>
+              <label class="inp-lbl">Contribui para INSS?<span class="tip-trigger" data-tip="A contribuição ao INSS no exercício é exigência da Receita Federal para deduzir aportes em PGBL. Se você é CLT, geralmente sim. Se PJ, depende do regime e do contador.">?</span></label>
               <div class="pgrid" style="grid-template-columns:1fr 1fr">
                 <div class="pc" data-val="sim" onclick="pickP(this,'inss')"><div class="pn" style="font-size:13px">Sim</div></div>
                 <div class="pc" data-val="nao" onclick="pickP(this,'inss')"><div class="pn" style="font-size:13px">Não</div></div>
@@ -1466,7 +1529,7 @@ a{text-decoration:none;color:inherit}
             </div>
           </div>
           <div>
-            <label class="inp-lbl">Declaração de IR</label>
+            <label class="inp-lbl">Declaração de IR<span class="tip-trigger" data-tip="Declaração completa: lista cada despesa dedutível (educação, saúde, dependentes, PGBL). Simplificada: aplica desconto padrão de 20% (limite R$ 16.754 em 2024). Em dúvida, olhe sua última declaração ou pergunte ao contador.">?</span></label>
             <div class="toggle-group" id="tg-ir">
               <div class="toggle-option" data-val="completa" onclick="pickT(this,'ir')">
                 <div class="toggle-box">
@@ -1512,7 +1575,7 @@ a{text-decoration:none;color:inherit}
                 </div>
               </div>
               <div style="margin-top:14px">
-                <label class="inp-lbl">Reserva de emergência atual <span style="color:var(--muted);font-weight:400">(em meses de despesa)</span></label>
+                <label class="inp-lbl">Reserva de emergência atual <span style="color:var(--muted);font-weight:400">(em meses de despesa)</span><span class="tip-trigger" data-tip="Quantos meses você conseguiria viver hoje sem nenhuma nova receita, usando o que está em renda fixa de liquidez imediata (poupança, Tesouro Selic, CDB com resgate diário). Padrão recomendado: 6 meses.">?</span></label>
                 <div class="iw">
                   <input class="inp np" id="i-reservaMeses" type="tel" inputmode="numeric" placeholder="ex.: 6" maxlength="3">
                 </div>
@@ -1584,7 +1647,7 @@ a{text-decoration:none;color:inherit}
               <label class="inp-lbl">Patrimônio investido hoje</label>
               <div class="iw">
                 <div class="ipfx">R$</div>
-                <input class="inp" id="i-patrim" type="tel" inputmode="numeric" placeholder="500.000,00" oninput="fmtMoeda(this)">
+                <input class="inp" id="i-patrim" type="tel" inputmode="numeric" placeholder="500.000,00" oninput="fmtMoeda(this)" onblur="reagirPatrim()">
               </div>
             </div>
             <div>
@@ -1596,7 +1659,7 @@ a{text-decoration:none;color:inherit}
             </div>
           </div>
           <div>
-            <label class="inp-lbl">Tem previdência privada? (PGBL ou VGBL)</label>
+            <label class="inp-lbl">Tem previdência privada? (PGBL ou VGBL)<span class="tip-trigger" data-tip="PGBL: previdência com dedução do IR (até 12% da renda) — exige declaração completa e INSS. VGBL: sem dedução, mas vantagens sucessórias (sem ITCMD em muitos casos, sem inventário). Se não sabe qual tem, olhe extratos do banco ou pergunte ao gerente.">?</span></label>
             <div class="toggle-group">
               <div class="toggle-option" data-val="sim" onclick="pickT(this,'tempr')">
                 <div class="toggle-box"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
@@ -1729,7 +1792,7 @@ a{text-decoration:none;color:inherit}
               <label class="inp-lbl" style="margin:0">Idade-alvo para aposentar</label>
               <div class="slider-val"><span id="apos-val">60</span> anos</div>
             </div>
-            <input type="range" class="slider" id="i-apos" min="40" max="85" value="60" oninput="updApos(this)">
+            <input type="range" class="slider" id="i-apos" min="40" max="85" value="60" oninput="updApos(this)" onchange="reagirAposAge()">
             <div class="slider-rng"><span>40 anos</span><span>85 anos</span></div>
           </div>
           <div style="margin-top:8px">
@@ -1802,7 +1865,7 @@ a{text-decoration:none;color:inherit}
                 </div>
               </div>
               <div>
-                <label class="inp-lbl">Já possui holding patrimonial?</label>
+                <label class="inp-lbl">Já possui holding patrimonial?<span class="tip-trigger" data-tip="Holding patrimonial é uma empresa criada exclusivamente para administrar bens imóveis. Vantagens potenciais: tributação reduzida sobre aluguel, economia em sucessão (ITCMD + inventário), governança familiar. Faz sentido a partir de 2-3 imóveis ou patrimônio imobiliário acima de R$ 1 milhão.">?</span></label>
                 <div class="pgrid" style="grid-template-columns:1fr 1fr">
                   <div class="pc" data-val="sim" onclick="pickP(this,'temhld')"><div class="pn" style="font-size:13px">Sim</div></div>
                   <div class="pc" data-val="nao" onclick="pickP(this,'temhld')"><div class="pn" style="font-size:13px">Não</div></div>
@@ -1838,6 +1901,11 @@ a{text-decoration:none;color:inherit}
         </div>
         <div class="cd"></div>
         <div class="cf">
+
+          <!-- Item #4 · Âncora emocional antes dos tópicos sucessórios -->
+          <div class="passo7-intro">
+            <strong>Os próximos campos cuidam do que mais importa: proteger sua família.</strong> Sucessão é assunto difícil, mas pular essa parte significa deixar essas decisões pro sistema judicial — caminho geralmente mais caro e doloroso pros herdeiros. Vamos com calma.
+          </div>
           <div class="input-grid">
             <div>
               <label class="inp-lbl">Tem dependentes / herdeiros?</label>
@@ -1862,14 +1930,14 @@ a{text-decoration:none;color:inherit}
             <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Estado do planejamento sucessório</div>
             <div class="input-grid">
               <div>
-                <label class="inp-lbl">Possui testamento atualizado?</label>
+                <label class="inp-lbl">Possui testamento atualizado?<span class="tip-trigger" data-tip="Considere apenas testamento registrado em cartório (público) ou particular com 3 testemunhas. Lembre-se: 50% do patrimônio (legítima) sempre vai aos herdeiros necessários, independente do testamento. O testamento define os outros 50% e cláusulas (usufruto, inalienabilidade).">?</span></label>
                 <div class="pgrid" style="grid-template-columns:1fr 1fr">
                   <div class="pc" data-val="sim" onclick="pickP(this,'temTestamento')"><div class="pn" style="font-size:13px">Sim</div></div>
                   <div class="pc" data-val="nao" onclick="pickP(this,'temTestamento')"><div class="pn" style="font-size:13px">Não</div></div>
                 </div>
               </div>
               <div>
-                <label class="inp-lbl">Longevidade familiar média <span style="color:var(--muted);font-weight:400">(pais/avós)</span></label>
+                <label class="inp-lbl">Longevidade familiar média <span style="color:var(--muted);font-weight:400">(pais/avós)</span><span class="tip-trigger" data-tip="Idade média que seus pais, avós e tios próximos viveram (ou estão vivendo). Usado pra calibrar o horizonte de planejamento da aposentadoria. Famílias de longevidade alta precisam projetar reservas maiores.">?</span></label>
                 <select class="inp np" id="i-longevFamiliar">
                   <option value="">— selecione —</option>
                   <option value="ate70">Até 70 anos</option>
@@ -1905,6 +1973,13 @@ a{text-decoration:none;color:inherit}
                 <div class="ed-desc">Diagnóstico completo, sem priorização</div>
               </div>
             </div>
+          </div>
+
+          <!-- Item #3 · Maior preocupação (textarea livre, opcional) -->
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
+            <label class="inp-lbl">Há algo específico que te tira o sono financeiramente? <span style="color:var(--muted);font-weight:400">(opcional)</span></label>
+            <textarea class="preocupacao-textarea" id="i-preocupacao" maxlength="600" placeholder="Ex.: 'Não sei se vou ter o suficiente pra me aposentar', 'Tenho medo do que acontece com minha família se eu faltar', 'Pago muito imposto e não sei se há jeito de otimizar'. Escreva no seu tempo, sem filtros — essa informação ajuda o consultor a focar no que realmente importa pra você."></textarea>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.55;font-style:italic">Esse campo é confidencial. Ele aparece apenas no relatório que o consultor recebe.</div>
           </div>
 
           <div class="err-msg" id="err-7">Responda sobre dependentes, testamento, longevidade familiar e objetivo principal.</div>
@@ -1974,6 +2049,12 @@ a{text-decoration:none;color:inherit}
           <div class="score-label" id="score-lbl">avaliando</div>
         </div>
       </div>
+    </div>
+
+    <!-- Item #2 · Benchmark contextual do score -->
+    <div class="score-benchmark" id="score-benchmark" style="display:none">
+      <div class="score-benchmark-bar"></div>
+      <div id="score-benchmark-txt"></div>
     </div>
 
     <!-- 4 DIMENSÕES -->
@@ -2111,7 +2192,8 @@ const D = {
   // Passo 7 — Sucessão
   depend:null, qtddep:0, idadesFilhos:[],
   temTestamento:null, longevFamiliar:null,
-  objet:null
+  objet:null,
+  preocupacao:''  // textarea livre — psicologia financeira (opcional)
 };
 const STEP_NAMES = ['Identificação','Renda & Regime','Patrimônio','Perfil','Aposentadoria','Imóveis','Sucessão','Confirmação'];
 
@@ -2178,9 +2260,146 @@ function wGoTo(n, back=false){
   renderProg();
   if(n===8) buildReview();
   window.scrollTo({top:0, behavior:'smooth'});
+  // Camada A · Mensagem de transição contextual no início do novo passo
+  if(!back) mostrarTransicao(n);
 }
-function wNext(n){ if(validate(n)) wGoTo(n+1); }
+function wNext(n){
+  if(validate(n)){
+    // Camada C · Flash de síntese ao avançar (antes de mostrar próximo passo)
+    mostrarSinteseFlash(n);
+    wGoTo(n+1);
+  }
+}
 function wPrev(n){ if(n>1) wGoTo(n-1,true); else fecharDiagnostico(); }
+
+/* ═════════════════════════════════════════════════════
+   CAMADAS CONVERSACIONAIS (item #7 expandido)
+   Camada A · transição entre passos
+   Camada B · feedback inline ao preencher
+   Camada C · síntese flash ao avançar
+   ═════════════════════════════════════════════════════ */
+
+const TRANSICOES = {
+  2: nome => `Bom começo${nome ? `, <strong>${nome}</strong>` : ''}. Agora vamos entender como o dinheiro entra hoje — renda, despesas, dívidas se houver. Quanto mais real, mais útil o diagnóstico.`,
+  3: () => `Renda mapeada. Vamos olhar agora o <strong>que você já tem investido</strong> e como está distribuído. Os números aqui guiam todas as recomendações de otimização.`,
+  4: () => `Patrimônio anotado. Próxima pergunta importa muito pra calibrar tudo: <strong>qual o seu apetite a risco?</strong> Não tem resposta certa — tem a certa pra você.`,
+  5: () => `Perfil definido. Agora vamos pensar no futuro: <strong>quando você quer parar de depender da renda do trabalho?</strong>`,
+  6: () => `Aposentadoria mapeada. Agora vamos olhar <strong>imóveis</strong> — eles costumam ser o gatilho de holding e o maior impacto sucessório.`,
+  7: () => `Imóveis mapeados. Última seção — e talvez a mais importante: <strong>família, sucessão e o que você quer proteger</strong>.`,
+  8: () => `Quase lá. Confira tudo abaixo antes de gerar o diagnóstico completo. Se algo estiver errado, é só voltar.`
+};
+
+function mostrarTransicao(n){
+  if(!TRANSICOES[n]) return;
+  const passo = document.querySelector(`.ws[data-step="${n}"]`);
+  if(!passo) return;
+  const cf = passo.querySelector('.cf');
+  if(!cf) return;
+  // Remove transição anterior se existir
+  const existente = cf.querySelector('.transicao-msg');
+  if(existente) existente.remove();
+  // Cria nova
+  const div = document.createElement('div');
+  div.className = 'transicao-msg';
+  const nome = (D.nome || '').split(' ')[0] || '';
+  div.innerHTML = `<div class="transicao-msg-ico">${n}</div><div>${TRANSICOES[n](nome)}</div>`;
+  cf.insertBefore(div, cf.firstChild);
+}
+
+const SINTESES = {
+  1: () => `Identificação registrada${D.ecivil === 'casado' || D.ecivil === 'uniao' ? ` — anotamos dados do(a) cônjuge` : ''}.`,
+  2: () => `Capacidade financeira identificada${D.renda >= 30000 ? ` — perfil de renda elevada.` : '.'}`,
+  3: () => `Patrimônio de <strong>${fmtK(D.patrim)}</strong> registrado.`,
+  4: () => `Perfil <strong>${D.perfil}</strong> anotado.`,
+  5: () => `Cronograma de aposentadoria aos <strong>${D.aposAge} anos</strong> construído.`,
+  6: () => D.temimo === 'sim' ? `${D.qtdimo} imóvel(is) registrado(s) — vai impactar análise de holding.` : `Sem imóveis — análise focará em carteira líquida.`,
+  7: () => `Estrutura familiar e objetivos mapeados. Pronto pra rodar o diagnóstico.`
+};
+
+function mostrarSinteseFlash(n){
+  if(!SINTESES[n]) return;
+  // Remove flash anterior
+  document.querySelectorAll('.sintese-flash').forEach(e => e.remove());
+  const div = document.createElement('div');
+  div.className = 'sintese-flash';
+  div.innerHTML = `<div class="sintese-flash-ico">✓</div><div>${SINTESES[n]()}</div>`;
+  document.body.appendChild(div);
+  setTimeout(() => div.classList.add('show'), 50);
+  setTimeout(() => {
+    div.classList.remove('show');
+    setTimeout(() => div.remove(), 400);
+  }, 3200);
+}
+
+/* Camada B · feedback inline ao preencher campos críticos */
+function mostrarFeedback(target, mensagem, tom){
+  // target: pode ser id (string) ou elemento DOM (HTMLElement)
+  // tom: 'neutral' (padrão), 'positive', 'warning'
+  let targetEl;
+  let bubbleId;
+  if(typeof target === 'string'){
+    targetEl = document.getElementById(target);
+    bubbleId = target + '-fb';
+  } else {
+    targetEl = target;
+    if(!targetEl.dataset.fbId) targetEl.dataset.fbId = 'fb-' + Math.random().toString(36).slice(2,8);
+    bubbleId = targetEl.dataset.fbId;
+  }
+  if(!targetEl) return;
+
+  let bubble = document.getElementById(bubbleId);
+  if(!bubble){
+    bubble = document.createElement('div');
+    bubble.id = bubbleId;
+    bubble.className = 'fb-bubble';
+    // Insere depois do container mais relevante
+    const container = targetEl.closest('.iw, .pgrid, .egrid, .toggle-group, .slider-wrap') || targetEl;
+    container.parentElement.insertBefore(bubble, container.nextSibling);
+  }
+  bubble.classList.remove('positive','warning');
+  if(tom === 'positive') bubble.classList.add('positive');
+  else if(tom === 'warning') bubble.classList.add('warning');
+  bubble.innerHTML = `<span class="fb-ico">${tom === 'warning' ? '⚠' : (tom === 'positive' ? '✓' : '○')}</span><span>${mensagem}</span>`;
+  bubble.classList.add('show');
+}
+function esconderFeedback(target){
+  const targetEl = typeof target === 'string' ? document.getElementById(target) : target;
+  if(!targetEl) return;
+  const bubbleId = typeof target === 'string' ? target + '-fb' : (targetEl.dataset?.fbId || '');
+  const bubble = bubbleId && document.getElementById(bubbleId);
+  if(bubble) bubble.classList.remove('show');
+}
+
+/* Triggers específicos por campo crítico (Camada B) */
+function reagirRenda(){
+  const v = pMoney('i-renda');
+  if(v <= 0){ esconderFeedback('i-renda'); return; }
+  if(v < 5000) mostrarFeedback('i-renda', `Renda na faixa de planejamento inicial. Foco maior será na construção de reserva e disciplina de aporte.`, 'neutral');
+  else if(v < 15000) mostrarFeedback('i-renda', `Renda na faixa <strong>classe média alta</strong>. Há espaço de otimização tributária se você declarar IR completo.`, 'neutral');
+  else if(v < 30000) mostrarFeedback('i-renda', `Renda na faixa <strong>upper-middle</strong>. Aqui PGBL e estruturas tributárias começam a fazer muita diferença.`, 'positive');
+  else if(v < 80000) mostrarFeedback('i-renda', `Renda na faixa <strong>private inicial</strong>. Otimização tributária e sucessória ganham peso central.`, 'positive');
+  else mostrarFeedback('i-renda', `Renda na faixa <strong>private alto</strong>. Estruturas societárias (holding, family office leve) devem ser avaliadas com prioridade.`, 'positive');
+}
+function reagirPatrim(){
+  const v = pMoney('i-patrim');
+  if(v <= 0){ esconderFeedback('i-patrim'); return; }
+  if(v < 100000) mostrarFeedback('i-patrim', `Patrimônio em <strong>construção</strong>. Foco será reserva de emergência e disciplina de aporte mensal.`, 'neutral');
+  else if(v < 500000) mostrarFeedback('i-patrim', `Patrimônio inicial sólido. Aqui a estrutura de produto (PGBL, FIIs, ETFs) começa a importar mais que rentabilidade.`, 'neutral');
+  else if(v < 2000000) mostrarFeedback('i-patrim', `Patrimônio na faixa onde <strong>otimizações tributárias têm maior impacto</strong> — cada 1% economizado vale muito.`, 'positive');
+  else if(v < 10000000) mostrarFeedback('i-patrim', `Patrimônio <strong>private alto</strong>. Estruturas avançadas (holding, VGBL com proteção sucessória) são obrigatórias.`, 'positive');
+  else mostrarFeedback('i-patrim', `Patrimônio na faixa <strong>family office</strong>. Diagnóstico aqui é só o começo — análise completa demanda múltiplas reuniões.`, 'positive');
+}
+function reagirAposAge(){
+  if(!D.idade || !D.aposAge) return;
+  const horizonte = D.aposAge - D.idade;
+  if(horizonte <= 0) return;
+  if(horizonte < 5) mostrarFeedback('i-apos', `Horizonte <strong>curto (${horizonte} anos)</strong>. Foco será preservação e geração de renda — não acumulação agressiva.`, 'warning');
+  else if(horizonte < 15) mostrarFeedback('i-apos', `Horizonte <strong>médio (${horizonte} anos)</strong>. Equilíbrio entre acumular e proteger.`, 'neutral');
+  else if(horizonte < 30) mostrarFeedback('i-apos', `Horizonte <strong>longo (${horizonte} anos)</strong>. Aqui juros compostos trabalham a seu favor — cada R$ aportado hoje vale muito mais.`, 'positive');
+  else mostrarFeedback('i-apos', `Horizonte <strong>muito longo (${horizonte} anos)</strong>. Tempo é seu maior aliado — disciplina de aporte vale mais que rentabilidade.`, 'positive');
+}
+
+/* Hooks: chamados via oninput/onchange dos campos críticos */
 
 /* ═════════════════════════════════════════════════════
    PICKERS
@@ -2196,6 +2415,15 @@ function pickE(el, key){
   parent.querySelectorAll('.ec').forEach(x=>x.classList.remove('sel'));
   el.classList.add('sel');
   D[key] = el.dataset.val;
+  // Camada B · reação inline contextual
+  if(key === 'perfil'){
+    const msgs = {
+      conservador: ['Escolha <strong>prudente</strong>. Carteira priorizará renda fixa de qualidade e proteção contra volatilidade.', 'positive'],
+      moderado: ['Equilíbrio entre <strong>crescimento e proteção</strong>. Mais comum entre clientes private maduros.', 'neutral'],
+      agressivo: ['Apetite a risco <strong>compatível com horizonte longo</strong>. Vamos validar se faz sentido pro seu objetivo.', 'neutral']
+    };
+    if(msgs[D.perfil]) mostrarFeedback(parent, msgs[D.perfil][0], msgs[D.perfil][1]);
+  }
 }
 function pickT(el, key){
   const parent = el.parentElement;
@@ -2424,6 +2652,8 @@ function validate(n){
     if(!D.depend || !D.objet || !D.temTestamento){ showErr(7); return false; }
     D.qtddep = D.depend==='sim' ? pNum('i-qtddep') : 0;
     D.longevFamiliar = document.getElementById('i-longevFamiliar').value || null;
+    // Captura preocupação (opcional, não bloqueia)
+    D.preocupacao = (document.getElementById('i-preocupacao')?.value || '').trim().slice(0, 600);
     if(!D.longevFamiliar){ showErr(7, 'Informe a longevidade familiar média.'); return false; }
     // Captura idades dos filhos se aplicável
     if(D.depend === 'sim' && D.qtddep > 0){
@@ -3071,6 +3301,9 @@ function renderRelatorio(calcArg, analiseIA){
   // SCORE RING
   setTimeout(()=>animateScore(score.total), 200);
 
+  // Item #2 · Benchmark contextual (1.5s após o score animar)
+  setTimeout(()=>renderScoreBenchmark(score.total, aps, pgbl, hld, vgbl, renda), 1600);
+
   // DIMENSÕES
   document.getElementById('dims-grid').innerHTML = score.dims.map(d => `
     <div class="dim">
@@ -3234,6 +3467,53 @@ function animateScore(target){
   else if(target>=50) lbl.textContent = 'oportunidades claras';
   else if(target>=30) lbl.textContent = 'atenção urgente';
   else lbl.textContent = 'reformulação total';
+}
+
+/* ═════════════════════════════════════════════════════
+   BENCHMARK CONTEXTUAL DO SCORE (item #2 · psicologia)
+   Contextualiza o score com referência percentil + ação
+   ═════════════════════════════════════════════════════ */
+function renderScoreBenchmark(scoreTotal, aps, pgbl, hld, vgbl, renda){
+  const wrap = document.getElementById('score-benchmark');
+  const txt = document.getElementById('score-benchmark-txt');
+  if(!wrap || !txt) return;
+
+  // Conta oportunidades quantificadas (mesma lógica do simulador)
+  let oportunidades = 0;
+  if(pgbl.aplica && pgbl.economiaAdicional > 100) oportunidades++;
+  if(vgbl.aplica && !vgbl.jaTem && (vgbl.economiaSucessao > 5000 || vgbl.alpha15Anos > 5000)) oportunidades++;
+  if(hld.aplica && !hld.jaTem && hld.economiaTotal > 30000) oportunidades++;
+  if(!D.pulouDespesas && D.despesaMensal > 0 && D.reservaMeses < 6) oportunidades++;
+  if(aps.cobertura < 80 && D.aposAge > D.idade) oportunidades++;
+  const totalComp = (D.compRF||0) + (D.compAcoes||0) + (D.compFII||0) + (D.compInter||0) + (D.compOutros||0);
+  if(totalComp >= 95 && (D.compInter||0) < 15 && D.perfil !== 'conservador') oportunidades++;
+
+  let pct, tom;
+  if(scoreTotal >= 85){ pct = 'top 10%'; tom = 'positive'; }
+  else if(scoreTotal >= 70){ pct = 'top 30%'; tom = 'positive'; }
+  else if(scoreTotal >= 50){ pct = 'mediana'; tom = 'neutral'; }
+  else if(scoreTotal >= 30){ pct = 'abaixo de 70%'; tom = 'attention'; }
+  else { pct = 'abaixo de 90%'; tom = 'attention'; }
+
+  let mensagem;
+  if(scoreTotal >= 85){
+    mensagem = `Score na <strong>${pct}</strong> dos planos patrimoniais avaliados. Carteira bem estruturada. ${oportunidades > 0 ? `Identificamos <strong>${oportunidades} ajuste${oportunidades === 1 ? '' : 's'} fino${oportunidades === 1 ? '' : 's'}</strong> para capturar eficiência adicional.` : 'Mantenha a disciplina atual.'}`;
+  } else if(scoreTotal >= 70){
+    mensagem = `Score na <strong>${pct}</strong> dos planos avaliados. Boa base patrimonial. Identificamos <strong>${oportunidades} oportunidade${oportunidades === 1 ? '' : 's'}</strong> de otimização para subir 10-20 pontos.`;
+  } else if(scoreTotal >= 50){
+    mensagem = `Score na <strong>${pct}</strong> dos planos avaliados — há espaço claro para evolução. Identificamos <strong>${oportunidades} ajuste${oportunidades === 1 ? '' : 's'}</strong> que pode${oportunidades === 1 ? '' : 'm'} elevar significativamente sua eficiência patrimonial.`;
+  } else {
+    mensagem = `Score <strong>${pct}</strong> da média — situação que demanda revisão estrutural. Identificamos <strong>${oportunidades} prioridade${oportunidades === 1 ? '' : 's'}</strong> para começar a corrigir agora. Quanto antes, maior o efeito composto no longo prazo.`;
+  }
+
+  txt.innerHTML = mensagem;
+  // Cor da barra lateral baseado no tom
+  const bar = wrap.querySelector('.score-benchmark-bar');
+  if(bar){
+    bar.style.background = tom === 'positive' ? '#2ecc8a' : (tom === 'attention' ? '#f0a868' : '#4c8bf5');
+  }
+  wrap.style.display = 'flex';
+  wrap.style.animation = 'fbFade .5s ease both';
 }
 
 /* ═════════════════════════════════════════════════════
@@ -4935,8 +5215,12 @@ function _atualizarSimulador(){
             ? `Ao aplicar <strong>todas as ${totalN} melhorias</strong> identificadas, o cliente pode capturar até <strong>${fmtMoneyShort(base.melhorias.reduce((s,m) => s + (m.ganhoTotal || 0), 0))}</strong> em economia tributária, proteção sucessória e ganho de eficiência no horizonte de ${horizonte} anos.`
             : aplicadasN === totalN
               ? `Valor total potencial entre ganhos tributários, proteção sucessória e eficiência patrimonial em <strong>${horizonte} anos</strong>. Esse é o impacto consolidado da estratégia completa.`
-              : `Continue aplicando melhorias para ver o potencial total cresce. Restam ${totalN - aplicadasN} oportunidades para capturar.`
+              : `Continue aplicando melhorias para ver o potencial total crescer. Restam ${totalN - aplicadasN} oportunidades para capturar.`
         }</div>
+        <!-- Item #6 · Disclaimer (calibração de confiança) -->
+        <div class="sim-disclaimer">
+          Projeção sob premissas conservadoras (CDI/IPCA históricos, legislação vigente em ${new Date().getFullYear()}, sem garantia de retorno). O valor real depende de execução disciplinada, cenário macroeconômico e mudanças tributárias. Documento de trabalho consultivo — não constitui promessa de retorno ou recomendação personalizada de investimento.
+        </div>
       </div>
 
     </div>
@@ -5482,6 +5766,15 @@ async function gerarPDF(){
   dependLinhas.push(tr('Longevidade familiar média (pais/avós)', longevLbl, false));
   dependLinhas.push(tr('Objetivo principal declarado', objetLbl, true));
   h += dossieGrupo('ESTRUTURA FAMILIAR, SUCESSÃO E LONGEVIDADE', dependLinhas);
+
+  // Maior preocupação declarada (campo livre — psicologia financeira)
+  if(D.preocupacao && D.preocupacao.trim().length > 0){
+    h += `<div data-pdfblock="preocupacao" style="page-break-inside:avoid;margin-top:14px;padding:18px 22px;background:${C.alt};border:1px solid #ddd;border-left:4px solid ${C.gold};border-radius:0">
+      <div style="font-size:9px;font-weight:700;color:${C.petrol};letter-spacing:.14em;font-family:Helvetica,Arial,sans-serif;margin-bottom:8px">MAIOR PREOCUPAÇÃO DECLARADA PELO CLIENTE</div>
+      <div style="font-size:12px;color:${C.body};line-height:1.7;font-family:Helvetica,Arial,sans-serif;font-style:italic">"${D.preocupacao.replace(/"/g,'&quot;').replace(/\n/g,'<br>')}"</div>
+      <div style="font-size:9.5px;color:${C.muted};margin-top:10px;font-family:Helvetica,Arial,sans-serif">Resposta livre informada pelo cliente. Material confidencial — informação central para calibrar o tom e prioridades da conversa consultiva.</div>
+    </div>`;
+  }
 
 
   // SEÇÃO 02 · RESUMO EXECUTIVO INSTITUCIONAL
