@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Submissões · WealthPlanning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080e1a; --surf:#0f1626; --bdr:rgba(255,255,255,.08);
+  --text:#c5cee0; --light:#5a6678; --muted:#8b949e; --white:#ffffff;
+  --accent:#4c8bf5; --green:#2ecc8a; --amber:#f0a868; --red:#f07070; --gold:#d9a85a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;min-height:100vh}
+
+/* ─── LOGIN OVERLAY ─── */
+.login-wrap{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column}
+.login-card{max-width:380px;width:90%;text-align:center;padding:40px 24px}
+.login-logo{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;color:var(--white);letter-spacing:-.02em;margin-bottom:8px}
+.login-logo span{color:var(--accent)}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:36px;font-family:'JetBrains Mono',monospace;letter-spacing:.06em}
+.pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
+.pi{width:56px;height:64px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:24px;font-weight:700;text-align:center;outline:none;-webkit-text-security:disc;font-family:'Bricolage Grotesque',sans-serif}
+.pi:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:16px;background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif}
+.login-btn:disabled{opacity:.4;cursor:not-allowed}
+.login-err{color:#f07070;font-size:13px;margin-top:14px;min-height:18px}
+
+/* ─── PAINEL ─── */
+.app{display:none;min-height:100vh;flex-direction:column}
+.app.active{display:flex}
+.app-top{padding:22px 32px;border-bottom:1px solid var(--bdr);background:linear-gradient(180deg,rgba(76,139,245,.04),transparent);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.app-brand{display:flex;flex-direction:column;gap:4px}
+.app-logo{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--white);letter-spacing:-.02em}
+.app-logo span{color:var(--accent)}
+.app-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.app-actions{display:flex;gap:10px;align-items:center}
+.app-btn{background:rgba(255,255,255,.04);border:1px solid var(--bdr);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.app-btn:hover{background:rgba(76,139,245,.1);border-color:var(--accent);color:var(--white)}
+.app-btn-primary{background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;color:#fff;font-weight:600}
+.app-btn-primary:hover{box-shadow:0 6px 14px rgba(76,139,245,.3)}
+
+/* ─── HEADER STATS ─── */
+.stats{padding:24px 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:18px 20px}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:300;color:var(--white);line-height:1;letter-spacing:-.02em}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* ─── TABELA / LISTA ─── */
+.list-wrap{padding:8px 32px 40px;flex:1}
+.list-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:14px;flex-wrap:wrap}
+.list-title{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--white)}
+.list-filter{display:flex;gap:6px}
+.filter-pill{background:rgba(255,255,255,.04);border:1px solid var(--bdr);padding:7px 14px;border-radius:999px;font-size:12px;color:var(--text);cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .15s}
+.filter-pill.active{background:rgba(76,139,245,.18);border-color:var(--accent);color:var(--white);font-weight:600}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:18px 22px;display:grid;grid-template-columns:1fr 110px 110px 130px auto;gap:16px;align-items:center;transition:all .15s}
+@media(max-width:920px){.item{grid-template-columns:1fr;gap:10px;padding:16px}}
+.item:hover{border-color:rgba(76,139,245,.3);background:rgba(76,139,245,.02)}
+.item-main{display:flex;flex-direction:column;gap:4px;min-width:0}
+.item-nome{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;color:var(--white);letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.item-wa{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.item-data{font-size:12.5px;color:var(--muted)}
+.item-data strong{color:var(--text)}
+.item-status{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;width:fit-content}
+.item-status.pendente{background:rgba(240,168,104,.12);color:#f0a868;border:1px solid rgba(240,168,104,.25)}
+.item-status.analisado{background:rgba(46,204,138,.12);color:#2ecc8a;border:1px solid rgba(46,204,138,.25)}
+.item-score{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:300;color:var(--white);letter-spacing:-.02em;text-align:center;line-height:1}
+.item-score-lbl{font-size:10px;color:var(--muted);text-align:center;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;margin-top:2px}
+.item-actions{display:flex;gap:8px;justify-content:flex-end}
+@media(max-width:920px){.item-actions{justify-content:flex-start}}
+.act{background:rgba(255,255,255,.04);border:1px solid var(--bdr);color:var(--text);padding:8px 14px;border-radius:9px;font-size:12.5px;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none}
+.act:hover{background:rgba(76,139,245,.1);border-color:var(--accent);color:var(--white)}
+.act-primary{background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;color:#fff;font-weight:600}
+.act-primary:hover{box-shadow:0 4px 10px rgba(76,139,245,.3)}
+.act-danger:hover{background:rgba(240,112,112,.1);border-color:#f07070;color:#f07070}
+
+/* ─── EMPTY STATE ─── */
+.empty{text-align:center;padding:60px 24px;color:var(--muted)}
+.empty-ico{font-size:48px;margin-bottom:14px;opacity:.4}
+.empty-t{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;color:var(--text);margin-bottom:6px}
+.empty-d{font-size:13.5px;line-height:1.6;max-width:420px;margin:0 auto}
+.empty-d a{color:var(--accent);text-decoration:none}
+.empty-d a:hover{text-decoration:underline}
+
+/* ─── LOADING ─── */
+.loading-row{padding:60px 24px;text-align:center;color:var(--muted);font-size:13px}
+.spinner{display:inline-block;width:24px;height:24px;border:2px solid rgba(76,139,245,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── MODAL CONFIRMACAO DELETE ─── */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal.show{display:flex}
+.modal-card{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:32px;max-width:420px;width:100%;text-align:center}
+.modal-ico{font-size:42px;margin-bottom:14px}
+.modal-t{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--white);margin-bottom:8px}
+.modal-d{font-size:13.5px;color:var(--text);line-height:1.6;margin-bottom:24px}
+.modal-actions{display:flex;gap:10px;justify-content:center}
+.modal-btn{padding:11px 20px;border-radius:10px;border:none;font-size:13.5px;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-weight:600}
+.modal-btn-cancel{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--bdr)}
+.modal-btn-confirm{background:#f07070;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- ─── TELA DE LOGIN POR PIN ─── -->
+<div class="login-wrap" id="login">
+  <div class="login-card">
+    <div class="login-logo">Wealth<span>Planning</span></div>
+    <div class="login-sub">Submissões · Área do consultor</div>
+    <div class="pin-row">
+      <input class="pi" type="tel" maxlength="1" inputmode="numeric" autofocus>
+      <input class="pi" type="tel" maxlength="1" inputmode="numeric">
+      <input class="pi" type="tel" maxlength="1" inputmode="numeric">
+      <input class="pi" type="tel" maxlength="1" inputmode="numeric">
+    </div>
+    <button class="login-btn" id="login-btn" disabled onclick="fazerLogin()">Entrar</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ─── PAINEL PRINCIPAL ─── -->
+<div class="app" id="app">
+
+  <div class="app-top">
+    <div class="app-brand">
+      <div class="app-logo">Wealth<span>Planning</span></div>
+      <div class="app-eyebrow">Submissões recebidas</div>
+    </div>
+    <div class="app-actions">
+      <a class="app-btn" id="link-painel">← Voltar ao painel</a>
+      <button class="app-btn" onclick="carregarLista()">↻ Atualizar</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-lbl">Total recebidas</div>
+      <div class="stat-val" id="stat-total">0</div>
+      <div class="stat-sub">submissões na base</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Pendentes de análise</div>
+      <div class="stat-val" id="stat-pendente" style="color:#f0a868">0</div>
+      <div class="stat-sub">aguardando você abrir</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Já analisadas</div>
+      <div class="stat-val" id="stat-analisado" style="color:#2ecc8a">0</div>
+      <div class="stat-sub">com IA cacheada</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Score médio</div>
+      <div class="stat-val" id="stat-score">—</div>
+      <div class="stat-sub">média dos clientes</div>
+    </div>
+  </div>
+
+  <div class="list-wrap">
+    <div class="list-hdr">
+      <div class="list-title">Lista de submissões</div>
+      <div class="list-filter">
+        <button class="filter-pill active" data-filter="todos" onclick="filtrar('todos', this)">Todos</button>
+        <button class="filter-pill" data-filter="pendente" onclick="filtrar('pendente', this)">Pendentes</button>
+        <button class="filter-pill" data-filter="analisado" onclick="filtrar('analisado', this)">Analisados</button>
+      </div>
+    </div>
+    <div class="list" id="lista">
+      <div class="loading-row"><div class="spinner"></div><div>Carregando submissões…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── MODAL DE CONFIRMAÇÃO ─── -->
+<div class="modal" id="modal-del">
+  <div class="modal-card">
+    <div class="modal-ico">⚠️</div>
+    <div class="modal-t">Excluir submissão?</div>
+    <div class="modal-d">Esta ação é permanente. Os dados do cliente <strong id="del-nome">—</strong> serão removidos do banco de dados e não poderão ser recuperados.</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="cancelarDel()">Cancelar</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmarDel()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let TOKEN = null;
+let SUBS = [];
+let FILTRO = 'todos';
+let DEL_ID = null;
+
+/* ─── LOGIN ─── */
+const inputs = document.querySelectorAll('.pi');
+const btnLogin = document.getElementById('login-btn');
+inputs.forEach((n, i) => {
+  n.addEventListener('input', () => {
+    if(n.value.length === 1 && i < 3) inputs[i+1].focus();
+    btnLogin.disabled = Array.from(inputs).map(x => x.value).join('').length < 4;
+  });
+  n.addEventListener('keydown', e => {
+    if(e.key === 'Backspace' && n.value === '' && i > 0) inputs[i-1].focus();
+    if(e.key === 'Enter') fazerLogin();
+  });
+});
+
+async function fazerLogin(){
+  const pin = Array.from(inputs).map(n => n.value).join('');
+  if(pin.length < 4) return;
+  const err = document.getElementById('login-err');
+  err.textContent = '';
+  btnLogin.disabled = true;
+  btnLogin.textContent = 'Validando…';
+  try {
+    const r = await fetch('/api/auth', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({pin})
+    });
+    const d = await r.json();
+    if(d.ok){
+      TOKEN = d.token;
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').classList.add('active');
+      document.getElementById('link-painel').href = '/painel?t=' + TOKEN;
+      carregarLista();
+      // Auto-refresh a cada 60s
+      setInterval(carregarLista, 60000);
+    } else {
+      err.textContent = 'PIN incorreto.';
+      inputs.forEach(i => i.value = '');
+      inputs[0].focus();
+      btnLogin.disabled = true;
+      btnLogin.textContent = 'Entrar';
+    }
+  } catch(e){
+    err.textContent = 'Erro de conexão.';
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'Entrar';
+  }
+}
+
+/* ─── CARREGAR LISTA ─── */
+async function carregarLista(){
+  try {
+    const r = await fetch('/api/diag/list?t=' + encodeURIComponent(TOKEN));
+    const d = await r.json();
+    if(!d.ok){
+      document.getElementById('lista').innerHTML = `<div class="empty"><div class="empty-ico">⚠</div><div class="empty-t">Erro</div><div class="empty-d">${d.error || 'Não foi possível carregar'}</div></div>`;
+      return;
+    }
+    SUBS = d.items || [];
+    atualizarStats();
+    renderLista();
+  } catch(e){
+    console.error('[lista]', e);
+    document.getElementById('lista').innerHTML = `<div class="empty"><div class="empty-ico">⚠</div><div class="empty-t">Erro de conexão</div><div class="empty-d">Verifique sua internet e tente atualizar.</div></div>`;
+  }
+}
+
+function atualizarStats(){
+  document.getElementById('stat-total').textContent = SUBS.length;
+  const pend = SUBS.filter(s => s.status === 'pendente').length;
+  const anal = SUBS.filter(s => s.status === 'analisado').length;
+  document.getElementById('stat-pendente').textContent = pend;
+  document.getElementById('stat-analisado').textContent = anal;
+  const scores = SUBS.filter(s => s.score != null).map(s => s.score);
+  if(scores.length > 0){
+    const media = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+    document.getElementById('stat-score').textContent = media;
+  } else {
+    document.getElementById('stat-score').textContent = '—';
+  }
+}
+
+function filtrar(f, el){
+  FILTRO = f;
+  document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  renderLista();
+}
+
+function renderLista(){
+  const filtrados = SUBS.filter(s => FILTRO === 'todos' || s.status === FILTRO);
+  if(filtrados.length === 0){
+    if(SUBS.length === 0){
+      document.getElementById('lista').innerHTML = `<div class="empty"><div class="empty-ico">📋</div><div class="empty-t">Nenhuma submissão ainda</div><div class="empty-d">Quando um cliente preencher o diagnóstico em <a href="https://wealthplanning.app/diagnostico.html" target="_blank">wealthplanning.app/diagnostico.html</a>, ele aparece aqui automaticamente.</div></div>`;
+    } else {
+      document.getElementById('lista').innerHTML = `<div class="empty"><div class="empty-ico">🔍</div><div class="empty-t">Nenhum resultado nesse filtro</div><div class="empty-d">Tente outra categoria acima.</div></div>`;
+    }
+    return;
+  }
+  document.getElementById('lista').innerHTML = filtrados.map(s => {
+    const data = formatarData(s.criado_em);
+    const wa = formatarWa(s.whatsapp);
+    const score = s.score != null ? s.score : '—';
+    const statusLbl = s.status === 'analisado' ? 'Analisado' : 'Pendente';
+    return `
+      <div class="item">
+        <div class="item-main">
+          <div class="item-nome">${escapar(s.nome)}</div>
+          <div class="item-wa">${wa}</div>
+          <div class="item-data">Recebido em <strong>${data}</strong> · protocolo <strong>${s.id}</strong></div>
+        </div>
+        <div class="item-status ${s.status}">${statusLbl}</div>
+        <div>
+          <div class="item-score">${score}</div>
+          <div class="item-score-lbl">SCORE/100</div>
+        </div>
+        <div class="item-actions">
+          <a class="act act-primary" href="/painel?t=${encodeURIComponent(TOKEN)}#abrir-ref=${encodeURIComponent(s.id)}" title="Abrir no painel">Abrir no painel</a>
+          <a class="act" href="/diagnostico.html?ref=${encodeURIComponent(s.id)}&t=${encodeURIComponent(TOKEN)}" title="Abrir diagnóstico direto">Abrir direto</a>
+          <button class="act act-danger" onclick="abrirDel('${s.id}', '${escapar(s.nome).replace(/'/g,"\\'")}')" title="Excluir">×</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapar(s){
+  return String(s||'').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatarWa(wa){
+  if(!wa) return '—';
+  const d = String(wa).replace(/\D/g,'');
+  if(d.length === 13) return `+${d.slice(0,2)} (${d.slice(2,4)}) ${d.slice(4,9)}-${d.slice(9)}`;
+  if(d.length === 12) return `+${d.slice(0,2)} (${d.slice(2,4)}) ${d.slice(4,8)}-${d.slice(8)}`;
+  return wa;
+}
+
+function formatarData(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  const dia = String(d.getDate()).padStart(2,'0');
+  const mes = String(d.getMonth()+1).padStart(2,'0');
+  const ano = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${dia}/${mes}/${ano} às ${hh}:${mm}`;
+}
+
+/* ─── DELETAR ─── */
+function abrirDel(id, nome){
+  DEL_ID = id;
+  document.getElementById('del-nome').textContent = nome;
+  document.getElementById('modal-del').classList.add('show');
+}
+function cancelarDel(){
+  DEL_ID = null;
+  document.getElementById('modal-del').classList.remove('show');
+}
+async function confirmarDel(){
+  if(!DEL_ID) return;
+  try {
+    const r = await fetch(`/api/diag/delete?id=${encodeURIComponent(DEL_ID)}&t=${encodeURIComponent(TOKEN)}`, {method: 'DELETE'});
+    const d = await r.json();
+    if(d.ok){
+      cancelarDel();
+      carregarLista();
+    } else {
+      alert('Erro ao excluir: ' + (d.error || 'desconhecido'));
+    }
+  } catch(e){
+    alert('Erro de conexão.');
+  }
+}
+</script>
+</body>
+</html>

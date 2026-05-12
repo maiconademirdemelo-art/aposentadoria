@@ -114,6 +114,19 @@ a{text-decoration:none;color:inherit}
 
 /* ─── TOGGLES (sim/não) ─── */
 .toggle-group{display:flex;flex-direction:column;gap:10px;width:100%}
+
+/* Grid de composição da carteira / idades filhos (2 colunas responsivas) */
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.comp-grid{grid-template-columns:1fr}}
+.comp-field .inp-lbl{font-size:12px}
+.comp-field .iw{position:relative}
+.comp-field .iw .ipfx{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* Pills (botões de seleção simples, sem ícone) */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.pill{background:rgba(255,255,255,.04);border:1.5px solid var(--bdr);border-radius:999px;padding:9px 16px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13.5px;font-weight:500;cursor:pointer;transition:all .15s}
+.pill:hover{border-color:var(--accent);background:rgba(76,139,245,.06)}
+.pill.active{background:linear-gradient(135deg,rgba(76,139,245,.18),rgba(76,139,245,.08));border-color:var(--accent);color:var(--white);font-weight:600}
 .toggle-option{display:flex;align-items:center;gap:14px;padding:16px 18px;background:rgba(255,255,255,.03);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;transition:all .2s}
 .toggle-option:hover{border-color:rgba(76,139,245,.4);background:rgba(76,139,245,.04)}
 .toggle-option.sel{border-color:var(--accent);background:rgba(76,139,245,.08)}
@@ -1255,13 +1268,13 @@ a{text-decoration:none;color:inherit}
   <div class="w-body">
     <div class="w-card">
 
-      <!-- ─── STEP 1: Identificação ─── -->
+      <!-- ─── STEP 1: Identificação e família ─── -->
       <div class="ws active" data-step="1">
         <div class="cb">
           <div class="e-hdr">
-            <div class="e-pre">PASSO 1 · IDENTIFICAÇÃO</div>
+            <div class="e-pre">PASSO 1 · IDENTIFICAÇÃO E FAMÍLIA</div>
             <div class="e-ttl">Com quem estamos falando?</div>
-            <div class="e-sub">Estes dados aparecem no relatório final como capa.</div>
+            <div class="e-sub">Dados pessoais e da estrutura familiar. Estado civil e regime de bens impactam diretamente o planejamento sucessório.</div>
           </div>
         </div>
         <div class="cd"></div>
@@ -1282,7 +1295,39 @@ a{text-decoration:none;color:inherit}
               <input class="inp np" id="i-prof" type="text" placeholder="Ex.: Engenheiro" maxlength="60">
             </div>
           </div>
-          <div class="err-msg" id="err-1">Preencha nome e idade (18-90) para continuar.</div>
+
+          <div style="margin-top:22px">
+            <label class="inp-lbl">Estado civil</label>
+            <div class="pills" id="pills-ecivil">
+              <button type="button" class="pill" data-val="solteiro" onclick="selPill('ecivil','solteiro',this)">Solteiro(a)</button>
+              <button type="button" class="pill" data-val="casado" onclick="selPill('ecivil','casado',this)">Casado(a)</button>
+              <button type="button" class="pill" data-val="uniao" onclick="selPill('ecivil','uniao',this)">União estável</button>
+              <button type="button" class="pill" data-val="divorciado" onclick="selPill('ecivil','divorciado',this)">Divorciado(a)</button>
+              <button type="button" class="pill" data-val="viuvo" onclick="selPill('ecivil','viuvo',this)">Viúvo(a)</button>
+            </div>
+          </div>
+
+          <div id="bloco-conjuge" style="display:none;margin-top:18px;padding:14px 16px;background:rgba(76,139,245,.06);border:1px solid rgba(76,139,245,.15);border-radius:10px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Dados do cônjuge</div>
+            <div class="input-grid">
+              <div>
+                <label class="inp-lbl">Regime de bens</label>
+                <select class="inp np" id="i-regbens">
+                  <option value="">— selecione —</option>
+                  <option value="parcial">Comunhão parcial</option>
+                  <option value="universal">Comunhão universal</option>
+                  <option value="separacao">Separação total</option>
+                  <option value="participacao">Participação final nos aquestos</option>
+                </select>
+              </div>
+              <div>
+                <label class="inp-lbl">Idade do(a) cônjuge</label>
+                <input class="inp np" id="i-idadeConj" type="tel" inputmode="numeric" placeholder="ex.: 33" maxlength="3">
+              </div>
+            </div>
+          </div>
+
+          <div class="err-msg" id="err-1">Preencha nome, idade (18-90) e estado civil para continuar.</div>
           <div class="br">
             <button class="bp" onclick="fecharDiagnostico()">Cancelar</button>
             <button class="bn" onclick="wNext(1)">Avançar
@@ -1359,6 +1404,58 @@ a{text-decoration:none;color:inherit}
               </div>
             </div>
           </div>
+
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Renda complementar e fluxo de caixa</div>
+            <div class="input-grid">
+              <div>
+                <label class="inp-lbl">Renda extra anual <span style="color:var(--muted);font-weight:400">(bônus, PLR, dividendos)</span></label>
+                <div class="iw">
+                  <div class="ipfx">R$</div>
+                  <input class="inp" id="i-rendaExtra" type="tel" inputmode="numeric" placeholder="0" oninput="fmtMoeda(this)">
+                </div>
+              </div>
+              <div>
+                <label class="inp-lbl">Despesa mensal média</label>
+                <div class="iw">
+                  <div class="ipfx">R$</div>
+                  <input class="inp" id="i-despesaMensal" type="tel" inputmode="numeric" placeholder="8.000,00" oninput="fmtMoeda(this)">
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:14px">
+              <label class="inp-lbl">Reserva de emergência atual <span style="color:var(--muted);font-weight:400">(em meses de despesa)</span></label>
+              <div class="iw">
+                <input class="inp np" id="i-reservaMeses" type="tel" inputmode="numeric" placeholder="ex.: 6" maxlength="3">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
+            <label class="inp-lbl">Possui dívidas ou financiamentos em aberto?</label>
+            <div class="pgrid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+              <div class="pc" data-val="sim" onclick="pickP(this,'temDivida');toggleDivida(true)"><div class="pn" style="font-size:13px">Sim</div></div>
+              <div class="pc" data-val="nao" onclick="pickP(this,'temDivida');toggleDivida(false)"><div class="pn" style="font-size:13px">Não</div></div>
+            </div>
+            <div id="bloco-divida" style="display:none;margin-top:14px">
+              <div class="input-grid">
+                <div>
+                  <label class="inp-lbl">Valor total das dívidas</label>
+                  <div class="iw">
+                    <div class="ipfx">R$</div>
+                    <input class="inp" id="i-dividaTotal" type="tel" inputmode="numeric" placeholder="0,00" oninput="fmtMoeda(this)">
+                  </div>
+                </div>
+                <div>
+                  <label class="inp-lbl">Prazo médio restante <span style="color:var(--muted);font-weight:400">(anos)</span></label>
+                  <div class="iw">
+                    <input class="inp np" id="i-dividaPrazo" type="tel" inputmode="numeric" placeholder="ex.: 8" maxlength="3">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="err-msg" id="err-2">Selecione regime, INSS, modalidade de IR e informe a renda mensal.</div>
           <div class="br">
             <button class="bp" onclick="wPrev(2)">Voltar</button>
@@ -1437,7 +1534,36 @@ a{text-decoration:none;color:inherit}
               </div>
             </div>
           </div>
-          <div class="err-msg" id="err-3">Informe patrimônio, aporte e responda sobre previdência.</div>
+
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Composição atual da carteira</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Aproximadamente quanto do patrimônio investido está em cada classe? Os 5 campos devem somar 100%.</div>
+            <div class="comp-grid">
+              <div class="comp-field">
+                <label class="inp-lbl">Renda fixa <span style="color:var(--muted);font-weight:400">(Tesouro, CDB, LCI/LCA, debêntures)</span></label>
+                <div class="iw"><input class="inp np" id="i-compRF" type="tel" inputmode="numeric" placeholder="ex.: 40" maxlength="3" oninput="atualizaSomaComp()"><div class="ipfx" style="left:auto;right:14px">%</div></div>
+              </div>
+              <div class="comp-field">
+                <label class="inp-lbl">Ações brasileiras <span style="color:var(--muted);font-weight:400">(B3, fundos de ações)</span></label>
+                <div class="iw"><input class="inp np" id="i-compAcoes" type="tel" inputmode="numeric" placeholder="ex.: 25" maxlength="3" oninput="atualizaSomaComp()"><div class="ipfx" style="left:auto;right:14px">%</div></div>
+              </div>
+              <div class="comp-field">
+                <label class="inp-lbl">FIIs <span style="color:var(--muted);font-weight:400">(fundos imobiliários)</span></label>
+                <div class="iw"><input class="inp np" id="i-compFII" type="tel" inputmode="numeric" placeholder="ex.: 15" maxlength="3" oninput="atualizaSomaComp()"><div class="ipfx" style="left:auto;right:14px">%</div></div>
+              </div>
+              <div class="comp-field">
+                <label class="inp-lbl">Internacional <span style="color:var(--muted);font-weight:400">(BDRs, ETFs globais, fundos)</span></label>
+                <div class="iw"><input class="inp np" id="i-compInter" type="tel" inputmode="numeric" placeholder="ex.: 15" maxlength="3" oninput="atualizaSomaComp()"><div class="ipfx" style="left:auto;right:14px">%</div></div>
+              </div>
+              <div class="comp-field">
+                <label class="inp-lbl">Outros <span style="color:var(--muted);font-weight:400">(crypto, multimercado, etc)</span></label>
+                <div class="iw"><input class="inp np" id="i-compOutros" type="tel" inputmode="numeric" placeholder="ex.: 5" maxlength="3" oninput="atualizaSomaComp()"><div class="ipfx" style="left:auto;right:14px">%</div></div>
+              </div>
+            </div>
+            <div id="soma-comp" style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:10px;letter-spacing:.05em">Soma atual: <span id="soma-comp-val" style="color:var(--accent);font-weight:700">0%</span> · ideal: 100%</div>
+          </div>
+
+          <div class="err-msg" id="err-3">Informe patrimônio, aporte, responda sobre previdência e a composição deve somar 100%.</div>
           <div class="br">
             <button class="bp" onclick="wPrev(3)">Voltar</button>
             <button class="bn" onclick="wNext(3)">Avançar
@@ -1614,16 +1740,46 @@ a{text-decoration:none;color:inherit}
             <div>
               <label class="inp-lbl">Tem dependentes / herdeiros?</label>
               <div class="pgrid" style="grid-template-columns:1fr 1fr">
-                <div class="pc" data-val="sim" onclick="pickP(this,'depend')"><div class="pn" style="font-size:13px">Sim</div></div>
-                <div class="pc" data-val="nao" onclick="pickP(this,'depend')"><div class="pn" style="font-size:13px">Não</div></div>
+                <div class="pc" data-val="sim" onclick="pickP(this,'depend');toggleDependentes(true)"><div class="pn" style="font-size:13px">Sim</div></div>
+                <div class="pc" data-val="nao" onclick="pickP(this,'depend');toggleDependentes(false)"><div class="pn" style="font-size:13px">Não</div></div>
               </div>
             </div>
             <div>
               <label class="inp-lbl">Quantos?</label>
-              <div class="iw"><input class="inp np" id="i-qtddep" type="tel" inputmode="numeric" placeholder="0" maxlength="2"></div>
+              <div class="iw"><input class="inp np" id="i-qtddep" type="tel" inputmode="numeric" placeholder="0" maxlength="2" oninput="atualizaIdadesFilhos()"></div>
             </div>
           </div>
-          <div>
+
+          <div id="bloco-idades-filhos" style="display:none;margin-top:18px;padding:14px 16px;background:rgba(76,139,245,.06);border:1px solid rgba(76,139,245,.15);border-radius:10px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Idade de cada dependente</div>
+            <div id="idades-filhos-grid" class="comp-grid"></div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5">As idades ajudam a calcular custos educacionais, proteção até maioridade e cronograma sucessório.</div>
+          </div>
+
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:600">Estado do planejamento sucessório</div>
+            <div class="input-grid">
+              <div>
+                <label class="inp-lbl">Possui testamento atualizado?</label>
+                <div class="pgrid" style="grid-template-columns:1fr 1fr">
+                  <div class="pc" data-val="sim" onclick="pickP(this,'temTestamento')"><div class="pn" style="font-size:13px">Sim</div></div>
+                  <div class="pc" data-val="nao" onclick="pickP(this,'temTestamento')"><div class="pn" style="font-size:13px">Não</div></div>
+                </div>
+              </div>
+              <div>
+                <label class="inp-lbl">Longevidade familiar média <span style="color:var(--muted);font-weight:400">(pais/avós)</span></label>
+                <select class="inp np" id="i-longevFamiliar">
+                  <option value="">— selecione —</option>
+                  <option value="ate70">Até 70 anos</option>
+                  <option value="70a80">Entre 70 e 80 anos</option>
+                  <option value="80a90">Entre 80 e 90 anos</option>
+                  <option value="mais90">Acima de 90 anos</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--bdr)">
             <label class="inp-lbl">Principal objetivo financeiro</label>
             <div class="egrid">
               <div class="ec" data-val="acumular" onclick="pickE(this,'objet')">
@@ -1648,7 +1804,8 @@ a{text-decoration:none;color:inherit}
               </div>
             </div>
           </div>
-          <div class="err-msg" id="err-7">Responda sobre dependentes e objetivo principal.</div>
+
+          <div class="err-msg" id="err-7">Responda sobre dependentes, testamento, longevidade familiar e objetivo principal.</div>
           <div class="br">
             <button class="bp" onclick="wPrev(7)">Voltar</button>
             <button class="bn" onclick="wNext(7)">Avançar
@@ -1822,14 +1979,28 @@ const SM = 1518;
    ═════════════════════════════════════════════════════ */
 let step = 1;
 const D = {
+  // Passo 1 — Identificação
   nome:'', idade:0, prof:'',
+  ecivil:null, regbens:null, idadeConj:0,
+  // Passo 2 — Renda & Regime
   regime:null, inss:null, ir:null, renda:0,
+  rendaExtra:0, despesaMensal:0, reservaMeses:0,
+  temDivida:null, dividaTotal:0, dividaPrazo:0,
+  // Passo 3 — Patrimônio
   patrim:0, aporte:0, tempr:null,
   pgblSaldo:0, pgblAporte:0, vgblSaldo:0,
+  // Composição da carteira (deve somar 100%)
+  compRF:0, compAcoes:0, compFII:0, compInter:0, compOutros:0,
+  // Passo 4 — Perfil
   perfil:null,
+  // Passo 5 — Aposentadoria
   aposAge:60, estrat:null,
+  // Passo 6 — Imóveis
   temimo:null, qtdimo:0, valimo:0, alug:0, cvqtd:0, temhld:null,
-  depend:null, qtddep:0, objet:null
+  // Passo 7 — Sucessão
+  depend:null, qtddep:0, idadesFilhos:[],
+  temTestamento:null, longevFamiliar:null,
+  objet:null
 };
 const STEP_NAMES = ['Identificação','Renda & Regime','Patrimônio','Perfil','Aposentadoria','Imóveis','Sucessão','Confirmação'];
 
@@ -1932,6 +2103,79 @@ function pickT(el, key){
 }
 
 /* ═════════════════════════════════════════════════════
+   PILLS (Passo 1: estado civil + condicional cônjuge)
+   ═════════════════════════════════════════════════════ */
+function selPill(key, val, el){
+  const parent = el.parentElement;
+  parent.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  D[key] = val;
+  // Lógica condicional: mostrar/esconder bloco cônjuge
+  if(key === 'ecivil'){
+    const bloco = document.getElementById('bloco-conjuge');
+    if(bloco){
+      bloco.style.display = (val === 'casado' || val === 'uniao') ? 'block' : 'none';
+    }
+  }
+}
+
+/* Mostra/esconde bloco de detalhes da dívida (Passo 2) */
+function toggleDivida(temDivida){
+  const bloco = document.getElementById('bloco-divida');
+  if(bloco) bloco.style.display = temDivida ? 'block' : 'none';
+}
+
+/* Mostra/esconde bloco de idades dos filhos (Passo 7) */
+function toggleDependentes(tem){
+  const bloco = document.getElementById('bloco-idades-filhos');
+  if(bloco) bloco.style.display = tem ? 'block' : 'none';
+  if(tem) atualizaIdadesFilhos();
+}
+
+/* Gera inputs dinâmicos pra idade de cada filho */
+function atualizaIdadesFilhos(){
+  const qtd = parseInt(document.getElementById('i-qtddep').value || '0', 10);
+  D.qtddep = qtd;
+  const grid = document.getElementById('idades-filhos-grid');
+  if(!grid) return;
+  const bloco = document.getElementById('bloco-idades-filhos');
+  if(qtd > 0 && D.depend === 'sim'){
+    bloco.style.display = 'block';
+    let html = '';
+    for(let i=0; i<Math.min(qtd, 10); i++){
+      const val = (D.idadesFilhos && D.idadesFilhos[i]) ? D.idadesFilhos[i] : '';
+      html += `<div class="comp-field">
+        <label class="inp-lbl">Filho(a) ${i+1}</label>
+        <div class="iw"><input class="inp np" type="tel" inputmode="numeric" placeholder="idade" maxlength="3" value="${val}" oninput="setIdadeFilho(${i}, this.value)"><div class="ipfx" style="left:auto;right:14px;color:var(--muted);font-size:12px">anos</div></div>
+      </div>`;
+    }
+    grid.innerHTML = html;
+  } else if(qtd === 0){
+    grid.innerHTML = '';
+  }
+}
+
+function setIdadeFilho(idx, val){
+  if(!D.idadesFilhos) D.idadesFilhos = [];
+  D.idadesFilhos[idx] = parseInt(val) || 0;
+}
+
+/* Atualiza soma da composição da carteira (Passo 3) */
+function atualizaSomaComp(){
+  const ids = ['i-compRF','i-compAcoes','i-compFII','i-compInter','i-compOutros'];
+  let total = 0;
+  ids.forEach(id => {
+    const v = parseInt(document.getElementById(id).value || '0', 10);
+    total += isNaN(v) ? 0 : v;
+  });
+  const el = document.getElementById('soma-comp-val');
+  if(el){
+    el.textContent = total + '%';
+    el.style.color = (total === 100) ? '#2ecc8a' : (total > 100 ? '#f07070' : 'var(--accent)');
+  }
+}
+
+/* ═════════════════════════════════════════════════════
    SLIDER APOSENTADORIA
    ═════════════════════════════════════════════════════ */
 function updApos(el){
@@ -1956,12 +2200,36 @@ function validate(n){
     D.nome = document.getElementById('i-nome').value.trim();
     D.idade = pNum('i-idade');
     D.prof  = document.getElementById('i-prof').value.trim();
-    if(!D.nome || D.idade<18 || D.idade>90){ showErr(1); return false; }
+    if(!D.nome || D.idade<18 || D.idade>90 || !D.ecivil){ showErr(1); return false; }
+    if(D.ecivil === 'casado' || D.ecivil === 'uniao'){
+      D.regbens = document.getElementById('i-regbens').value || null;
+      D.idadeConj = pNum('i-idadeConj');
+      if(!D.regbens || D.idadeConj < 18 || D.idadeConj > 100){
+        showErr(1, 'Para casados/união estável, informe regime de bens e idade do(a) cônjuge.');
+        return false;
+      }
+    }
     return true;
   }
   if(n===2){
     D.renda = pMoney('i-renda');
     if(!D.regime || !D.inss || !D.ir || D.renda<=0){ showErr(2); return false; }
+    // Novos campos (opcionais mas capturados)
+    D.rendaExtra     = pMoney('i-rendaExtra');
+    D.despesaMensal  = pMoney('i-despesaMensal');
+    D.reservaMeses   = pNum('i-reservaMeses');
+    if(!D.temDivida){
+      showErr(2, 'Responda se possui dívidas para continuar.');
+      return false;
+    }
+    if(D.temDivida === 'sim'){
+      D.dividaTotal = pMoney('i-dividaTotal');
+      D.dividaPrazo = pNum('i-dividaPrazo');
+      if(D.dividaTotal <= 0){
+        showErr(2, 'Informe o valor total das dívidas.');
+        return false;
+      }
+    }
     return true;
   }
   if(n===3){
@@ -1972,6 +2240,17 @@ function validate(n){
       D.pgblSaldo  = pMoney('i-pgbl-saldo');
       D.pgblAporte = pMoney('i-pgbl-aporte');
       D.vgblSaldo  = pMoney('i-vgbl-saldo');
+    }
+    // Composição da carteira: capturar valores
+    D.compRF     = pNum('i-compRF');
+    D.compAcoes  = pNum('i-compAcoes');
+    D.compFII    = pNum('i-compFII');
+    D.compInter  = pNum('i-compInter');
+    D.compOutros = pNum('i-compOutros');
+    const soma = D.compRF + D.compAcoes + D.compFII + D.compInter + D.compOutros;
+    if(D.patrim > 0 && (soma < 95 || soma > 105)){
+      showErr(3, 'A composição da carteira deve somar aproximadamente 100% (soma atual: ' + soma + '%).');
+      return false;
     }
     return true;
   }
@@ -1993,8 +2272,23 @@ function validate(n){
     return true;
   }
   if(n===7){
-    if(!D.depend || !D.objet){ showErr(7); return false; }
+    if(!D.depend || !D.objet || !D.temTestamento){ showErr(7); return false; }
     D.qtddep = D.depend==='sim' ? pNum('i-qtddep') : 0;
+    D.longevFamiliar = document.getElementById('i-longevFamiliar').value || null;
+    if(!D.longevFamiliar){ showErr(7, 'Informe a longevidade familiar média.'); return false; }
+    // Captura idades dos filhos se aplicável
+    if(D.depend === 'sim' && D.qtddep > 0){
+      const idades = [];
+      for(let i=0; i<D.qtddep; i++){
+        const v = (D.idadesFilhos && D.idadesFilhos[i]) ? D.idadesFilhos[i] : 0;
+        idades.push(v);
+      }
+      D.idadesFilhos = idades;
+      if(idades.some(i => i < 0 || i > 100)){
+        showErr(7, 'Informe a idade de cada dependente.');
+        return false;
+      }
+    }
     return true;
   }
   return true;
@@ -2007,19 +2301,33 @@ function buildReview(){
   const itens = [
     ['Cliente', `${D.nome}${D.prof?` · ${D.prof}`:''}`],
     ['Idade', D.idade + ' anos'],
+    ['Estado civil', ({solteiro:'Solteiro(a)',casado:'Casado(a)',uniao:'União estável',divorciado:'Divorciado(a)',viuvo:'Viúvo(a)'})[D.ecivil] || '—'],
+  ];
+  if(D.ecivil === 'casado' || D.ecivil === 'uniao'){
+    itens.push(['Regime de bens', ({parcial:'Comunhão parcial',universal:'Comunhão universal',separacao:'Separação total',participacao:'Participação final'})[D.regbens] || '—']);
+    itens.push(['Idade do cônjuge', (D.idadeConj || '—') + ' anos']);
+  }
+  itens.push(
     ['Renda mensal bruta', fmtR(D.renda)],
+    ['Renda extra anual', D.rendaExtra > 0 ? fmtR(D.rendaExtra) : '—'],
+    ['Despesa mensal', D.despesaMensal > 0 ? fmtR(D.despesaMensal) : '—'],
+    ['Reserva de emergência', D.reservaMeses > 0 ? D.reservaMeses + ' meses' : '—'],
     ['Regime', {clt:'CLT',pj:'PJ',empresario:'Empresário'}[D.regime]],
     ['Declaração IR', D.ir==='completa'?'Completa':'Simplificada/Isento'],
+    ['Dívidas em aberto', D.temDivida === 'sim' ? fmtR(D.dividaTotal) + ' · ' + D.dividaPrazo + ' anos' : 'Não possui'],
     ['Patrimônio investido', fmtK(D.patrim)],
     ['Aporte mensal', fmtR(D.aporte)],
+    ['Composição da carteira', `RF ${D.compRF||0}% · Ações ${D.compAcoes||0}% · FII ${D.compFII||0}% · Int. ${D.compInter||0}% · Out. ${D.compOutros||0}%`],
     ['Perfil de investidor', D.perfil[0].toUpperCase()+D.perfil.slice(1)],
     ['Idade-alvo', D.aposAge + ' anos'],
     ['Estratégia', D.estrat==='renda'?'Renda vitalícia':'Consumir patrimônio'],
     ['Imóveis', D.temimo==='sim' ? `${D.qtdimo} imóveis · ${fmtK(D.valimo)}` : 'Não possui'],
     ['Holding', D.temimo==='sim' ? (D.temhld==='sim'?'Já possui':'Não possui') : '—'],
-    ['Dependentes', D.depend==='sim' ? `${D.qtddep} pessoa(s)` : 'Nenhum'],
+    ['Dependentes', D.depend==='sim' ? `${D.qtddep} pessoa(s)${D.idadesFilhos && D.idadesFilhos.length ? ' · idades: ' + D.idadesFilhos.join(', ') : ''}` : 'Nenhum'],
+    ['Testamento atualizado', D.temTestamento === 'sim' ? 'Sim' : (D.temTestamento === 'nao' ? 'Não' : '—')],
+    ['Longevidade familiar', ({ate70:'Até 70 anos',  '70a80':'70 a 80 anos', '80a90':'80 a 90 anos', mais90:'Acima de 90 anos'})[D.longevFamiliar] || '—'],
     ['Objetivo principal', {acumular:'Acumular patrimônio',proteger:'Proteger sucessão',renda:'Gerar renda mensal',equilibrio:'Equilíbrio entre tudo'}[D.objet]]
-  ];
+  );
   document.getElementById('review-grid').innerHTML = itens.map(([l,v]) =>
     `<div class="review-item"><div class="review-l">${l}</div><div class="review-v">${v}</div></div>`
   ).join('');
@@ -2448,7 +2756,19 @@ async function _diagCallClaude(systemPrompt, userPrompt, retries=3){
       }
       if(!r.ok){
         const t = await r.text();
-        throw new Error('HTTP '+r.status+': '+t.slice(0,200));
+        // Log completo no console pra debug
+        console.error('[_diagCallClaude] HTTP', r.status);
+        console.error('[_diagCallClaude] Response body:', t);
+        console.error('[_diagCallClaude] Request had system length:', systemPrompt.length, 'user length:', userPrompt.length);
+        // Tentar parsear JSON do erro pra extrair mensagem limpa
+        let errMsg = 'HTTP '+r.status;
+        try {
+          const errJson = JSON.parse(t);
+          if(errJson.error?.message) errMsg += ': ' + errJson.error.message;
+          else if(errJson.message) errMsg += ': ' + errJson.message;
+          else errMsg += ': ' + t.slice(0,300);
+        } catch(_){ errMsg += ': ' + t.slice(0,300); }
+        throw new Error(errMsg);
       }
       const data = await r.json();
       const blocks = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text);
@@ -4439,13 +4759,31 @@ async function gerarPDF(){
       lastReport.iaInstitucional = await _diagGerarAnaliseInstitucional();
       clearInterval(ticker);
       _setLoadingTxt('Parecer institucional concluído', 'Compondo documento PDF…');
+      // Se foi aberto via ?ref, salva IA no servidor pra próxima vez não pagar de novo
+      if(SUBMISSAO_REF_ID && _refToken){
+        try {
+          await fetch(`/api/diag/save-ia?id=${encodeURIComponent(SUBMISSAO_REF_ID)}&t=${encodeURIComponent(_refToken)}`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({iaInstitucional: lastReport.iaInstitucional, iaConsultiva: lastReport.ia || null})
+          });
+          console.log('[ref] IA cacheada no servidor pra submissão', SUBMISSAO_REF_ID);
+        } catch(e){ console.warn('[ref] falha ao cachear IA:', e); }
+      }
       await new Promise(r => setTimeout(r, 600));
     } catch(err){
       clearInterval(ticker);
-      console.warn('[pdf] IA institucional falhou, usando fallback canned:', err);
-      _setLoadingTxt('Análise institucional indisponível', 'Gerando PDF com estrutura padrão. Erro: ' + (err.message||'').slice(0,80));
-      await new Promise(r => setTimeout(r, 1800));
-      lastReport.iaInstitucional = null; // marca explicitamente para usar fallback
+      // Log COMPLETO no console pra debug
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.error('[pdf] IA institucional falhou. Detalhes completos abaixo:');
+      console.error('Erro tipo:', err.constructor?.name);
+      console.error('Erro message:', err.message);
+      console.error('Erro string:', String(err));
+      console.error('Erro JSON:', JSON.stringify(err, Object.getOwnPropertyNames(err||{}), 2));
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      _setLoadingTxt('Análise institucional indisponível', 'Erro: ' + (err.message||String(err)||'desconhecido').slice(0,200) + ' — abra o console (F12) para o erro completo.');
+      await new Promise(r => setTimeout(r, 3500));
+      lastReport.iaInstitucional = null;
     }
     lo.classList.remove('show');
   }
@@ -4479,7 +4817,7 @@ async function gerarPDF(){
 
   // ─── Helpers ───
   function sec(num, title){
-    return `<div style="margin-top:30px;margin-bottom:14px"><div style="font-size:9px;font-weight:600;color:${C.petrol};letter-spacing:.15em;font-family:Helvetica,Arial,sans-serif">SEÇÃO ${num}</div><div style="font-size:18px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif;letter-spacing:-.01em">${title}</div><div style="height:1px;background:${C.dark};margin-top:8px"></div></div>`;
+    return `<div data-pdfsec="${num}" data-pdfblock="header" style="margin-top:30px;margin-bottom:14px;page-break-inside:avoid;page-break-after:avoid"><div style="font-size:9px;font-weight:600;color:${C.petrol};letter-spacing:.15em;font-family:Helvetica,Arial,sans-serif">SEÇÃO ${num}</div><div style="font-size:18px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif;letter-spacing:-.01em">${title}</div><div style="height:1px;background:${C.dark};margin-top:8px"></div></div>`;
   }
   function tr(label, value, alt){
     const bg = alt ? C.alt : C.bg;
@@ -4489,25 +4827,25 @@ async function gerarPDF(){
     return `<tr style="background:${C.petrol};color:white">${cols.map(c=>`<td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;font-family:Helvetica,Arial,sans-serif;${c.align==='right'?'text-align:right':(c.align==='center'?'text-align:center':'')}">${c.label}</td>`).join('')}</tr>`;
   }
   function tbl(headers, rows){
-    return `<table style="width:100%;border-collapse:collapse;margin:12px 0;font-family:Helvetica,Arial,sans-serif">${th(headers)}${rows.join('')}</table>`;
+    return `<div data-pdfblock="tabela" style="page-break-inside:avoid"><table style="width:100%;border-collapse:collapse;margin:12px 0;font-family:Helvetica,Arial,sans-serif">${th(headers)}${rows.join('')}</table></div>`;
   }
   function parecer(text, color, label){
     if(!text) return '';
     const c = color || C.petrol;
-    return `<div style="background:${C.alt};border-left:3px solid ${c};padding:14px 18px;margin:14px 0;font-size:10.5px;color:${C.body};line-height:1.75;font-family:Helvetica,Arial,sans-serif">${label?`<div style="font-size:8.5px;font-weight:700;letter-spacing:.14em;color:${c};margin-bottom:8px">${label}</div>`:''}${text}</div>`;
+    return `<div data-pdfblock="parecer" style="background:${C.alt};border-left:3px solid ${c};padding:14px 18px;margin:14px 0;font-size:10.5px;color:${C.body};line-height:1.75;font-family:Helvetica,Arial,sans-serif;page-break-inside:avoid">${label?`<div style="font-size:8.5px;font-weight:700;letter-spacing:.14em;color:${c};margin-bottom:8px">${label}</div>`:''}${text}</div>`;
   }
   function prose(text){
-    return `<p style="font-size:11px;color:${C.body};line-height:1.75;margin:10px 0;font-family:Helvetica,Arial,sans-serif">${text}</p>`;
+    return `<p data-pdfblock="prose" style="font-size:11px;color:${C.body};line-height:1.75;margin:10px 0;font-family:Helvetica,Arial,sans-serif;page-break-inside:avoid">${text}</p>`;
   }
   function proseInst(text){
     // prosa institucional, levemente menor e mais densa
-    return `<p style="font-size:10.5px;color:${C.body};line-height:1.8;margin:10px 0;text-align:justify;font-family:Helvetica,Arial,sans-serif">${text}</p>`;
+    return `<p data-pdfblock="prose" style="font-size:10.5px;color:${C.body};line-height:1.8;margin:10px 0;text-align:justify;font-family:Helvetica,Arial,sans-serif;page-break-inside:avoid">${text}</p>`;
   }
   function kpiBox(label, value, sub, color){
     return `<div style="flex:1;padding:18px 14px;text-align:center;border-right:1px solid #ddd"><div style="font-size:8.5px;font-weight:600;color:${C.muted};letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;font-family:Helvetica,Arial,sans-serif">${label}</div><div style="font-size:22px;font-weight:300;color:${color||C.navy};font-family:Helvetica,Arial,sans-serif;letter-spacing:-.02em">${value}</div><div style="font-size:9px;color:${C.muted};margin-top:6px;font-family:Helvetica,Arial,sans-serif">${sub||''}</div></div>`;
   }
   function faseBlock(fase, titulo, objetivo, acoes){
-    return `<div style="margin:14px 0;border:1px solid #ddd;border-left:4px solid ${C.petrol};border-radius:0;background:${C.bg}">
+    return `<div data-pdfblock="fase" style="margin:14px 0;border:1px solid #ddd;border-left:4px solid ${C.petrol};border-radius:0;background:${C.bg};page-break-inside:avoid">
       <div style="padding:14px 18px;background:${C.alt};border-bottom:1px solid #ddd">
         <div style="font-size:9px;font-weight:700;color:${C.petrol};letter-spacing:.14em;font-family:Helvetica,Arial,sans-serif">${fase}</div>
         <div style="font-size:13px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif">${titulo||''}</div>
@@ -4582,12 +4920,138 @@ async function gerarPDF(){
 
   // CARTA DO CONSULTOR (abertura, sem numeração)
   if(iaI.cartaConsultor){
-    h += `<div style="margin-top:30px;margin-bottom:8px"><div style="font-size:9px;font-weight:600;color:${C.petrol};letter-spacing:.15em;font-family:Helvetica,Arial,sans-serif">PARECER ABERTURA</div><div style="font-size:18px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif;letter-spacing:-.01em">Carta do consultor</div><div style="height:1px;background:${C.dark};margin-top:8px"></div></div>`;
+    h += `<div data-pdfsec="carta" style="margin-top:30px;margin-bottom:8px;page-break-inside:avoid"><div style="font-size:9px;font-weight:600;color:${C.petrol};letter-spacing:.15em;font-family:Helvetica,Arial,sans-serif">PARECER ABERTURA</div><div style="font-size:18px;font-weight:600;color:${C.navy};margin-top:3px;font-family:Helvetica,Arial,sans-serif;letter-spacing:-.01em">Carta do consultor</div><div style="height:1px;background:${C.dark};margin-top:8px"></div></div>`;
     h += `<div style="margin:14px 0;font-size:11px;color:${C.body};line-height:1.85;font-family:Helvetica,Arial,sans-serif;text-align:justify">${iaI.cartaConsultor}</div>`;
   }
 
-  // SEÇÃO 01 · RESUMO EXECUTIVO INSTITUCIONAL
-  h += sec('01', 'Resumo Executivo Institucional');
+  // ─── DOSSIÊ DO CLIENTE (todas as respostas do wizard organizadas) ───
+  h += sec('01', 'Dossiê do Cliente · Respostas Declaradas');
+  h += `<div style="font-size:10px;color:${C.muted};margin-bottom:14px;font-family:Helvetica,Arial,sans-serif;line-height:1.5">Esta seção consolida as informações fornecidas pelo cliente durante o preenchimento do diagnóstico. Todas as projeções e recomendações apresentadas adiante derivam destes dados.</div>`;
+
+  // helper interno: mantém subtítulo + sua tabela como bloco indivisível
+  const dossieGrupo = (label, linhas) => {
+    return `<div data-pdfblock="dossie-grupo" style="page-break-inside:avoid;margin-top:14px">
+      <div style="font-size:9px;font-weight:700;color:${C.petrol};letter-spacing:.12em;margin:4px 0;font-family:Helvetica,Arial,sans-serif">${label}</div>
+      <table style="width:100%;border-collapse:collapse;margin:6px 0 0;font-family:Helvetica,Arial,sans-serif">
+        <tr style="background:${C.petrol};color:white">
+          <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em">CAMPO</td>
+          <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;text-align:right">INFORMAÇÃO</td>
+        </tr>
+        ${linhas.join('')}
+      </table>
+    </div>`;
+  };
+
+  // Sub-grupo 1: Dados pessoais e familiares
+  const ecivilLbl = {solteiro:'Solteiro(a)',casado:'Casado(a)',uniao:'União estável',divorciado:'Divorciado(a)',viuvo:'Viúvo(a)'}[D.ecivil] || '—';
+  const linhasPess = [
+    tr('Nome completo', D.nome || '—', false),
+    tr('Idade atual', (D.idade || '—') + ' anos', true),
+    tr('Profissão / Ocupação', D.prof || 'Não informada', false),
+    tr('Estado civil', ecivilLbl, true),
+  ];
+  if(D.ecivil === 'casado' || D.ecivil === 'uniao'){
+    const regbensLbl = {parcial:'Comunhão parcial',universal:'Comunhão universal',separacao:'Separação total',participacao:'Participação final nos aquestos'}[D.regbens] || '—';
+    linhasPess.push(tr('Regime de bens', regbensLbl, false));
+    linhasPess.push(tr('Idade do(a) cônjuge', (D.idadeConj || '—') + ' anos', true));
+  }
+  h += dossieGrupo('DADOS PESSOAIS E FAMILIARES', linhasPess);
+
+  // Sub-grupo 2: Situação financeira atual
+  const regimeLbl = {clt:'CLT (assalariado)', pj:'PJ (pessoa jurídica prestadora)', empresario:'Empresário / autônomo'}[D.regime] || '—';
+  const irLbl = {completa:'Declaração completa', simplificada:'Declaração simplificada', isento:'Isento'}[D.ir] || (D.ir==='simplificada'?'Simplificada/Isento':'—');
+  h += dossieGrupo('RENDA E REGIME TRIBUTÁRIO', [
+    tr('Renda mensal bruta declarada', fr(D.renda), false),
+    tr('Renda anual bruta projetada', fr((D.renda||0)*12), true),
+    tr('Renda extra anual (bônus, PLR, dividendos)', D.rendaExtra > 0 ? fr(D.rendaExtra) : 'Não declarada', false),
+    tr('Regime de trabalho', regimeLbl, true),
+    tr('Contribui para INSS', D.inss==='sim'?'Sim · contribuição ativa':'Não', false),
+    tr('Regime de declaração IR', irLbl, true),
+  ]);
+
+  // Sub-grupo 3: Fluxo de caixa e passivos
+  h += dossieGrupo('FLUXO DE CAIXA E PASSIVOS', [
+    tr('Despesa mensal média', D.despesaMensal > 0 ? fr(D.despesaMensal) : 'Não informada', false),
+    tr('Sobra mensal estimada', D.despesaMensal > 0 ? fr((D.renda||0) - (D.despesaMensal||0)) : 'Não calculada', true),
+    tr('Reserva de emergência', D.reservaMeses > 0 ? D.reservaMeses + ' meses de despesa' : 'Não declarada', false),
+    tr('Possui dívidas em aberto', D.temDivida === 'sim' ? 'Sim' : 'Não', true),
+    ...(D.temDivida === 'sim' ? [
+      tr('Valor total das dívidas', fr(D.dividaTotal||0), false),
+      tr('Prazo médio restante', (D.dividaPrazo||0) + ' anos', true),
+    ] : []),
+  ]);
+
+  // Sub-grupo 4: Patrimônio e aportes
+  const linhasPatr = [
+    tr('Patrimônio financeiro investido', fr(D.patrim), false),
+    tr('Aporte mensal recorrente', fr(D.aporte), true),
+    tr('Aporte anual projetado', fr((D.aporte||0)*12), false),
+    tr('Perfil de risco autodeclarado', (D.perfil||'').charAt(0).toUpperCase() + (D.perfil||'').slice(1), true),
+  ];
+  if(D.tempr === 'sim'){
+    linhasPatr.push(tr('Possui previdência privada', 'Sim', false));
+    linhasPatr.push(tr('Saldo atual em PGBL', fr(D.pgblSaldo||0), true));
+    linhasPatr.push(tr('Aporte anual atual em PGBL', fr(D.pgblAporte||0), false));
+    linhasPatr.push(tr('Saldo atual em VGBL', fr(D.vgblSaldo||0), true));
+  } else {
+    linhasPatr.push(tr('Possui previdência privada', 'Não', false));
+  }
+  h += dossieGrupo('PATRIMÔNIO E APORTES', linhasPatr);
+
+  // Sub-grupo 5: Composição da carteira
+  const totalComp = (D.compRF||0) + (D.compAcoes||0) + (D.compFII||0) + (D.compInter||0) + (D.compOutros||0);
+  if(totalComp > 0){
+    h += dossieGrupo('COMPOSIÇÃO ATUAL DA CARTEIRA', [
+      tr('Renda fixa (Tesouro, CDB, LCI/LCA, debêntures)', (D.compRF||0) + '% · ' + fk((D.patrim||0) * (D.compRF||0) / 100), false),
+      tr('Ações brasileiras', (D.compAcoes||0) + '% · ' + fk((D.patrim||0) * (D.compAcoes||0) / 100), true),
+      tr('FIIs (fundos imobiliários)', (D.compFII||0) + '% · ' + fk((D.patrim||0) * (D.compFII||0) / 100), false),
+      tr('Internacional (BDRs, ETFs globais)', (D.compInter||0) + '% · ' + fk((D.patrim||0) * (D.compInter||0) / 100), true),
+      tr('Outros (crypto, multimercado)', (D.compOutros||0) + '% · ' + fk((D.patrim||0) * (D.compOutros||0) / 100), false),
+    ]);
+  }
+
+  // Sub-grupo 6: Objetivos de aposentadoria
+  h += dossieGrupo('OBJETIVOS DE APOSENTADORIA', [
+    tr('Idade-alvo para aposentadoria', (D.aposAge || '—') + ' anos', false),
+    tr('Horizonte de acumulação restante', Math.max(0, (D.aposAge||0) - (D.idade||0)) + ' anos', true),
+    tr('Estratégia escolhida', D.estrat==='renda' ? 'Renda vitalícia (capital preservado para herdeiros)' : 'Consumo do patrimônio até 99 anos', false),
+  ]);
+
+  // Sub-grupo 7: Patrimônio imobiliário
+  if(D.temimo === 'sim'){
+    h += dossieGrupo('PATRIMÔNIO IMOBILIÁRIO', [
+      tr('Possui imóveis', 'Sim', false),
+      tr('Quantidade de imóveis', (D.qtdimo || 0) + ' unidade(s)', true),
+      tr('Valor total declarado', fr(D.valimo || 0), false),
+      tr('Receita de aluguel mensal', fr(D.alug || 0), true),
+      tr('Receita de aluguel anual', fr((D.alug || 0)*12), false),
+      tr('Compra/venda média anual', (D.cvqtd || 0) + ' operação(ões)/ano', true),
+      tr('Estrutura societária', D.temhld==='sim' ? 'Holding patrimonial já constituída' : 'Imóveis na pessoa física', false),
+    ]);
+  } else {
+    h += dossieGrupo('PATRIMÔNIO IMOBILIÁRIO', [tr('Possui imóveis', 'Não', false)]);
+  }
+
+  // Sub-grupo 8: Estrutura familiar, sucessão e longevidade
+  const longevLbl = {ate70:'Até 70 anos', '70a80':'Entre 70 e 80 anos', '80a90':'Entre 80 e 90 anos', mais90:'Acima de 90 anos'}[D.longevFamiliar] || '—';
+  const objetLbl = {acumular:'Acumular patrimônio', proteger:'Proteger sucessão e família', renda:'Gerar renda passiva mensal', equilibrio:'Equilíbrio entre múltiplos objetivos'}[D.objet] || '—';
+  const dependLinhas = [
+    tr('Possui dependentes diretos', D.depend==='sim' ? 'Sim' : 'Não', false),
+  ];
+  if(D.depend === 'sim'){
+    dependLinhas.push(tr('Quantidade de dependentes', (D.qtddep || 0) + ' pessoa(s)', true));
+    if(D.idadesFilhos && D.idadesFilhos.length > 0 && D.idadesFilhos.some(i => i > 0)){
+      dependLinhas.push(tr('Idades dos dependentes', D.idadesFilhos.filter(i => i > 0).join(', ') + ' anos', false));
+    }
+  }
+  dependLinhas.push(tr('Testamento atualizado', D.temTestamento === 'sim' ? 'Sim, já redigido' : 'Não possui', true));
+  dependLinhas.push(tr('Longevidade familiar média (pais/avós)', longevLbl, false));
+  dependLinhas.push(tr('Objetivo principal declarado', objetLbl, true));
+  h += dossieGrupo('ESTRUTURA FAMILIAR, SUCESSÃO E LONGEVIDADE', dependLinhas);
+
+
+  // SEÇÃO 02 · RESUMO EXECUTIVO INSTITUCIONAL
+  h += sec('02', 'Resumo Executivo Institucional');
   if(iaI.resumoExecutivoInst){
     h += proseInst(iaI.resumoExecutivoInst);
   } else {
@@ -4595,7 +5059,7 @@ async function gerarPDF(){
   }
 
   // SEÇÃO 02 · VISÃO MACROECONÔMICA
-  h += sec('02', 'Visão Macroeconômica Relevante');
+  h += sec('03', 'Visão Macroeconômica Relevante');
   if(iaI.visaoMacro){
     h += proseInst(iaI.visaoMacro);
   } else {
@@ -4603,7 +5067,7 @@ async function gerarPDF(){
   }
 
   // SEÇÃO 03 · SCORE PATRIMONIAL CONSOLIDADO
-  h += sec('03', 'Composição do Score Patrimonial');
+  h += sec('04', 'Composição do Score Patrimonial');
   h += tbl(
     [{label:'DIMENSÃO'},{label:'PONTUAÇÃO',align:'right'},{label:'STATUS',align:'right'}],
     score.dims.map((d,i) => {
@@ -4619,7 +5083,7 @@ async function gerarPDF(){
   );
 
   // SEÇÃO 04 · APOSENTADORIA
-  h += sec('04', 'Análise Estratégica · Planejamento de Aposentadoria');
+  h += sec('05', 'Análise Estratégica · Planejamento de Aposentadoria');
   h += tbl(
     [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
     [
@@ -4638,7 +5102,7 @@ async function gerarPDF(){
   h += parecer(iaI.analiseEstrategica?.aposentadoria, C.blue, 'PARECER · APOSENTADORIA');
 
   // SEÇÃO 05 · PGBL
-  h += sec('05', 'Análise Estratégica · Otimização Tributária PGBL');
+  h += sec('06', 'Análise Estratégica · Otimização Tributária PGBL');
   if(pgbl.aplica){
     h += tbl(
       [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
@@ -4660,10 +5124,10 @@ async function gerarPDF(){
   h += parecer(iaI.analiseEstrategica?.pgbl, C.green, 'PARECER · PGBL');
 
   // SEÇÃO 06 · HOLDING
-  h += sec('06', 'Análise Estratégica · Estruturação Societária');
+  h += sec('07', 'Análise Estratégica · Estruturação Societária');
   if(hld.aplica){
     const horizonte = hld.horizonte || 25;
-    h += `<div style="font-size:9px;color:${C.muted};margin:8px 0 6px;letter-spacing:.06em">COMPARATIVO PATRIMONIAL · HORIZONTE ${horizonte} ANOS</div>`;
+    h += `<div data-pdfblock="tabela" style="page-break-inside:avoid"><div style="font-size:9px;color:${C.muted};margin:8px 0 6px;letter-spacing:.06em">COMPARATIVO PATRIMONIAL · HORIZONTE ${horizonte} ANOS</div>`;
     h += `<table style="width:100%;border-collapse:collapse;margin:8px 0;font-family:Helvetica,Arial,sans-serif">
       <tr style="background:${C.petrol};color:white">
         <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em">RUBRICA</td>
@@ -4683,7 +5147,7 @@ async function gerarPDF(){
     h += cmp('Custo sucessório', fr(D.valimo*0.22), fr(D.valimo*0.08), true);
     h += cmp('Custo abertura', '—', fr(hld.custoAbertura), false);
     h += cmp('Manutenção anual', '—', fr(hld.manutAnual), true);
-    h += `</table>`;
+    h += `</table></div>`;
     h += tbl(
       [{label:'RESULTADO'},{label:'VALOR',align:'right'}],
       [
@@ -4699,7 +5163,7 @@ async function gerarPDF(){
   h += parecer(iaI.analiseEstrategica?.holding, C.gold, 'PARECER · HOLDING');
 
   // SEÇÃO 07 · VGBL
-  h += sec('07', 'Análise Estratégica · Proteção Sucessória VGBL');
+  h += sec('08', 'Análise Estratégica · Proteção Sucessória VGBL');
   if(vgbl.aplica){
     h += tbl(
       [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
@@ -4720,7 +5184,7 @@ async function gerarPDF(){
   h += parecer(iaI.analiseEstrategica?.vgbl, C.purple, 'PARECER · VGBL');
 
   // SEÇÃO 08 · RENDA PASSIVA
-  h += sec('08', 'Análise Estratégica · Geração de Renda Passiva');
+  h += sec('09', 'Análise Estratégica · Geração de Renda Passiva');
   h += tbl(
     [{label:'INDICADOR'},{label:'VALOR',align:'right'}],
     [
@@ -4737,12 +5201,12 @@ async function gerarPDF(){
 
   // SEÇÃO 09 · ESTRATÉGIA INTEGRADA
   if(iaI.estrategiaIntegrada){
-    h += sec('09', 'Estratégia Integrada e Sequenciamento');
+    h += sec('10', 'Estratégia Integrada e Sequenciamento');
     h += proseInst(iaI.estrategiaIntegrada);
   }
 
   // SEÇÃO 10 · PLANO DE IMPLEMENTAÇÃO FASEADO
-  h += sec('10', 'Plano de Implementação Faseado');
+  h += sec('11', 'Plano de Implementação Faseado');
   if(iaI.planoImplementacao && iaI.planoImplementacao.length){
     iaI.planoImplementacao.forEach(f => {
       h += faseBlock(f.fase, f.titulo, f.objetivo, f.acoes);
@@ -4768,8 +5232,8 @@ async function gerarPDF(){
 
   // SEÇÃO 11 · MAPA DE RISCOS
   if(iaI.riscosInstitucionais && iaI.riscosInstitucionais.length){
-    h += sec('11', 'Mapa de Riscos Institucionais');
-    h += `<table style="width:100%;border-collapse:collapse;margin:12px 0;font-family:Helvetica,Arial,sans-serif">
+    h += sec('12', 'Mapa de Riscos Institucionais');
+    h += `<div data-pdfblock="tabela" style="page-break-inside:avoid"><table style="width:100%;border-collapse:collapse;margin:12px 0;font-family:Helvetica,Arial,sans-serif">
       <tr style="background:${C.petrol};color:white">
         <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;width:140px">CATEGORIA</td>
         <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;text-align:center;width:70px">PROB.</td>
@@ -4777,18 +5241,18 @@ async function gerarPDF(){
         <td style="padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em">DESCRIÇÃO · MITIGAÇÃO</td>
       </tr>`;
     iaI.riscosInstitucionais.forEach((r,i) => { h += riscoRow(r, i%2===1); });
-    h += `</table>`;
+    h += `</table></div>`;
   }
 
   // SEÇÃO 12 · OBSERVAÇÕES REGULATÓRIAS
   if(iaI.observacoesRegulatorias){
-    h += sec('12', 'Observações Regulatórias');
+    h += sec('13', 'Observações Regulatórias');
     h += proseInst(iaI.observacoesRegulatorias);
   }
 
   // SEÇÃO 13 · CADÊNCIA DE REVISÃO
   if(iaI.cadenciaRevisao){
-    h += sec('13', 'Cadência de Revisão e Próximos Passos');
+    h += sec('14', 'Cadência de Revisão e Próximos Passos');
     h += proseInst(iaI.cadenciaRevisao);
   }
 
@@ -4831,6 +5295,7 @@ async function gerarPDF(){
   const el = container.firstChild;
 
   try {
+    // ─── Renderiza o canvas ANTES de medir blocos (precisa estar na DOM) ───
     const canvas = await html2canvas(el, {
       scale: 2,
       useCORS: true,
@@ -4843,18 +5308,98 @@ async function gerarPDF(){
     const pageW = 210, pageH = 297;
     const imgW = pageW;
     const imgH = canvas.height * pageW / canvas.width;
-    const pages = Math.ceil(imgH / pageH);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.94);
+    const cssWidthPx = el.scrollWidth || el.offsetWidth || 794;
+    const pxToMm = pageW / cssWidthPx;
 
-    for(let pg = 0; pg < pages; pg++){
+    // ─── Algoritmo de paginação por blocos coesos ───
+    // Coleta TODOS os blocos marcados como data-pdfblock. Cada bloco
+    // tem um top e um bottom em mm. O algoritmo de paginação procura
+    // o melhor ponto de quebra ENTRE blocos, nunca cortando no meio
+    // de um bloco coeso (a menos que o bloco seja maior que a página).
+    const blockEls = Array.from(el.querySelectorAll('[data-pdfblock]'));
+    // Filtra somente blocos "raiz" (não pega filhos aninhados se já tem pai marcado)
+    // Pra blocos aninhados, prioriza o pai (que é o mais coeso)
+    const rootBlocks = blockEls.filter(b => {
+      let p = b.parentElement;
+      while(p && p !== el){
+        if(p.hasAttribute('data-pdfblock')) return false;
+        p = p.parentElement;
+      }
+      return true;
+    });
+    // Cada bloco vira { top: mm, bottom: mm }
+    const blocks = rootBlocks.map(b => ({
+      top: b.offsetTop * pxToMm,
+      bottom: (b.offsetTop + b.offsetHeight) * pxToMm,
+      el: b
+    })).sort((a,b) => a.top - b.top);
+
+    const totalHeightMm = imgH;
+    const breaks = [];
+    let cursorMm = 0;
+    let safety = 0;
+
+    // Margem mínima de respiro no topo de cada página (especial pós-capa)
+    const TOP_MARGIN_PG = 0; // a capa já tem padding interno
+
+    while(cursorMm < totalHeightMm && safety < 300){
+      safety++;
+      const limit = cursorMm + pageH;
+      if(limit >= totalHeightMm){
+        // Última página
+        breaks.push({startMm: cursorMm, endMm: totalHeightMm});
+        cursorMm = totalHeightMm;
+        break;
+      }
+
+      // Procura blocos que CRUZAM a linha do limite (top < limit < bottom)
+      // Se algum cruza, quebra ANTES do top desse bloco (empurra ele pra próxima)
+      // Se nenhum cruza, pode quebrar no limit (não tem nada sendo dividido)
+      const crossing = blocks.find(b =>
+        b.top < limit - 1 && b.bottom > limit + 1 && b.top > cursorMm + 5
+      );
+
+      let breakAt;
+      if(crossing){
+        // Quebra antes desse bloco (ele inteiro vai pra próxima página)
+        breakAt = crossing.top - 2; // 2mm de respiro
+      } else {
+        // Quebra exatamente no limit (nada está sendo cortado)
+        breakAt = limit;
+      }
+
+      // Proteção: se o bloco que está cruzando começou MUITO no início da página,
+      // significa que esse bloco é maior que uma página inteira — nesse caso aceita
+      // cortar nele mesmo (não tem como melhorar)
+      if(crossing && crossing.top - cursorMm < 30){
+        breakAt = limit; // bloco grande demais, corta no meio mesmo
+      }
+
+      breaks.push({startMm: cursorMm, endMm: breakAt});
+      cursorMm = breakAt;
+    }
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.94);
+    const totalPages = breaks.length;
+
+    for(let pg = 0; pg < totalPages; pg++){
       if(pg > 0) pdf.addPage();
-      pdf.addImage(dataUrl, 'JPEG', 0, -(pg*pageH), imgW, imgH);
+      const brk = breaks[pg];
+      const visibleHeightMm = brk.endMm - brk.startMm;
+      // Desenha a imagem deslocada pra que o topo da página corresponda a brk.startMm
+      pdf.addImage(dataUrl, 'JPEG', 0, -brk.startMm, imgW, imgH);
+      // Mascara o resto (após visibleHeightMm) com retângulo branco
+      if(visibleHeightMm < pageH){
+        pdf.setFillColor(255,255,255);
+        pdf.rect(0, visibleHeightMm, pageW, pageH - visibleHeightMm + 1, 'F');
+      }
+      // Footer institucional em todas as páginas exceto a capa
       if(pg > 0){
         pdf.setFontSize(7);
         pdf.setTextColor(140,140,140);
         pdf.setFont('helvetica','normal');
         pdf.text(`WealthPlanning · ${D.nome} · ${docId}`, 14, pageH-8);
-        pdf.text(`Documento confidencial · Página ${pg+1} de ${pages}`, pageW-14, pageH-8, {align:'right'});
+        pdf.text(`Documento confidencial · Página ${pg+1} de ${totalPages}`, pageW-14, pageH-8, {align:'right'});
       }
     }
 
@@ -5230,11 +5775,166 @@ function mostrarTelaObrigado(score, aps, pgbl, hld, vgbl, renda){
 }
 
 /* ═════════════════════════════════════════════════════
+   PRÉ-PREENCHIMENTO via ?ref=ID (consultor abrindo submissão salva)
+   ═════════════════════════════════════════════════════ */
+let SUBMISSAO_REF_ID = null;
+async function carregarSubmissao(id, token){
+  try {
+    const r = await fetch(`/api/diag/get?id=${encodeURIComponent(id)}&t=${encodeURIComponent(token)}`);
+    const data = await r.json();
+    if(!data.ok){
+      console.error('[ref] falha ao buscar submissão:', data.error);
+      alert('Não foi possível abrir essa submissão: ' + (data.error || 'erro desconhecido'));
+      return false;
+    }
+    const item = data.item;
+    // Faz merge dos dados salvos no D global (preservando defaults)
+    if(item.dados && typeof item.dados === 'object'){
+      Object.assign(D, item.dados);
+    }
+    // Aplica os valores nos inputs visualmente
+    aplicarDadosNoWizard();
+    SUBMISSAO_REF_ID = id;
+    // Se já tem IA cacheada, pode pular pra render direto — mas por segurança
+    // vamos só pré-preencher e deixar consultor revisar/gerar de novo se quiser
+    console.log('[ref] submissão carregada:', id, 'nome:', item.nome, 'status:', item.status);
+    return true;
+  } catch(e){
+    console.error('[ref] erro:', e);
+    return false;
+  }
+}
+
+function aplicarDadosNoWizard(){
+  // Aplica D nos inputs visuais (text, money, selects, pills)
+  const setV = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? ''; };
+  const setMoney = (id, val) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(val > 0){
+      el.value = Number(val).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      el.dataset.raw = String(val);
+    }
+  };
+  const clickPC = (selector, val) => {
+    if(!val) return;
+    const els = document.querySelectorAll(selector + ' .pc');
+    els.forEach(el => { if(el.dataset.val === val) el.classList.add('sel'); else el.classList.remove('sel'); });
+  };
+  const clickToggle = (groupQuery, val) => {
+    if(!val) return;
+    const els = document.querySelectorAll(groupQuery + ' .toggle-option');
+    els.forEach(el => { if(el.dataset.val === val) el.classList.add('sel'); else el.classList.remove('sel'); });
+  };
+  const clickEC = (groupQuery, val) => {
+    if(!val) return;
+    const els = document.querySelectorAll(groupQuery + ' .ec');
+    els.forEach(el => { if(el.dataset.val === val) el.classList.add('sel'); else el.classList.remove('sel'); });
+  };
+  const clickPill = (groupId, val) => {
+    if(!val) return;
+    const els = document.querySelectorAll('#' + groupId + ' .pill');
+    els.forEach(el => { if(el.dataset.val === val) el.classList.add('active'); else el.classList.remove('active'); });
+  };
+
+  // Passo 1
+  setV('i-nome', D.nome);
+  setV('i-idade', D.idade || '');
+  setV('i-prof', D.prof);
+  clickPill('pills-ecivil', D.ecivil);
+  if(D.ecivil === 'casado' || D.ecivil === 'uniao'){
+    const bloco = document.getElementById('bloco-conjuge');
+    if(bloco) bloco.style.display = 'block';
+    setV('i-regbens', D.regbens);
+    setV('i-idadeConj', D.idadeConj || '');
+  }
+  // Passo 2
+  setMoney('i-renda', D.renda);
+  setMoney('i-rendaExtra', D.rendaExtra);
+  setMoney('i-despesaMensal', D.despesaMensal);
+  setV('i-reservaMeses', D.reservaMeses || '');
+  clickPC('#pg-regime', D.regime);
+  // INSS está num pgrid sem id próprio - vamos buscar por contexto:
+  document.querySelectorAll('.pc[data-val]').forEach(el => {
+    if(D.inss && (el.dataset.val === D.inss) && el.closest('.cf')?.querySelector('#i-renda')){
+      // hack: este pgrid está perto do INSS — marca se o valor bater
+    }
+  });
+  clickToggle('#tg-ir', D.ir);
+  if(D.temDivida){
+    document.querySelectorAll('.pc[data-val]').forEach(el => {
+      if(el.dataset.val === D.temDivida && el.getAttribute('onclick')?.includes('temDivida')){
+        el.classList.add('sel');
+      }
+    });
+    if(D.temDivida === 'sim'){
+      document.getElementById('bloco-divida').style.display = 'block';
+      setMoney('i-dividaTotal', D.dividaTotal);
+      setV('i-dividaPrazo', D.dividaPrazo || '');
+    }
+  }
+  // Passo 3
+  setMoney('i-patrim', D.patrim);
+  setMoney('i-aporte', D.aporte);
+  clickToggle('.cf', D.tempr);
+  if(D.tempr === 'sim'){
+    const cf = document.getElementById('cf-prev');
+    if(cf) cf.classList.add('show');
+    setMoney('i-pgbl-saldo', D.pgblSaldo);
+    setMoney('i-pgbl-aporte', D.pgblAporte);
+    setMoney('i-vgbl-saldo', D.vgblSaldo);
+  }
+  setV('i-compRF', D.compRF || '');
+  setV('i-compAcoes', D.compAcoes || '');
+  setV('i-compFII', D.compFII || '');
+  setV('i-compInter', D.compInter || '');
+  setV('i-compOutros', D.compOutros || '');
+  if(D.compRF || D.compAcoes) atualizaSomaComp();
+  // Passo 4 - perfil (egrid)
+  clickEC('.egrid', D.perfil);
+  // Passo 5 - aposentadoria
+  const slider = document.getElementById('i-apos');
+  if(slider && D.aposAge){ slider.value = D.aposAge; updApos(slider); }
+  clickEC('.egrid', D.estrat);
+  // Passo 6 - imóveis
+  clickToggle('.cf', D.temimo);
+  if(D.temimo === 'sim'){
+    const cf = document.getElementById('cf-imo');
+    if(cf) cf.classList.add('show');
+    setV('i-qtdimo', D.qtdimo || '');
+    setMoney('i-valimo', D.valimo);
+    setMoney('i-alug', D.alug);
+    setV('i-cvqtd', D.cvqtd || '');
+    clickPC('.cf', D.temhld);
+  }
+  // Passo 7 - sucessão
+  document.querySelectorAll('.pc[data-val]').forEach(el => {
+    if(el.dataset.val === D.depend && el.getAttribute('onclick')?.includes('depend')){
+      el.classList.add('sel');
+    }
+    if(el.dataset.val === D.temTestamento && el.getAttribute('onclick')?.includes('temTestamento')){
+      el.classList.add('sel');
+    }
+  });
+  setV('i-qtddep', D.qtddep || '');
+  setV('i-longevFamiliar', D.longevFamiliar);
+  if(D.depend === 'sim' && D.qtddep > 0){
+    toggleDependentes(true);
+  }
+  clickEC('.egrid', D.objet);
+}
+
+/* ═════════════════════════════════════════════════════
    INIT
    ═════════════════════════════════════════════════════ */
 renderProg();
 // inicializa slider de aposentadoria
 updApos(document.getElementById('i-apos'));
+
+// Detecta ?ref=ID (modo consultor abrindo submissão salva)
+const _urlParams = new URLSearchParams(window.location.search);
+const _refId = _urlParams.get('ref');
+const _refToken = _urlParams.get('t');
 
 if(MODO_CLIENTE){
   // Cliente: começa pela tela de boas-vindas
@@ -5249,8 +5949,17 @@ if(MODO_CLIENTE){
   // Troca texto do botão final do wizard pra refletir modo cliente
   const btnGerarTxt = document.getElementById('btn-gerar-txt');
   if(btnGerarTxt) btnGerarTxt.textContent = 'Enviar diagnóstico';
+} else if(_refId && _refToken){
+  // Consultor abrindo submissão salva: pré-preenche o D e mostra wizard
+  carregarSubmissao(_refId, _refToken).then(ok => {
+    if(ok){
+      setTimeout(() => {
+        wGoTo(8); // pula direto pro passo 8 (revisão) - consultor pode voltar se quiser editar
+      }, 200);
+    }
+  });
 } else {
-  // Consultor: começa direto no wizard (comportamento original)
+  // Consultor com wizard vazio (comportamento original)
   setTimeout(() => document.getElementById('i-nome')?.focus(), 200);
 }
 
