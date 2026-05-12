@@ -11025,128 +11025,111 @@ window.initRendaSimulator=function(){
 };
 })();
 
-// ═══ DIAGNOSTICO ═══
 function abrirDiagnostico(){var o=document.createElement("div");o.id="diag-overlay";o.style.cssText="position:fixed;inset:0;z-index:99999;background:#080e1a";var f=document.createElement("iframe");f.src="diagnostico.html";f.style.cssText="width:100%;height:100%;border:none";o.appendChild(f);document.body.appendChild(o);document.body.style.overflow="hidden";window.addEventListener("message",function h(e){if(e.data==="fechar-diagnostico"){var x=document.getElementById("diag-overlay");if(x)x.remove();document.body.style.overflow="";window.removeEventListener("message",h)}})}
 
-// ═══ ABAS + FII — INJETADOS VIA JS ═══
-(function(){
-  // Esperar o DOM + delay para garantir que tudo renderizou
-  function init(){
-    var header = document.querySelector("#s-acoes .acoes-header");
-    var inputState = document.getElementById("acoes-input-state");
-    if(!header || !inputState) return;
+// DEBUG: Monitorar quando s-acoes fica visível
+var _origShow = typeof showScreen === 'function' ? showScreen : null;
+if(_origShow){
+  console.log("[DEBUG] showScreen encontrado, sobrescrevendo...");
+} else {
+  console.log("[DEBUG] showScreen NAO encontrado ainda");
+}
 
-    // Renomear título
-    var t1 = header.querySelector(".acoes-title");
-    if(t1) t1.innerHTML = 'Análise de <span class="acoes-title-accent">Ativos</span>';
-    var sub = header.querySelector(".acoes-sub");
-    if(sub) sub.textContent = "Diagnóstico fundamentalista de ações e FIIs listados na B3.";
+// Injetar abas quando s-acoes ficar visível
+var _ativosInjetado = false;
+function injetarAtivos(){
+  if(_ativosInjetado) return;
+  console.log("[DEBUG] injetarAtivos() chamado");
+  
+  var screen = document.getElementById("s-acoes");
+  if(!screen){console.log("[DEBUG] s-acoes NAO encontrado");return}
+  console.log("[DEBUG] s-acoes encontrado, display=" + getComputedStyle(screen).display);
+  
+  var header = screen.querySelector(".acoes-header");
+  if(!header){console.log("[DEBUG] .acoes-header NAO encontrado");return}
+  console.log("[DEBUG] header encontrado");
+  
+  var inputState = document.getElementById("acoes-input-state");
+  if(!inputState){console.log("[DEBUG] acoes-input-state NAO encontrado");return}
+  console.log("[DEBUG] inputState encontrado, display=" + getComputedStyle(inputState).display);
+  console.log("[DEBUG] inputState.parentNode=" + (inputState.parentNode?inputState.parentNode.className:"null"));
 
-    // CSS das abas
-    var sty = document.createElement("style");
-    sty.textContent = ".ativos-tabs{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:28px}.ativos-tab{flex:1;padding:12px;background:transparent;border:none;border-radius:9px;color:rgba(255,255,255,.4);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}.ativos-tab:hover{color:#fff;background:rgba(255,255,255,.03)}.ativos-tab.active{background:rgba(76,139,245,.12);color:#4c8bf5;border:1px solid rgba(76,139,245,.25)}.ativos-tab .tb{font-family:monospace;font-size:8px;padding:2px 6px;border-radius:99px;background:rgba(168,94,255,.15);color:#a85eff;font-weight:700;margin-left:6px}";
-    document.head.appendChild(sty);
+  // Titulo
+  var t = header.querySelector(".acoes-title");
+  if(t) t.innerHTML = "An\u00e1lise de <span class=\"acoes-title-accent\">Ativos</span>";
+  var sub = header.querySelector(".acoes-sub");
+  if(sub) sub.textContent = "Diagn\u00f3stico fundamentalista de a\u00e7\u00f5es e FIIs listados na B3.";
 
-    // Criar abas
-    var tabs = document.createElement("div");
-    tabs.className = "ativos-tabs";
-    tabs.innerHTML = '<button class="ativos-tab active" id="tab-btn-acoes" onclick="switchAtivosTab(\'acoes\')">📈 Ações</button><button class="ativos-tab" id="tab-btn-fiis" onclick="switchAtivosTab(\'fiis\')">🏢 FIIs <span class="tb">NOVO</span></button>';
-    header.parentNode.insertBefore(tabs, inputState);
+  // CSS
+  var sty = document.createElement("style");
+  sty.textContent = ".ativos-tabs{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:28px}.ativos-tab{flex:1;padding:12px;background:transparent;border:none;border-radius:9px;color:rgba(255,255,255,.4);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}.ativos-tab:hover{color:#fff}.ativos-tab.active{background:rgba(76,139,245,.12);color:#4c8bf5;border:1px solid rgba(76,139,245,.25)}.ativos-tab .tb{font-size:8px;padding:2px 6px;border-radius:99px;background:rgba(168,94,255,.15);color:#a85eff;font-weight:700;margin-left:6px}";
+  document.head.appendChild(sty);
+  
+  // Abas
+  var tabs = document.createElement("div");
+  tabs.className = "ativos-tabs";
+  var b1 = document.createElement("button");
+  b1.className = "ativos-tab active";
+  b1.id = "tab-btn-acoes";
+  b1.textContent = "\ud83d\udcc8 A\u00e7\u00f5es";
+  b1.onclick = function(){switchAtivosTab("acoes")};
+  var b2 = document.createElement("button");
+  b2.className = "ativos-tab";
+  b2.id = "tab-btn-fiis";
+  b2.innerHTML = "\ud83c\udfe2 FIIs <span class=\"tb\">NOVO</span>";
+  b2.onclick = function(){switchAtivosTab("fiis")};
+  tabs.appendChild(b1);
+  tabs.appendChild(b2);
+  
+  // Inserir tabs antes do inputState
+  inputState.parentNode.insertBefore(tabs, inputState);
+  console.log("[DEBUG] Abas inseridas com sucesso");
+  
+  // FII input
+  var fi = document.createElement("div");
+  fi.id = "fii-input-state";
+  fi.style.display = "none";
+  fi.innerHTML = "<div class=\"acoes-input-card\" style=\"border-color:rgba(46,204,138,.25)\"><label class=\"acoes-input-label\" style=\"color:#2ecc8a\">Ticker do FII</label><div class=\"acoes-input-row\"><input type=\"text\" id=\"fii-ticker\" placeholder=\"HGLG11\" maxlength=\"8\" autocomplete=\"off\" style=\"border-color:rgba(46,204,138,.3)\"></div><div class=\"acoes-btn-row\" style=\"grid-template-columns:1fr\"><button class=\"acoes-mode-btn\" style=\"background:linear-gradient(135deg,rgba(46,204,138,.15),rgba(46,204,138,.08));border-color:rgba(46,204,138,.3)\" onclick=\"fiiIniciarAnalise()\"><span class=\"acoes-mode-icon\">\ud83c\udfe2</span><span class=\"acoes-mode-info\"><strong style=\"color:#2ecc8a\">Iniciar An\u00e1lise de FII</strong><small>Macro, fundamentos, P/VP e veredicto</small></span></button></div><div class=\"acoes-examples\"><span class=\"acoes-examples-lab\">Exemplos:</span><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">HGLG11</button><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">KNRI11</button><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">MXRF11</button><button class=\"acoes-ex-btn\" onclick=\"document.getElementById(&apos;fii-ticker&apos;).value=this.textContent\">XPML11</button></div></div><div class=\"acoes-meta-grid\"><div class=\"acoes-meta-col\"><div class=\"acoes-meta-num\" style=\"color:#2ecc8a\">01</div><h3>An\u00e1lise</h3><p>Macro, fundo, P/VP, riscos e veredicto.</p></div><div class=\"acoes-meta-col\"><div class=\"acoes-meta-num\" style=\"color:#2ecc8a\">02</div><h3>Segmenta\u00e7\u00e3o</h3><p>Lajes, log\u00edstica, shopping, papel ou FoF.</p></div><div class=\"acoes-meta-col\"><div class=\"acoes-meta-num\" style=\"color:#2ecc8a\">03</div><h3>Aviso</h3><p>Informativo. N\u00e3o constitui recomenda\u00e7\u00e3o.</p></div></div>";
+  inputState.parentNode.insertBefore(fi, inputState.nextSibling);
+  console.log("[DEBUG] FII input inserido");
+  
+  _ativosInjetado = true;
+  console.log("[DEBUG] Injecao completa");
+}
 
-    // Criar FII input
-    var fi = document.createElement("div");
-    fi.id = "fii-input-state";
-    fi.style.display = "none";
-    fi.innerHTML = '<div class="acoes-input-card" style="border-color:rgba(46,204,138,.25)"><label class="acoes-input-label" style="color:#2ecc8a">Ticker do FII</label><div class="acoes-input-row"><input type="text" id="fii-ticker" placeholder="HGLG11" maxlength="8" autocomplete="off" spellcheck="false" style="border-color:rgba(46,204,138,.3)"></div><div class="acoes-btn-row" style="grid-template-columns:1fr"><button class="acoes-mode-btn" style="background:linear-gradient(135deg,rgba(46,204,138,.15),rgba(46,204,138,.08));border-color:rgba(46,204,138,.3)" onclick="fiiIniciarAnalise()"><span class="acoes-mode-icon">🏢</span><span class="acoes-mode-info"><strong style="color:#2ecc8a">Iniciar Análise de FII</strong><small>Macro, fundamentos, P/VP e veredicto</small></span></button></div><div class="acoes-examples"><span class="acoes-examples-lab">Exemplos:</span><button class="acoes-ex-btn" onclick="document.getElementById(\'fii-ticker\').value=this.textContent">HGLG11</button><button class="acoes-ex-btn" onclick="document.getElementById(\'fii-ticker\').value=this.textContent">KNRI11</button><button class="acoes-ex-btn" onclick="document.getElementById(\'fii-ticker\').value=this.textContent">MXRF11</button><button class="acoes-ex-btn" onclick="document.getElementById(\'fii-ticker\').value=this.textContent">XPML11</button><button class="acoes-ex-btn" onclick="document.getElementById(\'fii-ticker\').value=this.textContent">VISC11</button></div></div><div class="acoes-meta-grid"><div class="acoes-meta-col"><div class="acoes-meta-num" style="color:#2ecc8a">01</div><h3>Análise</h3><p>Macro, fundo, fundamentalista, P/VP, riscos e veredicto.</p></div><div class="acoes-meta-col"><div class="acoes-meta-num" style="color:#2ecc8a">02</div><h3>Segmentação</h3><p>Lajes, logística, shopping, papel ou FoF.</p></div><div class="acoes-meta-col"><div class="acoes-meta-num" style="color:#2ecc8a">03</div><h3>Aviso</h3><p>Informativo. Não constitui recomendação.</p></div></div>';
-    inputState.parentNode.insertBefore(fi, inputState.nextSibling);
-
-    // Criar FII results
-    var fr = document.createElement("div");
-    fr.id = "fii-results-state";
-    fr.style.display = "none";
-    var secs = "";
-    [["01","macro","Macro View"],["02","fundo","Caracterização"],["03","fund","Fundamentalista"],["04","pvp","P/VP"],["05","risco","Riscos"],["06","veredicto","Veredicto"]].forEach(function(s){
-      secs += '<div class="acoes-section"><div class="acoes-section-head" onclick="acoesToggleSection(this)"><div class="acoes-section-left"><span class="acoes-section-num">'+s[0]+'</span><span class="acoes-section-title">'+s[2]+'</span></div><div class="acoes-section-right"><span class="acoes-section-status" id="fii-st-'+s[1]+'">aguardando</span><svg class="acoes-section-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div></div><div class="acoes-section-body"><div class="acoes-section-content" id="fii-body-'+s[1]+'"></div></div></div>';
-    });
-    fr.innerHTML = '<div class="acoes-hero" style="border-color:rgba(46,204,138,.15)"><div class="acoes-hero-mark" style="color:#2ecc8a">FII · <span id="fii-hero-ticker">—</span></div><h2 class="acoes-hero-name" id="fii-hero-name">Carregando...</h2><div class="acoes-hero-meta"><span id="fii-hero-segmento">—</span><span class="acoes-dot">·</span><span id="fii-hero-gestora">—</span><span class="acoes-dot">·</span><span class="acoes-pill" id="fii-hero-data-base">—</span></div></div><div class="acoes-kpi-grid"><div class="acoes-kpi"><div class="acoes-kpi-label">DY</div><div class="acoes-kpi-value acoes-skeleton" id="fii-kpi-dy">—</div><div class="acoes-kpi-sub" id="fii-kpi-dy-sub">—</div></div><div class="acoes-kpi"><div class="acoes-kpi-label">P/VP</div><div class="acoes-kpi-value acoes-skeleton" id="fii-kpi-pvp">—</div><div class="acoes-kpi-sub" id="fii-kpi-pvp-sub">—</div></div><div class="acoes-kpi"><div class="acoes-kpi-label">Justo</div><div class="acoes-kpi-value acoes-skeleton" id="fii-kpi-pvpjusto">—</div><div class="acoes-kpi-sub" id="fii-kpi-pvpjusto-sub">—</div></div><div class="acoes-kpi"><div class="acoes-kpi-label">Veredicto</div><div class="acoes-kpi-value acoes-skeleton" id="fii-kpi-veredicto">—</div><div class="acoes-kpi-sub" id="fii-kpi-veredicto-sub">—</div></div></div><div class="acoes-progress acoes-hidden" id="fii-progress"><div class="acoes-progress-spinner"></div><div class="acoes-progress-text" id="fii-progress-text">Iniciando...</div></div><div class="acoes-sections">' + secs + '</div><div style="text-align:center;margin-top:28px"><button class="acoes-mode-btn" style="display:inline-flex;max-width:300px;background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.2)" onclick="fiiResetState()"><span class="acoes-mode-icon">🔄</span><span class="acoes-mode-info"><strong style="color:#2ecc8a">Nova análise</strong></span></button></div>';
-    fi.parentNode.insertBefore(fr, fi.nextSibling);
-
-    // Enter no ticker FII
-    document.getElementById("fii-ticker").addEventListener("keydown", function(e){ if(e.key==="Enter") fiiIniciarAnalise(); });
-  }
-
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else setTimeout(init, 100);
-})();
-
-// ═══ TAB SWITCH ═══
 function switchAtivosTab(tab){
+  console.log("[DEBUG] switchAtivosTab: " + tab);
   document.querySelectorAll(".ativos-tab").forEach(function(b){b.classList.remove("active")});
-  document.getElementById("tab-btn-"+tab).classList.add("active");
-  var ai=document.getElementById("acoes-input-state"),ar=document.getElementById("acoes-results-state");
-  var fi=document.getElementById("fii-input-state"),fr=document.getElementById("fii-results-state");
+  var btn = document.getElementById("tab-btn-"+tab);
+  if(btn) btn.classList.add("active");
+  var ai=document.getElementById("acoes-input-state");
+  var ar=document.getElementById("acoes-results-state");
+  var fi=document.getElementById("fii-input-state");
   if(tab==="acoes"){
-    if(ai)ai.style.display="";if(ar)ar.style.display="";
-    if(fi)fi.style.display="none";if(fr)fr.style.display="none";
+    if(ai)ai.style.display="";
+    if(ar)ar.style.display="";
+    if(fi)fi.style.display="none";
   } else {
-    if(ai)ai.style.display="none";if(ar)ar.style.display="none";
+    if(ai)ai.style.display="none";
+    if(ar)ar.style.display="none";
     if(fi)fi.style.display="";
     setTimeout(function(){var t=document.getElementById("fii-ticker");if(t)t.focus()},200);
   }
 }
 
-// ═══ FII ENGINE ═══
-var fii$=function(id){return document.getElementById(id)};
-function fiiSetStatus(k,s){var el=fii$("fii-st-"+k);if(!el)return;el.textContent={pending:"aguardando",loading:"carregando",done:"pronto",error:"erro"}[s]||s;el.className="acoes-section-status "+(s==="pending"?"":"acoes-"+s)}
-function fiiSetProgress(msg){var p=fii$("fii-progress");if(!msg){p.classList.add("acoes-hidden");return}p.classList.remove("acoes-hidden");fii$("fii-progress-text").textContent=msg}
-function fiiResetState(){fii$("fii-input-state").style.display="";fii$("fii-results-state").style.display="none";fii$("fii-ticker").value=""}
-function fiiKV(l,v,c){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:#8b949e;font-size:13px">'+l+'</span><span style="color:'+(c||"#e6edf3")+';font-weight:600;font-size:13px">'+v+'</span></div>'}
-var FII_SYS="Analista sênior de FIIs brasileiros. Técnico. Sem markdown. APENAS JSON sem cercas de código. Use web_search.";
-async function fiiIniciarAnalise(){
-  var tk=(fii$("fii-ticker").value||"").trim().toUpperCase();
-  if(!/^[A-Z]{4}\d{2}$/.test(tk)){alert("Ticker inválido (ex: HGLG11)");return}
-  fii$("fii-input-state").style.display="none";fii$("fii-results-state").style.display="";
-  fii$("fii-hero-ticker").textContent=tk;
-  ["macro","fundo","fund","pvp","risco","veredicto"].forEach(function(k){fiiSetStatus(k,"pending")});
-  fiiSetProgress("Buscando dados...");
-  try{
-    fiiSetStatus("fundo","loading");
-    var sn=await acoesCallJSON({system:FII_SYS,user:'FII '+tk+' na B3. JSON:{"nome":"","ticker":"'+tk+'","segmento":"","gestora":"","pvp":0,"dy12m":0,"cotacao":0,"pl":"","dataBase":""}',useSearch:true});
-    fii$("fii-hero-name").textContent=sn.nome||tk;fii$("fii-hero-segmento").textContent=sn.segmento||"";fii$("fii-hero-gestora").textContent=sn.gestora||"";fii$("fii-hero-data-base").textContent=sn.dataBase||"";
-    fii$("fii-kpi-dy").textContent=sn.dy12m?sn.dy12m.toFixed(1)+"%":"—";fii$("fii-kpi-dy").classList.remove("acoes-skeleton");
-    fii$("fii-kpi-pvp").textContent=sn.pvp?sn.pvp.toFixed(2):"—";fii$("fii-kpi-pvp").classList.remove("acoes-skeleton");
-    fii$("fii-body-fundo").innerHTML=fiiKV("Nome",sn.nome||"—")+fiiKV("Segmento",sn.segmento||"—")+fiiKV("Gestora",sn.gestora||"—")+fiiKV("Cotação",sn.cotacao?"R$ "+Number(sn.cotacao).toFixed(2):"—")+fiiKV("P/VP",sn.pvp?sn.pvp.toFixed(2):"—")+fiiKV("DY",sn.dy12m?sn.dy12m.toFixed(1)+"%":"—")+fiiKV("PL",sn.pl||"—");
-    fiiSetStatus("fundo","done");
-    fiiSetProgress("Macro...");fiiSetStatus("macro","loading");
-    var mc=await acoesCallJSON({system:FII_SYS,user:'Macro FIIs '+sn.segmento+'. JSON:{"selic":"","ipca12m":"","igpm12m":"","ntnb10y":"","cicloJuros":"","visaoMacro":""}',useSearch:true});
-    fii$("fii-body-macro").innerHTML=fiiKV("Selic",mc.selic||"—")+fiiKV("IPCA",mc.ipca12m||"—")+fiiKV("IGP-M",mc.igpm12m||"—")+fiiKV("NTN-B",mc.ntnb10y||"—")+fiiKV("Ciclo",mc.cicloJuros||"—")+(mc.visaoMacro?'<div style="margin-top:16px;padding:14px;background:rgba(76,139,245,.06);border-left:3px solid #4c8bf5;border-radius:0 8px 8px 0;font-size:13px;color:#e6edf3;line-height:1.6">'+mc.visaoMacro+"</div>":"");
-    fiiSetStatus("macro","done");
-    fiiSetProgress("Fundamentos...");fiiSetStatus("fund","loading");
-    var fd=await acoesCallJSON({system:FII_SYS,user:'Fundamentos '+tk+' ('+sn.segmento+'). JSON:{"dy12m":0,"dyMedia3a":0,"vacancia":null,"nAtivos":0,"taxaTotal":"","qualidade":"","analise":""}',useSearch:true});
-    var fH=fiiKV("DY 12m",fd.dy12m?fd.dy12m.toFixed(1)+"%":"—","#2ecc8a")+fiiKV("DY 3a",fd.dyMedia3a?fd.dyMedia3a.toFixed(1)+"%":"—");
-    if(fd.vacancia!=null)fH+=fiiKV("Vacância",fd.vacancia+"%");
-    fH+=fiiKV("Ativos",fd.nAtivos||"—")+fiiKV("Taxa",fd.taxaTotal||"—")+fiiKV("Qualidade",fd.qualidade||"—");
-    if(fd.analise)fH+='<div style="margin-top:16px;padding:14px;background:rgba(248,215,94,.04);border-left:3px solid #f8d75e;border-radius:0 8px 8px 0;font-size:13px;color:#e6edf3;line-height:1.6">'+fd.analise+"</div>";
-    fii$("fii-body-fund").innerHTML=fH;fiiSetStatus("fund","done");
-    fiiSetProgress("P/VP...");fiiSetStatus("pvp","loading");
-    var pv=await acoesCallJSON({system:FII_SYS,user:'P/VP '+tk+'. JSON:{"pvpAtual":0,"pvpJusto":0,"desvio":"","desvioDir":"","pares":[{"ticker":"","pvp":0,"dy":0}],"analise":""}',useSearch:true});
-    fii$("fii-kpi-pvpjusto").textContent=pv.pvpJusto?pv.pvpJusto.toFixed(2):"—";fii$("fii-kpi-pvpjusto").classList.remove("acoes-skeleton");
-    var dc=pv.desvioDir==="desconto"?"#2ecc8a":pv.desvioDir==="prêmio"?"#f07070":"#f8d75e";
-    fii$("fii-kpi-pvpjusto-sub").innerHTML='<span style="color:'+dc+'">'+(pv.desvio||"—")+"</span>";
-    var pH=fiiKV("Atual",pv.pvpAtual?pv.pvpAtual.toFixed(2):"—")+fiiKV("Justo",pv.pvpJusto?pv.pvpJusto.toFixed(2):"—","#4c8bf5")+fiiKV("Desvio",pv.desvio||"—",dc);
-    if(pv.pares)pv.pares.forEach(function(x){pH+=fiiKV(x.ticker,"P/VP "+x.pvp.toFixed(2)+" DY "+x.dy.toFixed(1)+"%")});
-    if(pv.analise)pH+='<div style="margin-top:16px;padding:14px;background:rgba(76,139,245,.06);border-left:3px solid #4c8bf5;border-radius:0 8px 8px 0;font-size:13px;color:#e6edf3;line-height:1.6">'+pv.analise+"</div>";
-    fii$("fii-body-pvp").innerHTML=pH;fiiSetStatus("pvp","done");
-    fiiSetProgress("Veredicto...");fiiSetStatus("risco","loading");fiiSetStatus("veredicto","loading");
-    var rv=await acoesCallJSON({system:FII_SYS,user:'Riscos e veredicto '+tk+'. JSON:{"riscos":[{"categoria":"","status":""}],"veredicto":"ALOCAR|MONITORAR|EVITAR","tese":"","script":""}',useSearch:true});
-    var rH="";if(rv.riscos)rv.riscos.forEach(function(x){var sc=x.status==="Normal"?"#2ecc8a":x.status==="Alerta"?"#f07070":"#f8d75e";rH+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span>'+x.categoria+'</span><span style="color:'+sc+';font-weight:700">'+x.status+"</span></div>"});
-    fii$("fii-body-risco").innerHTML=rH;fiiSetStatus("risco","done");
-    var vc=rv.veredicto==="ALOCAR"?"#2ecc8a":rv.veredicto==="EVITAR"?"#f07070":"#f8d75e";
-    fii$("fii-kpi-veredicto").innerHTML='<span style="color:'+vc+';font-weight:800">'+(rv.veredicto||"—")+"</span>";fii$("fii-kpi-veredicto").classList.remove("acoes-skeleton");
-    fii$("fii-body-veredicto").innerHTML='<div style="padding:20px;background:rgba(13,31,45,.8);border-radius:12px;text-align:center;margin-bottom:16px"><div style="font-size:28px;font-weight:800;color:'+vc+'">'+(rv.veredicto||"—")+"</div></div>"+(rv.tese?'<div style="padding:14px;background:rgba(255,255,255,.02);border-radius:8px;font-size:13px;color:#e6edf3;line-height:1.6;margin-bottom:12px">'+rv.tese+"</div>":"")+(rv.script?'<div style="padding:14px;background:rgba(46,204,138,.04);border:1px solid rgba(46,204,138,.12);border-radius:8px"><div style="font-size:11px;color:#2ecc8a;font-weight:700;margin-bottom:6px">Script para o assessor</div><div style="font-size:13px;color:#e6edf3;line-height:1.6">'+rv.script+"</div></div>":"");
-    fiiSetStatus("veredicto","done");fiiSetProgress(null);
-  }catch(err){console.error("FII:",err);fiiSetProgress("Erro: "+err.message)}
-}
+function fiiIniciarAnalise(){alert("FII: em construcao")}
+function fiiResetState(){}
+
+// Observar navegação para s-acoes e injetar
+var _obs = new MutationObserver(function(){
+  var s = document.getElementById("s-acoes");
+  if(s && getComputedStyle(s).display !== "none" && !_ativosInjetado){
+    console.log("[DEBUG] s-acoes ficou visivel, injetando...");
+    setTimeout(injetarAtivos, 50);
+  }
+});
+_obs.observe(document.body, {attributes:true, subtree:true, attributeFilter:["style","class"]});
+console.log("[DEBUG] Observer ativo, aguardando s-acoes");
 
 </script>
 </body>
