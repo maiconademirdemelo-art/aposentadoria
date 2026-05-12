@@ -9331,6 +9331,7 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
         <button id="acoes-new-analysis" onclick="acoesResetState()">← Nova análise</button>
         <button id="acoes-export-json" onclick="acoesExportJSON()">Exportar JSON</button>
         <button id="acoes-export-md" onclick="acoesExportMD()">Exportar Markdown</button>
+        <button id="acoes-export-pdf" onclick="acoesGerarPDF()" style="background:linear-gradient(135deg,rgba(76,139,245,.15),rgba(76,139,245,.08));border-color:rgba(76,139,245,.3);color:#4c8bf5">📄 Relatório PDF</button>
       </div>
 
     </div>
@@ -9375,7 +9376,7 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
       </div>
       <div style="text-align:center;margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
         <button class="acoes-mode-btn" style="display:inline-flex;max-width:260px;background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.2)" onclick="fiiResetState()"><span class="acoes-mode-icon">🔄</span><span class="acoes-mode-info"><strong style="color:#2ecc8a">Nova análise</strong></span></button>
-        <button id="fii-pdf-btn" class="acoes-mode-btn" style="display:none;max-width:260px;background:rgba(76,139,245,.08);border:1px solid rgba(76,139,245,.2)" onclick="fiiGerarPDF()"><span class="acoes-mode-icon">📄</span><span class="acoes-mode-info"><strong style="color:#4c8bf5">Gerar Relatório PDF</strong></span></button>
+        <button id="fii-pdf-btn" class="acoes-mode-btn" style="max-width:260px;background:rgba(76,139,245,.08);border:1px solid rgba(76,139,245,.2)" onclick="fiiGerarPDF()"><span class="acoes-mode-icon">📄</span><span class="acoes-mode-info"><strong style="color:#4c8bf5">Gerar Relatório PDF</strong></span></button>
       </div>
     </div>
 
@@ -11446,6 +11447,116 @@ async function fiiGerarPDF(){
   }
   container.remove();
   btn.querySelector("strong").textContent="Gerar Relatório PDF";
+}
+
+
+async function acoesGerarPDF(){
+  var d=acoesState.data;if(!d||!d.snapshot){alert("Execute a análise primeiro");return}
+  var btn=document.getElementById("acoes-export-pdf");
+  var origText=btn.textContent;btn.textContent="Gerando PDF...";
+
+  var C={navy:"#0D1F2D",dark:"#1C3A4A",petrol:"#2E5D6E",body:"#3D3D3D",muted:"#6B6B6B",light:"#A8A8A8",green:"#1A7A4A",red:"#8B1A1A",amber:"#7A5C00",bg:"#FFFFFF",alt:"#F4F5F6",sub:"#EAF0F3"};
+  var s=d.snapshot,m=d.macro||{},f=d.fund||{},t=d.tec||{},v=d.veredicto||{};
+  var mp=f.multiplos||{},en=f.endividamento||{};
+  var vc=v.decisao==="COMPRAR"||v.decisao==="ALOCAR"?C.green:v.decisao==="VENDER"||v.decisao==="EVITAR"?C.red:C.amber;
+  var hoje=new Date().toLocaleDateString("pt-BR");
+
+  function kpi(label,value,sub,color){return '<div style="flex:1;padding:16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:9px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:22px;font-weight:300;color:'+(color||C.navy)+'">'+value+'</div><div style="font-size:9px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>'}
+  function sec(num,title){return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:9px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:16px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>'}
+  function tr(label,val,alt){return '<tr><td style="padding:6px 10px;font-size:10px;color:'+C.body+';border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+label+'</td><td style="padding:6px 10px;font-size:10px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+val+'</td></tr>'}
+  function co(text,color){return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:8px 12px;margin:8px 0;font-size:10px;color:'+C.body+';line-height:1.5">'+text+'</div>'}
+  function th2(){return '<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">INDICADOR</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>'}
+
+  var h='<div id="acoes-pdf-container" style="width:794px;font-family:Helvetica,Arial,sans-serif;color:'+C.body+';background:white">';
+
+  // CAPA
+  h+='<div style="background:'+C.navy+';padding:40px 36px 30px;color:white">';
+  h+='<div style="font-size:28px;font-weight:300">Relatório de Análise de Ação</div>';
+  h+='<div style="display:inline-block;background:'+C.dark+';padding:3px 10px;border-radius:3px;font-size:10px;color:'+C.petrol+';margin-top:10px">Análise Fundamentalista e Técnica</div>';
+  h+='<div style="width:40px;height:1px;background:'+C.petrol+';margin:14px 0"></div>';
+  h+='<div style="font-size:14px;color:'+C.light+'">'+(s.nome||s.ticker)+' ('+s.ticker+') — '+(s.setor||"")+'</div>';
+  h+='<div style="font-size:11px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Data-base: '+(s.dataBase||hoje)+'</div>';
+  h+='</div>';
+
+  // KPIs
+  h+='<div style="background:'+C.alt+';display:flex;border-bottom:1px solid #ddd">';
+  h+=kpi("Preço",s.precoAtual?"R$ "+Number(s.precoAtual).toFixed(2):"—",s.variacao52sem?s.variacao52sem+"%":"—");
+  h+=kpi("P/L",mp.pl?String(mp.pl):"—",mp.pl&&mp.pl<15?"Atrativo":"");
+  h+=kpi("Score",v.score?v.score+"/10":"—","técnico+fundamental");
+  h+=kpi("Veredicto",v.decisao||"—",v.horizonte||"",vc);
+  h+='</div>';
+
+  h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:8px;color:'+C.light+'">';
+  h+='<span>'+(s.nome||s.ticker)+' ('+s.ticker+')</span>';
+  h+='<span>Relatório informativo — não constitui oferta ou recomendação.</span></div>';
+
+  // SEÇÕES
+  h+='<div style="padding:0 36px 30px">';
+
+  // S01 MACRO
+  h+=sec("01","Contexto Macroeconômico");
+  h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">'+th2();
+  h+=tr("Selic",m.selic||"—",false)+tr("IPCA 12m",m.ipca12m||"—",true)+tr("PIB Projeção",m.pibProj12m||"—",false)+tr("Câmbio USD",m.cambioUSD||"—",true)+tr("Ciclo Econômico",m.cicloEconomico||"—",false);
+  h+='</table>';
+  if(m.visao)h+=co(m.visao);
+  if(m.setorClassificacao)h+=co("<strong>Setor:</strong> "+m.setorClassificacao);
+
+  // S02 FUNDAMENTOS
+  h+=sec("02","Análise Fundamentalista");
+  h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">'+th2();
+  h+=tr("P/L",mp.pl||"—",false)+tr("P/VP",mp.pvp||"—",true)+tr("EV/EBITDA",mp.evEbitda||"—",false)+tr("ROE",mp.roe?mp.roe+"%":"—",true)+tr("ROIC",mp.roic?mp.roic+"%":"—",false)+tr("Margem Líquida",mp.margemLiquida?mp.margemLiquida+"%":"—",true)+tr("Margem EBITDA",mp.margemEbitda?mp.margemEbitda+"%":"—",false)+tr("Dividend Yield",mp.dy?mp.dy+"%":"—",true)+tr("Payout",mp.payout?mp.payout+"%":"—",false);
+  h+='</table>';
+  if(en){
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">ENDIVIDAMENTO</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>';
+    h+=tr("Dívida Líq./EBITDA",en.divLiqEbitda||"—",false)+tr("Dívida Líq./PL",en.divLiqPl||"—",true)+tr("Liquidez Corrente",en.liquidezCorrente||"—",false);
+    h+='</table>';
+  }
+  if(f.analise)h+=co(f.analise);
+
+  // S03 TÉCNICA
+  h+=sec("03","Análise Técnica");
+  if(t.tendencia)h+=co("<strong>Tendência:</strong> "+t.tendencia);
+  h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">'+th2();
+  if(t.suporte)h+=tr("Suporte",t.suporte,false);
+  if(t.resistencia)h+=tr("Resistência",t.resistencia,true);
+  if(t.rsi)h+=tr("RSI (14)",t.rsi,false);
+  if(t.macd)h+=tr("MACD",t.macd,true);
+  if(t.volumeMedio)h+=tr("Volume Médio",t.volumeMedio,false);
+  if(t.mediaMovel200)h+=tr("MM200",t.mediaMovel200,true);
+  h+='</table>';
+  if(t.analise)h+=co(t.analise);
+
+  // S04 VEREDICTO
+  h+=sec("04","Veredicto Final");
+  h+='<div style="background:'+C.navy+';padding:20px;border-radius:6px;text-align:center;margin:12px 0">';
+  h+='<div style="font-size:24px;font-weight:600;color:'+vc+'">'+(v.decisao||"—")+'</div>';
+  if(v.precoAlvo)h+='<div style="font-size:12px;color:white;margin-top:6px">Preço-alvo: R$ '+v.precoAlvo+'</div>';
+  if(v.rationale)h+='<div style="font-size:10.5px;color:white;margin-top:10px;line-height:1.5;text-align:left">'+v.rationale+'</div>';
+  h+='</div>';
+  if(v.perfis)h+=co("<strong>Perfis:</strong> "+v.perfis);
+  if(v.riscos)h+=co("<strong>Riscos:</strong> "+v.riscos);
+
+  // Nota
+  h+='<div style="margin-top:24px;padding-top:12px;border-top:1px solid #eee;font-size:8px;color:'+C.light+';line-height:1.5">';
+  h+='Relatório gerado com base em dados públicos. Não constitui recomendação de investimento. O assessor é responsável por adequar ao perfil do cliente.</div>';
+
+  h+='</div></div>';
+
+  // Renderizar
+  var container=document.createElement("div");
+  container.innerHTML=h;container.style.cssText="position:fixed;left:-9999px;top:0";
+  document.body.appendChild(container);
+  var el=container.firstChild;
+  try{
+    var canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:"#ffffff"});
+    var imgData=canvas.toDataURL("image/jpeg",0.95);
+    var pdf=new jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    var pW=210,pH_=297,imgW=pW,imgH=canvas.height*pW/canvas.width;
+    var pages=Math.ceil(imgH/pH_);
+    for(var pg=0;pg<pages;pg++){if(pg>0)pdf.addPage();pdf.addImage(imgData,"JPEG",0,-(pg*pH_),imgW,imgH)}
+    pdf.save("analise_acao_"+s.ticker+"_"+new Date().toISOString().slice(0,10)+".pdf");
+  }catch(err){console.error("PDF:",err);alert("Erro: "+err.message)}
+  container.remove();btn.textContent=origText;
 }
 
 </script>
