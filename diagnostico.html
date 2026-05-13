@@ -1270,9 +1270,42 @@ a{text-decoration:none;color:inherit}
 .passo7-intro{padding:16px 20px;background:linear-gradient(135deg,rgba(217,168,90,.08),rgba(217,168,90,.02));border:1px solid rgba(217,168,90,.2);border-left:3px solid #d9a85a;border-radius:10px;font-family:'Instrument Sans',sans-serif;font-size:13.5px;color:var(--text);line-height:1.65;margin-bottom:20px}
 .passo7-intro strong{color:#d9a85a;font-weight:600}
 
+/* Info-box legítima 50% (item A10) — explicação técnico-legal sobre testamento */
+.legitima-info{display:flex;gap:14px;padding:14px 18px;background:rgba(76,139,245,.05);border:1px solid rgba(76,139,245,.18);border-left:3px solid var(--accent);border-radius:10px;margin-top:16px;font-size:12.5px;color:var(--text);line-height:1.65;font-family:'Instrument Sans',sans-serif}
+.legitima-info-ico{flex-shrink:0;font-size:20px;line-height:1;margin-top:1px;color:var(--accent)}
+.legitima-info strong{color:var(--white);font-weight:600}
+.legitima-info em{color:var(--muted);font-style:italic}
+
 </style>
 </head>
 <body>
+<script>
+/* ════════════════════════════════════════════════════════
+   EARLY SCRIPT · Decide tela inicial ANTES do DOMContentLoaded
+   Resolve flash em mobile onde sW (wizard) aparecia por 200-400ms
+   antes do JS principal trocar pra sV (boas-vindas cliente).
+   ════════════════════════════════════════════════════════ */
+(function(){
+  var modoCliente = (window.self === window.top);
+  // URL params: se tem ?ref=ID, é consultor reabrindo submissão → modo consultor
+  var hasRef = /[?&]ref=/.test(window.location.search);
+  var alvo;
+  if(modoCliente && !hasRef) alvo = 'sV';   // cliente: boas-vindas
+  else                       alvo = 'sW';   // consultor: wizard direto
+
+  // Marca o documento ANTES das telas renderizarem visualmente
+  function aplicar(){
+    var el = document.getElementById(alvo);
+    if(el) el.classList.add('active');
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', aplicar);
+  } else {
+    aplicar();
+  }
+})();
+</script>
+
 
 <div class="smoke"><div class="sl1"></div><div class="sl2"></div></div>
 
@@ -1404,7 +1437,7 @@ a{text-decoration:none;color:inherit}
 <!-- ═══════════════════════════════════
      WIZARD (8 passos)
      ═══════════════════════════════════ -->
-<div id="sW" class="screen active">
+<div id="sW" class="screen">
 
   <!-- Header sticky com progresso -->
   <div class="w-top">
@@ -1659,7 +1692,7 @@ a{text-decoration:none;color:inherit}
             </div>
           </div>
           <div>
-            <label class="inp-lbl">Tem previdência privada? (PGBL ou VGBL)<span class="tip-trigger" data-tip="PGBL: previdência com dedução do IR (até 12% da renda) — exige declaração completa e INSS. VGBL: sem dedução, mas vantagens sucessórias (sem ITCMD em muitos casos, sem inventário). Se não sabe qual tem, olhe extratos do banco ou pergunte ao gerente.">?</span></label>
+            <label class="inp-lbl">Tem previdência privada? (PGBL ou VGBL)<span class="tip-trigger" data-tip="PGBL: previdência com dedução do IR (até 12% da renda) — exige declaração completa e INSS. VGBL: sem dedução, mas vantagens sucessórias — fora do inventário e, após decisão do STF (Tema 1.214/2024), sem ITCMD na maioria dos casos. Se não sabe qual tem, olhe extratos do banco ou pergunte ao gerente.">?</span></label>
             <div class="toggle-group">
               <div class="toggle-option" data-val="sim" onclick="pickT(this,'tempr')">
                 <div class="toggle-box"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
@@ -1865,7 +1898,7 @@ a{text-decoration:none;color:inherit}
                 </div>
               </div>
               <div>
-                <label class="inp-lbl">Já possui holding patrimonial?<span class="tip-trigger" data-tip="Holding patrimonial é uma empresa criada exclusivamente para administrar bens imóveis. Vantagens potenciais: tributação reduzida sobre aluguel, economia em sucessão (ITCMD + inventário), governança familiar. Faz sentido a partir de 2-3 imóveis ou patrimônio imobiliário acima de R$ 1 milhão.">?</span></label>
+                <label class="inp-lbl">Já possui holding patrimonial?<span class="tip-trigger" data-tip="Holding patrimonial é uma empresa criada para administrar bens imóveis com finalidade econômica real (gestão, locação, governança). Vantagens potenciais: tributação reduzida sobre aluguel, economia em sucessão (ITCMD + inventário), governança familiar e segregação patrimonial. Faz sentido a partir de 2-3 imóveis ou patrimônio imobiliário acima de R$ 1 milhão. Importante: holding sem atividade real pode ser questionada por simulação (CC art. 50).">?</span></label>
                 <div class="pgrid" style="grid-template-columns:1fr 1fr">
                   <div class="pc" data-val="sim" onclick="pickP(this,'temhld')"><div class="pn" style="font-size:13px">Sim</div></div>
                   <div class="pc" data-val="nao" onclick="pickP(this,'temhld')"><div class="pn" style="font-size:13px">Não</div></div>
@@ -1945,6 +1978,14 @@ a{text-decoration:none;color:inherit}
                   <option value="80a90">Entre 80 e 90 anos</option>
                   <option value="mais90">Acima de 90 anos</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Item A10 · Info auxiliar sobre legítima de 50% -->
+            <div class="legitima-info">
+              <div class="legitima-info-ico">⚖</div>
+              <div>
+                <strong>Importante sobre testamento e herança no Brasil:</strong> Por lei (Código Civil art. 1.846), <strong>50% do patrimônio</strong> (legítima) é destinado obrigatoriamente aos herdeiros necessários — descendentes, ascendentes e cônjuge — <em>independente do que diga o testamento</em>. O testamento define apenas a distribuição dos outros 50% e pode incluir cláusulas como usufruto vitalício, inalienabilidade ou impenhorabilidade. Para ter validade jurídica, considere apenas testamento <strong>registrado em cartório (público)</strong> ou <strong>particular com 3 testemunhas</strong>.
               </div>
             </div>
           </div>
@@ -2157,13 +2198,30 @@ const HLD = {
   ITBI: 0.08,
   INVENTARIO: 0.06,
   CBS_IBS: 0.0795,
-  HOLDING_ALUGUEL_TOTAL: 0.158,
+  // ITEM A4 · Alíquota efetiva conservadora (12.5% inclui margem sobre os ~11.33% nominais
+  // do lucro presumido: IRPJ 4.8% (32%×15%) + CSLL 2.88% (32%×9%) + PIS 0.65% + COFINS 3%).
+  // Nota: pós-reforma tributária EC 132/2023 (LC 214/2025), regras específicas para atividade
+  // imobiliária ainda em transição até 2033 — projeção sob legislação vigente.
+  HOLDING_ALUGUEL_TOTAL: 0.125,
   PF_GANHO_CAPITAL: 0.20,
   HOLDING_GANHO: 0.0673
 };
 const VGBL_CUSTO_SUCESSAO = 0.17; // inventário+ITCMD+advogados
 
 const SM = 1518;
+
+/* ═════════════════════════════════════════════════════
+   TABELA IR 2025/2026 (item A3 · vigente desde maio/2025
+   por MP 1.171/2025, com isenção ampliada para R$ 2.428,80)
+   ═════════════════════════════════════════════════════ */
+function irMensal(base){
+  // Recebe base de cálculo mensal, retorna IR mensal devido
+  if(base <= 2428.80)  return 0;
+  if(base <= 2826.65)  return base * 0.075  - 182.16;
+  if(base <= 3751.05)  return base * 0.15   - 394.16;
+  if(base <= 4664.68)  return base * 0.225  - 675.49;
+  return                      base * 0.275  - 908.73;
+}
 
 /* ═════════════════════════════════════════════════════
    ESTADO
@@ -2727,14 +2785,10 @@ function calcINSS(monthlyGross){
   }
   return total;
 }
-// IR mensal progressivo
+// IR mensal progressivo · alias da função centralizada (tabela 2026)
 function calcIRMensal(base){
   if(base<=0) return 0;
-  if(base<=2259.20) return 0;
-  if(base<=2826.65) return base*.075 - 169.44;
-  if(base<=3751.05) return base*.15 - 381.44;
-  if(base<=4664.68) return base*.225 - 662.77;
-  return base*.275 - 896;
+  return irMensal(base);
 }
 
 // Projeção patrimonial (idêntica ao plano-futuro)
@@ -2793,22 +2847,32 @@ function calcAposentadoria(){
 }
 
 function calcPGBL(){
-  const semBeneficio = !(D.ir==='completa' && D.inss==='sim');
-  if(semBeneficio || D.renda<=0){
-    return { aplica:false, motivo: semBeneficio ? (D.ir!=='completa'?'Requer declaração completa':'Requer INSS') : 'Sem renda' };
+  // ITEM A1 · Bloqueia PGBL se cliente não declara IR completa OU não contribui ao INSS
+  // - Declaração completa: exigência implícita (deduções só fazem sentido nela)
+  // - INSS no exercício: exigência da Receita Federal (RIR/2018 art. 67 + Lei 9.532/1997 art. 11)
+  const motivos = [];
+  if(D.ir !== 'completa')  motivos.push('Requer declaração de IR no modelo completo');
+  if(D.inss !== 'sim')     motivos.push('Sem contribuição ao INSS no exercício, dedução PGBL é vedada (RIR art. 67)');
+  if(D.renda <= 0)         motivos.push('Sem renda tributável declarada');
+  if(motivos.length > 0){
+    return { aplica:false, motivo: motivos.join(' · ') };
   }
-  const rendaAnual = D.renda*12;
+
+  // ITEM A2 · Base de cálculo: usa D.renda (CLT/PJ/Pró-labore tributável, mensal × 12).
+  // Exclui propositalmente D.rendaExtra, que pode conter dividendos isentos, PLR (até ~R$7.640 isenta),
+  // ganhos de capital com isenção mensal de R$35k. A dedução de 12% deve incidir só sobre renda bruta TRIBUTÁVEL.
+  const rendaAnual = D.renda * 12;
   const monthlyIncome = rendaAnual/12;
   const monthlyInss = calcINSS(monthlyIncome);
   const baseMes = Math.max(monthlyIncome - monthlyInss, 0);
-  const taxSem = calcIRMensal(baseMes)*12;
+  const taxSem = irMensal(baseMes)*12;
 
   const tetoDeducao = rendaAnual * 0.12;
   const aporteAtual = Math.min(D.pgblAporte, tetoDeducao);
   const aporteAdicional = Math.max(tetoDeducao - aporteAtual, 0);
 
-  const taxComAtual = calcIRMensal(Math.max(baseMes - aporteAtual/12, 0))*12;
-  const taxComMax = calcIRMensal(Math.max(baseMes - tetoDeducao/12, 0))*12;
+  const taxComAtual = irMensal(Math.max(baseMes - aporteAtual/12, 0))*12;
+  const taxComMax = irMensal(Math.max(baseMes - tetoDeducao/12, 0))*12;
 
   const economiaAtual = Math.max(taxSem - taxComAtual, 0);
   const economiaAdicional = Math.max(taxComAtual - taxComMax, 0);
@@ -2836,14 +2900,7 @@ function calcHolding(){
   // Tributação aluguel
   let pfAlugMes=0, hldAlugMes=0;
   if(D.alug>0){
-    const ir = (() => {
-      const r=D.alug;
-      if(r<=2259.20) return 0;
-      if(r<=2826.65) return r*.075 - 169.44;
-      if(r<=3751.05) return r*.15 - 381.44;
-      if(r<=4664.68) return r*.225 - 662.77;
-      return r*.275 - 896;
-    })();
+    const ir = irMensal(D.alug);
     const cbs = D.alug*12 > 28560 ? D.alug*HLD.CBS_IBS : 0;
     pfAlugMes = ir + cbs;
     hldAlugMes = D.alug*HLD.HOLDING_ALUGUEL_TOTAL;
@@ -3251,11 +3308,21 @@ async function gerarDiagnostico(){
 
   try {
     const userPrompt = _diagBuildPrompt(D, calc);
+    // PARALELIZAÇÃO (Tier 2): dispara IA institucional ANTES de aguardar a consultiva.
+    // Quando o cliente clicar "Baixar PDF", ela provavelmente já estará pronta.
+    console.log('[parallel] Disparando IA institucional em paralelo...');
+    const promiseInstitucional = _diagGerarAnaliseInstitucional()
+      .then(r => { console.log('[parallel] ✓ IA institucional pré-processada com sucesso'); return r; })
+      .catch(e => { console.warn('[parallel] ✗ IA institucional falhou em background:', e.message); return null; });
+
     const respText = await _diagCallClaude(DIAG_SYS, userPrompt, 2);
     analiseIA = _diagExtractJSON(respText);
     clearInterval(tickerInterval);
     _setLoadingTxt('Análise concluída', 'Compondo relatório institucional…');
     await new Promise(r => setTimeout(r, 600));
+
+    // Guarda a promise pra ser usada no gerarPDF (sem await aqui — ela continua em background)
+    window.__iaInstitucionalPromise = promiseInstitucional;
   } catch(err) {
     clearInterval(tickerInterval);
     console.warn('[diag] IA falhou, usando fallback canned:', err);
@@ -3970,7 +4037,7 @@ function _buildSecPgbl(pgbl, textoIA){
           <div class="b-ico">ℹ️</div>
           <div class="b-txt">
             <div class="b-ttl">Considere VGBL como alternativa sucessória</div>
-            <div class="b-dsc">Sem o benefício do PGBL, o VGBL é a alternativa mais comum para previdência privada com vantagens sucessórias (sem inventário, sem ITCMD).</div>
+            <div class="b-dsc">Sem o benefício do PGBL, o VGBL é a alternativa mais comum para previdência privada com vantagens sucessórias (fora do inventário e, após Tema 1.214/STF, sem ITCMD na maioria dos casos).</div>
           </div>
           <div class="b-val" style="color:#4c8bf5">VGBL →</div>
         </div>
@@ -4197,13 +4264,7 @@ function _buildSecHld(hld, textoIA){
 
   // Subcálculos para mostrar mini-comparativos
   const pfAlugAno = D.alug>0 ? (() => {
-    const r=D.alug;
-    let ir;
-    if(r<=2259.20) ir=0;
-    else if(r<=2826.65) ir=r*.075 - 169.44;
-    else if(r<=3751.05) ir=r*.15 - 381.44;
-    else if(r<=4664.68) ir=r*.225 - 662.77;
-    else ir=r*.275 - 896;
+    const ir = irMensal(D.alug);
     const cbs = D.alug*12 > 28560 ? D.alug*HLD.CBS_IBS : 0;
     return (ir + cbs)*12;
   })() : 0;
@@ -4233,7 +4294,7 @@ function _buildSecHld(hld, textoIA){
       <div class="ms-hero">
         <div class="ms-ey" style="color:#f8d75e">Módulo 3 · Holding Patrimonial</div>
         <h2 class="ms-ttl">Análise de <span style="color:#f8d75e">Viabilidade da Holding</span></h2>
-        <p class="ms-sub">Comparação financeira entre manter os ${D.qtdimo} imóvel(is) na pessoa física (${fmtK(D.valimo)}) versus estruturar uma holding patrimonial para proteção, sucessão e otimização tributária ao longo de ${HORIZONTE} anos.</p>
+        <p class="ms-sub">Comparação financeira entre manter os ${D.qtdimo} imóvel(is) na pessoa física (${fmtK(D.valimo)}) versus estruturar uma holding patrimonial para <strong>segregação patrimonial, governança societária e otimização tributária e sucessória</strong> ao longo de ${HORIZONTE} anos.</p>
         <div class="ms-tags">
           <div class="ms-tag a">${D.qtdimo} imóveis</div>
           <div class="ms-tag">${fmtK(D.valimo)} em valor</div>
@@ -4251,7 +4312,7 @@ function _buildSecHld(hld, textoIA){
           ? `A análise indica economia de <strong style="color:#2ecc8a">${fmtK(hld.economiaTotal)}</strong> ao longo de ${HORIZONTE} anos. Combina vantagem tributária na receita de aluguel/venda e na sucessão.`
           : hld.jaTem
             ? `A estrutura já está montada. Recomenda-se revisar o contrato social e o regime tributário a cada 3 anos, especialmente após a reforma tributária (EC 132/2023).`
-            : `O retorno financeiro não justifica o custo de manutenção. Vale considerar apenas se houver objetivos específicos de proteção patrimonial (cônjuge, sucessão antecipada).`}
+            : `O retorno financeiro não justifica o custo de manutenção. Vale considerar apenas se houver objetivos específicos de governança societária familiar ou de planejamento sucessório antecipado (doação de cotas com usufruto).`}
         </p>
         ${recomendado ? `
           <div style="margin-top:24px;padding:18px 22px;background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.2);border-radius:14px;display:inline-block">
@@ -4401,13 +4462,7 @@ function _renderHldChart(hld){
   const HORIZONTE = hld.horizonte || 25;
   // Subcálculos
   const pfAlugAno = D.alug>0 ? (() => {
-    const r=D.alug;
-    let ir;
-    if(r<=2259.20) ir=0;
-    else if(r<=2826.65) ir=r*.075 - 169.44;
-    else if(r<=3751.05) ir=r*.15 - 381.44;
-    else if(r<=4664.68) ir=r*.225 - 662.77;
-    else ir=r*.275 - 896;
+    const ir = irMensal(D.alug);
     const cbs = D.alug*12 > 28560 ? D.alug*HLD.CBS_IBS : 0;
     return (ir + cbs)*12;
   })() : 0;
@@ -4520,7 +4575,7 @@ function _buildSecVgbl(vgbl, textoIA){
         </div>
         <div>
           <h3>Por que VGBL para sucessão?</h3>
-          <p>O VGBL <strong>não entra em inventário</strong>: é transferido diretamente aos beneficiários em até 30 dias, <strong>sem ITCMD, sem advogado, sem burocracia</strong>. Pode migrar até R$ 600.000/ano sem pagar IOF. Não tem come-cotas (a maior vantagem fiscal no longo prazo).</p>
+          <p>O VGBL <strong>não entra em inventário</strong>: é transferido diretamente aos beneficiários em até 30 dias, sem custas judiciais nem honorários advocatícios. Após o <strong>Tema 1.214 do STF (RE 1.363.013/2024)</strong>, há tese consolidada pela não incidência de ITCMD em VGBL no falecimento. Pode migrar até R$ 600.000/ano sem pagar IOF. Não tem come-cotas (a maior vantagem fiscal no longo prazo).</p>
         </div>
       </div>
 
@@ -5374,8 +5429,8 @@ function _diagBuildPromptPDF(D, calc, iaTela){
   "analiseEstrategica": {
     "aposentadoria": "7-9 frases. Análise institucional profunda. Diagnóstico do gap de cobertura, adequação da estratégia (renda vitalícia vs decumulation), análise da alocação por perfil de risco, considerações sobre sequência de retornos na fase de distribuição (sequence-of-returns risk), e opções concretas de mitigação do gap. Mencionar a taxa real adotada e as premissas de longevidade (até 99 anos). Cite valores específicos.",
     "pgbl": "7-9 frases. Tese sobre o caso. Eficiência tributária comparada (PGBL vs VGBL vs aplicação tradicional), simulação do efeito juros compostos da restituição reaplicada, considerações sobre liquidez restrita na previdência, regime tributário ideal para o resgate (regressivo vs progressivo). Se não se aplica, justifique tecnicamente e proponha alternativa.",
-    "holding": "7-9 frases. Análise da viabilidade econômica e jurídica. Comparação tributária PF vs PJ pós-reforma tributária (CBS/IBS 7,95% sobre aluguel em PF, 15,8% efetivo em Lucro Presumido), análise sucessória detalhada (custo de inventário ~6% + ITCMD 8% + ITBI 8% vs ITCMD sobre cotas 8%), considerações de governança societária mínima, riscos em caso de divórcio/conflito familiar. Se não se aplica, justifique pelo porte patrimonial.",
-    "vgbl": "7-9 frases. Análise das vantagens sucessórias (ausência de inventário, ausência de ITCMD em vários estados, liquidez aos beneficiários em ~30 dias). Alpha tributário do come-cotas (drag tributário ~22% em aplicação tradicional vs ~10% no VGBL ao longo de 15 anos). Seleção entre tabela regressiva (10% após 10 anos) vs progressiva (compensação na DIRPF). Integração com testamento e doações em vida.",
+    "holding": "7-9 frases. Análise da viabilidade econômica e jurídica. Use sempre 'segregação patrimonial', 'governança societária' e 'planejamento sucessório' — NUNCA termos como 'blindagem' ou 'proteção contra credores' (pode atrair desconsideração da PJ - CC art. 50). Mencione necessidade de finalidade econômica real (gestão de aluguel, administração patrimonial). Comparação tributária PF vs PJ pós-reforma tributária (CBS/IBS 7,95% sobre aluguel em PF acima de R$ 28.560/ano, ~12,5% efetivo em Lucro Presumido considerando IRPJ 4,8% + CSLL 2,88% + PIS 0,65% + COFINS 3%). Análise sucessória detalhada (custo de inventário ~6% + ITCMD 4-8% por estado + ITBI 8% vs ITCMD sobre cotas). Riscos em caso de divórcio/conflito familiar. Se não se aplica, justifique pelo porte patrimonial.",
+    "vgbl": "7-9 frases. Análise das vantagens sucessórias (ausência de inventário, e após Tema 1.214 do STF - RE 1.363.013/2024 - tese consolidada de não-incidência de ITCMD em VGBL/PGBL no falecimento, embora alguns estados ainda mantenham cobrança administrativa que pode requerer impugnação judicial. Liquidez aos beneficiários em ~30 dias). Alpha tributário do come-cotas (drag tributário ~22% em aplicação tradicional vs ~10% no VGBL ao longo de 15 anos). Seleção entre tabela regressiva (10% após 10 anos) vs progressiva (compensação na DIRPF). Integração com testamento e doações em vida.",
     "renda": "7-9 frases. Estratégia de retiradas e composição. Análise da carteira recomendada por perfil (Tesouro IPCA+, FIIs lajes/logística, ações de dividendos, crédito privado, alocação internacional), risco de sequência de retornos no início da fase de distribuição, distinção entre yield real e nominal, e cronograma realista para atingir cobertura plena. Cite a taxa real estimada."
   },
 
@@ -5454,16 +5509,36 @@ async function gerarPDF(){
     // Mostra overlay de loading com ticker
     const lo = document.getElementById('loading');
     lo.classList.add('show');
-    _setLoadingTxt('Composição institucional em andamento…', 'Head de wealth está escrevendo o parecer institucional — pode levar até 60 segundos.');
+    // PARALELIZAÇÃO: verifica se a IA institucional já foi disparada em paralelo
+    const promiseEmAndamento = window.__iaInstitucionalPromise;
+    if(promiseEmAndamento){
+      console.log('[parallel] Pegando IA institucional pré-disparada (provavelmente já pronta)…');
+      _setLoadingTxt('Recuperando parecer institucional…', 'Pré-processado em paralelo com a análise da tela — quase instantâneo.');
+    } else {
+      _setLoadingTxt('Composição institucional em andamento…', 'Head de wealth está escrevendo o parecer institucional — pode levar até 60 segundos.');
+    }
     const t0 = Date.now();
     const ticker = setInterval(()=>{
       const segs = Math.floor((Date.now()-t0)/1000);
       const subEl = document.getElementById('loading-sub');
-      if(subEl) subEl.textContent = `Head de wealth escrevendo o parecer · ${segs}s · pode levar até 60 segundos.`;
+      if(subEl){
+        subEl.textContent = promiseEmAndamento
+          ? `Recuperando parecer pré-processado · ${segs}s`
+          : `Head de wealth escrevendo o parecer · ${segs}s · pode levar até 60 segundos.`;
+      }
     }, 1000);
 
     try {
-      lastReport.iaInstitucional = await _diagGerarAnaliseInstitucional();
+      // Usa promise pré-disparada (paralelização) se disponível, senão dispara nova
+      if(promiseEmAndamento){
+        const result = await promiseEmAndamento;
+        if(result === null) throw new Error('IA institucional falhou em background');
+        lastReport.iaInstitucional = result;
+        // Limpa a referência pra próxima geração não pegar resultado antigo
+        window.__iaInstitucionalPromise = null;
+      } else {
+        lastReport.iaInstitucional = await _diagGerarAnaliseInstitucional();
+      }
       clearInterval(ticker);
       _setLoadingTxt('Parecer institucional concluído', 'Compondo documento PDF…');
       // Se foi aberto via ?ref, salva IA no servidor pra próxima vez não pagar de novo
@@ -5480,6 +5555,7 @@ async function gerarPDF(){
       await new Promise(r => setTimeout(r, 600));
     } catch(err){
       clearInterval(ticker);
+      window.__iaInstitucionalPromise = null;
       // Log COMPLETO no console pra debug
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.error('[pdf] IA institucional falhou. Detalhes completos abaixo:');
@@ -5767,6 +5843,21 @@ async function gerarPDF(){
   dependLinhas.push(tr('Objetivo principal declarado', objetLbl, true));
   h += dossieGrupo('ESTRUTURA FAMILIAR, SUCESSÃO E LONGEVIDADE', dependLinhas);
 
+  // Item A10 · Nota técnica sobre legítima de 50% (regra de ouro do direito sucessório brasileiro)
+  // Sempre exibe, com ênfase quando cliente NÃO tem testamento (situação mais crítica)
+  const semTestamento = D.temTestamento !== 'sim';
+  const corBordaLegitima = semTestamento ? C.gold : C.petrol;
+  const tituloLegitima = semTestamento
+    ? 'PONTO DE ATENÇÃO: REGRA DA LEGÍTIMA + AUSÊNCIA DE TESTAMENTO'
+    : 'NOTA TÉCNICA: REGRA DA LEGÍTIMA (CÓDIGO CIVIL ART. 1.846)';
+  const textoLegitima = semTestamento
+    ? `Sem testamento e considerando a estrutura familiar declarada, <strong>100% do patrimônio será distribuído pelas regras de sucessão legítima</strong> (Código Civil arts. 1.829 e 1.846), sem possibilidade de personalização. Mesmo redigindo testamento futuro, <strong>50% do patrimônio (legítima) permanece obrigatoriamente destinado aos herdeiros necessários</strong> — descendentes, ascendentes e cônjuge —, restando ao testamento dispor apenas dos outros 50% (parte disponível). Recomenda-se avaliar com advogado especializado a redação de testamento público ou particular (com 3 testemunhas) para a parcela disponível, podendo incluir cláusulas de usufruto vitalício, inalienabilidade ou impenhorabilidade conforme o caso.`
+    : `Conforme o Código Civil brasileiro (art. 1.846), <strong>50% do patrimônio (legítima) é destinado obrigatoriamente aos herdeiros necessários</strong> — descendentes, ascendentes e cônjuge — independentemente do conteúdo do testamento. O testamento atualizado regula apenas a parcela disponível (outros 50%), podendo incluir cláusulas de usufruto vitalício, inalienabilidade ou impenhorabilidade. Recomenda-se revisão periódica do testamento a cada mudança patrimonial ou familiar relevante.`;
+  h += `<div data-pdfblock="legitima" style="page-break-inside:avoid;margin-top:14px;padding:16px 20px;background:${C.alt};border:1px solid #ddd;border-left:4px solid ${corBordaLegitima};border-radius:0">
+    <div style="font-size:9px;font-weight:700;color:${C.petrol};letter-spacing:.14em;font-family:Helvetica,Arial,sans-serif;margin-bottom:8px">${tituloLegitima}</div>
+    <div style="font-size:11px;color:${C.body};line-height:1.7;font-family:Helvetica,Arial,sans-serif">${textoLegitima}</div>
+  </div>`;
+
   // Maior preocupação declarada (campo livre — psicologia financeira)
   if(D.preocupacao && D.preocupacao.trim().length > 0){
     h += `<div data-pdfblock="preocupacao" style="page-break-inside:avoid;margin-top:14px;padding:18px 22px;background:${C.alt};border:1px solid #ddd;border-left:4px solid ${C.gold};border-radius:0">
@@ -5846,7 +5937,7 @@ async function gerarPDF(){
       ]
     );
   } else {
-    h += proseInst(`<strong style="color:${C.navy}">PGBL não se aplica ao perfil tributário atual.</strong> Motivo: ${pgbl.motivo}. Sem o benefício fiscal do PGBL, o instrumento alternativo recomendado é o VGBL pelas vantagens sucessórias (ausência de inventário, ausência de ITCMD em vários estados, liquidez aos beneficiários em até 30 dias) e pela ausência de come-cotas semestrais.`);
+    h += proseInst(`<strong style="color:${C.navy}">PGBL não se aplica ao perfil tributário atual.</strong> Motivo: ${pgbl.motivo}. Sem o benefício fiscal do PGBL, o instrumento alternativo recomendado é o VGBL pelas vantagens sucessórias — após o <strong>Tema 1.214 do STF (RE 1.363.013/2024)</strong>, há tese consolidada pela não incidência de ITCMD em VGBL no falecimento do segurado, embora alguns estados ainda mantenham cobrança administrativa que pode requerer impugnação judicial. Liquidez aos beneficiários em até 30 dias e ausência de come-cotas semestrais (vs ~22% de drag tributário em aplicação tradicional).`);
   }
   h += parecer(iaI.analiseEstrategica?.pgbl, C.green, 'PARECER · PGBL');
 
@@ -5868,8 +5959,8 @@ async function gerarPDF(){
     h += cmp('Status atual', '—', hld.jaTem?'Estruturada':'Não estruturada', false);
     h += cmp('Imóveis', D.qtdimo + ' un. · ' + fk(D.valimo), 'Cotas societárias', true);
     if(D.alug>0){
-      const irPF = ((()=>{const r=D.alug;let ir=r<=2259.20?0:r<=2826.65?r*.075-169.44:r<=3751.05?r*.15-381.44:r<=4664.68?r*.225-662.77:r*.275-896;return (ir+(D.alug*12>28560?D.alug*0.0795:0))*12;})());
-      h += cmp('Tributação aluguel/ano', fr(irPF), fr(D.alug*0.158*12), false);
+      const irPF = (irMensal(D.alug) + (D.alug*12 > 28560 ? D.alug*HLD.CBS_IBS : 0))*12;
+      h += cmp('Tributação aluguel/ano', fr(irPF), fr(D.alug*HLD.HOLDING_ALUGUEL_TOTAL*12), false);
     }
     h += cmp('Custo sucessório', fr(D.valimo*0.22), fr(D.valimo*0.08), true);
     h += cmp('Custo abertura', '—', fr(hld.custoAbertura), false);
@@ -6001,14 +6092,19 @@ async function gerarPDF(){
     <p style="margin:8px 0"><strong style="color:${C.navy}">Cenário macroeconômico utilizado:</strong> CDI de ${fp(CDI*100)} a.a. e IPCA de ${fp(INFL*100)} a.a., correspondentes às medianas históricas brasileiras dos últimos 30 anos (1995-2025) — fontes: Banco Central do Brasil (SGS), IBGE, B3.</p>
     <p style="margin:8px 0"><strong style="color:${C.navy}">Perfil de risco e fator multiplicador:</strong> ${perfilLbl} — taxa bruta = CDI × ${FAT[D.perfil].toFixed(1)}. Taxa real anual descontada da inflação: ${fp(aps.taxaAnual*100)}.</p>
     <p style="margin:8px 0"><strong style="color:${C.navy}">Tributação:</strong> Tabelas progressivas de INSS e IR vigentes em 2026. Reforma tributária (EC 132/2023) considerada nas alíquotas de holding (CBS/IBS 7,95% sobre aluguel em PF acima de R$ 28.560/ano).</p>
-    <p style="margin:8px 0"><strong style="color:${C.navy}">Holding:</strong> Lucro Presumido, atividade imobiliária. Tributação efetiva sobre aluguel: 15,8%. Ganho de capital: 6,73% sobre receita. Custos: abertura R$ 8.000 + R$ 500/imóvel acima do 5º; manutenção R$ 6.000/ano. ITCMD na sucessão de cotas: 8% (médio nacional).</p>
-    <p style="margin:8px 0"><strong style="color:${C.navy}">VGBL:</strong> Drag tributário estimado de 22% na aplicação tradicional (come-cotas 15% semestral + IR 15% no resgate) vs 10% no VGBL (alíquota regressiva mínima após 10 anos). Sem ITCMD, sem inventário.</p>
+    <p style="margin:8px 0"><strong style="color:${C.navy}">Holding:</strong> Lucro Presumido, atividade imobiliária com finalidade econômica real (gestão e locação). Tributação efetiva sobre aluguel: ~12,5% (IRPJ 4,8% + CSLL 2,88% + PIS 0,65% + COFINS 3% + margem de segurança). Ganho de capital: 6,73% sobre receita. Custos: abertura R$ 8.000 + R$ 500/imóvel acima do 5º; manutenção R$ 6.000/ano. ITCMD na sucessão de cotas: 4-8% conforme estado da federação. <em>Nota:</em> projeção sob legislação vigente — regras específicas pós-reforma tributária (LC 214/2025) para atividade imobiliária em transição até 2033.</p>
+    <p style="margin:8px 0"><strong style="color:${C.navy}">VGBL:</strong> Drag tributário estimado de 22% na aplicação tradicional (come-cotas 15% semestral + IR 15% no resgate) vs 10% no VGBL (alíquota regressiva mínima após 10 anos). Fora do inventário (transferência direta aos beneficiários em até 30 dias). Após o Tema 1.214 do STF (RE 1.363.013/2024), tese consolidada de não-incidência de ITCMD no falecimento — apesar de alguns estados manterem cobrança administrativa.</p>
     <p style="margin:8px 0"><strong style="color:${C.navy}">Renda Passiva:</strong> Yield real ponderado da carteira recomendada, composta por Tesouro IPCA+, FIIs (lajes/logística), ações de dividendos, crédito privado e alocação internacional, em proporções variáveis por perfil.</p>
   </div>`;
 
-  // DISCLAIMER FINAL
+  // DISCLAIMER FINAL — reforçado (CVM + CRC/OAB + reforma tributária em curso)
+  const hojeDisclaimer = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'});
   h += `<div style="margin-top:30px;padding:14px;background:${C.alt};border-left:3px solid ${C.dark};font-size:9px;color:${C.muted};line-height:1.7;font-family:Helvetica,Arial,sans-serif">
-    <strong style="color:${C.navy}">Disclaimer regulatório:</strong> Este documento tem finalidade exclusivamente informativa e educacional. Não constitui oferta, recomendação personalizada de investimento, consultoria de valores mobiliários, parecer tributário ou advocatício. Os valores apresentados são projeções estatísticas baseadas em premissas macroeconômicas históricas e podem divergir significativamente dos resultados reais. Rentabilidade passada não garante rentabilidade futura. Decisões de investimento, estruturação societária e planejamento sucessório devem ser tomadas com aconselhamento de profissionais certificados (CFP, advogado tributário, contador). Documento confidencial, de uso exclusivo do cliente identificado e seu consultor financeiro.
+    <strong style="color:${C.navy}">Aviso Regulatório e Legal:</strong>
+    <p style="margin:6px 0">Este documento tem finalidade exclusivamente <strong>informativa e educacional</strong>. <strong>NÃO constitui</strong>: (i) oferta ou recomendação personalizada de investimento, em conformidade com a Resolução CVM 19/2021 e Lei 6.385/1976; (ii) parecer ou consultoria tributária formal — para tomada de decisão, consulte contador habilitado no CRC e/ou advogado tributarista inscrito na OAB; (iii) parecer jurídico sobre estruturação societária ou sucessória; (iv) recomendação para constituição de pessoa jurídica.</p>
+    <p style="margin:6px 0"><strong style="color:${C.navy}">Premissas e limitações:</strong> Os valores apresentados são <strong>projeções estatísticas</strong> baseadas em premissas macroeconômicas históricas (CDI/IPCA 1995-2025) e podem divergir significativamente dos resultados reais. Rentabilidade passada não garante rentabilidade futura. Análise baseada na <strong>legislação tributária vigente em ${hojeDisclaimer}</strong> — a Reforma Tributária (EC 132/2023 e Lei Complementar 214/2025) tem regras específicas para atividade imobiliária e instrumentos financeiros em <strong>transição até 2033</strong>, podendo alterar materialmente as projeções aqui apresentadas.</p>
+    <p style="margin:6px 0"><strong style="color:${C.navy}">Decisões de execução:</strong> Decisões de investimento, estruturação societária, planejamento tributário e sucessório devem ser tomadas com aconselhamento de profissionais certificados e revisão da documentação contratual específica (estatuto social, contratos de previdência, certidões de registro de imóveis).</p>
+    <p style="margin:6px 0;font-style:italic">Documento confidencial, de uso exclusivo do cliente identificado e seu consultor financeiro. Reprodução, distribuição ou citação parcial não autorizada.</p>
   </div>`;
 
   h += `</div>`; // fim padding
