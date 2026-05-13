@@ -6335,8 +6335,8 @@ async function acoesIniciarAnalise(modo){
   const modoLabel = useSearch ? 'COMPLETA (web search)' : 'RÁPIDA (sem web search)';
   console.log('[ações] iniciando análise', modoLabel, 'de', ticker);
 
-  // Delays: 20s entre chamadas com search para respeitar 30K tokens/min
-  const DELAY = useSearch ? 5000 : 2000;
+  // Tier 2 Anthropic: 1.5s entre chamadas com search · sem search vai paralelo (100K tokens/min, 1000 RPM)
+  const DELAY = useSearch ? 1500 : 0;
   async function delayWithCountdown(ms, nextStep) {
     if(ms <= 3000) { await new Promise(r => setTimeout(r, ms)); return; }
     const secs = Math.ceil(ms / 1000);
@@ -11168,7 +11168,7 @@ async function fiiStart(){
   fii$("fii-hero-ticker").textContent=tk;
   ["macro","fundo","fund","pvp","risco","veredicto"].forEach(function(k){fiiSt(k,"pending")});
 
-  var FD=5000; // 12s entre steps (FII precisa menos tokens)
+  var FD=1500; // Tier 2: 1.5s entre steps (FII sempre com web search)
   async function fiiDelay(ms,label){
     if(ms<=3000){await new Promise(function(r){setTimeout(r,ms)});return}
     var secs=Math.ceil(ms/1000);
