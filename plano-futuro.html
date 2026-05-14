@@ -13571,36 +13571,117 @@ async function allocatorEstrategia(macroResumo, perfil, objetivo, horizonte, tol
   return await acoesCallJSON({system:sys, user:user, useSearch:true});
 }
 
-// ──────── CALL 3: SCREENING DE AÇÕES ────────
+// ──────── CALL 3: SCREENING DE AÇÕES (com critérios técnicos rigorosos do prompt-mãe) ────────
 async function allocatorScreeningRV(macroResumo, alocacaoRV, objetivo, restricoes, nAtivos){
-  var sys = ALLOC_SYS + " ETAPA: Screening de ACOES brasileiras (B3). Selecione acoes de alta qualidade que atendem aos criterios. " +
-    "CRITERIOS PADRAO (foco renda): DY 12m > 6%, payout estavel ultimos 3 anos, ROE > 12%, Divida liquida/EBITDA < 3x, liquidez diaria > R$ 5M, beta < 1.2. " +
-    "CRITERIOS (foco crescimento): ROE > 15%, ROIC > 15%, crescimento receita > 10%/ano ultimos 3 anos, margens em expansao, baixa alavancagem. " +
-    "OBRIGATORIO: web_search com dados ATUAIS de cada acao. NAO INVENTE numeros. " +
-    "DIVERSIFICACAO OBRIGATORIA: max 25% em qualquer setor unico. Distribuir entre: financeiro, utilities, telecom, varejo, energia, bens industriais, consumo, etc. " +
-    "Para CADA acao: ticker, nome, setor, DY 12m REAL, P/L atual, ROE, classificacao de volatilidade (baixa/media/alta), peso sugerido na carteira (% do total), briefing de 2-3 frases explicando POR QUE entrou na selecao.";
+  var sys = ALLOC_SYS + " ETAPA: Screening de ACOES brasileiras (B3). Selecione acoes que atendem aos criterios DE FUNDAMENTOS E MOMENTO TECNICO. " +
+    "===== CRITERIOS FUNDAMENTALISTAS (foco renda): " +
+    "DY 12m > 6%, payout estavel ultimos 3 anos, ROE > 12%, Divida liquida/EBITDA < 3x, liquidez diaria > R$ 5M. " +
+    "===== CRITERIOS FUNDAMENTALISTAS (foco crescimento): " +
+    "ROE > 15%, ROIC > 15%, crescimento receita > 10%/ano ultimos 3 anos, margens em expansao, baixa alavancagem. " +
+    "===== CRITERIOS TECNICOS OBRIGATORIOS (estes RESPEITAM o prompt-mae da analise individual): " +
+    "(T1) Tendencia primaria NAO pode ser 'Baixa' - apenas 'Alta' ou 'Lateral' sao aceitos. " +
+    "(T2) RSI deve estar entre 30 e 70 (nem sobrevendido cronico nem sobrecomprado). " +
+    "(T3) MACD nao pode estar em sinal 'Venda' consistente - apenas 'Compra' ou 'Neutro'. " +
+    "(T4) Preco deve estar PROXIMO OU ACIMA da Media Movel 200 dias (nao em queda livre abaixo dela). " +
+    "(T5) Veredicto tecnico tem que ser 'COMPRAR' ou 'ACUMULAR' - NUNCA 'AGUARDAR' ou 'NAO_RECOMENDADO'. " +
+    "OBRIGATORIO: web_search para confirmar dados ATUAIS de cada acao (DY, P/L, ROE, RSI, tendencia, momento). NAO INVENTE numeros. " +
+    "===== REGRA CRITICA: " +
+    "Antes de incluir CADA acao na lista, voce DEVE fazer uma checagem interna do momento tecnico atual. " +
+    "Se a acao tem fundamentos otimos mas momento tecnico desfavoravel (ex: tendencia de baixa, RSI < 35, MACD vendedor, abaixo da MM200), NAO INCLUA. " +
+    "Pense como um analista respondendo: 'esta acao esta em ponto de entrada AGORA ou seria recomendado AGUARDAR?' Apenas pontos de entrada (COMPRAR/ACUMULAR) entram. " +
+    "===== DIVERSIFICACAO OBRIGATORIA: " +
+    "max 25% em qualquer setor unico. Distribuir entre: financeiro, utilities, telecom, varejo, energia, bens industriais, consumo, etc. " +
+    "===== Para CADA acao incluida, retornar: " +
+    "ticker, nome, setor, DY 12m REAL, P/L atual, ROE, beta, classificacao de volatilidade (baixa/media/alta), " +
+    "veredictoTecnico ('COMPRAR' ou 'ACUMULAR' obrigatoriamente), " +
+    "momentoTecnico (1 frase descrevendo tendencia + RSI + MACD + posicao MM200), " +
+    "peso sugerido na carteira (% do total), " +
+    "briefing de 2-3 frases combinando fundamento + momento tecnico. " +
+    "Se voce nao encontrar " + nAtivos + " acoes elegiveis (com fundamentos E momento OK), retorne menos - PREFIRA QUALIDADE A QUANTIDADE.";
   var user = "Macro: " + macroResumo + "\n" +
     "Alocacao prevista para RV: " + alocacaoRV + "% do total\n" +
     "Objetivo principal: " + objetivo + "\n" +
     "Restricoes do cliente: " + (restricoes||"nenhuma") + "\n" +
-    "Selecione " + nAtivos + " acoes diversificadas por setor.\n\n" +
-    "Retorne JSON: {acoes:[{ticker:'',nome:'',setor:'',dy:'',pl:'',roe:'',beta:'',vol:'baixa|media|alta',pesoSugerido:0,briefing:''}],totalSelecionado:0,setoresCobertos:[''],alertasGerais:''}";
+    "Selecione ate " + nAtivos + " acoes diversificadas por setor que estejam EM PONTO DE ENTRADA TECNICO AGORA.\n\n" +
+    "Retorne JSON: {acoes:[{ticker:'',nome:'',setor:'',dy:'',pl:'',roe:'',beta:'',vol:'baixa|media|alta',veredictoTecnico:'COMPRAR|ACUMULAR',momentoTecnico:'',pesoSugerido:0,briefing:''}],totalSelecionado:0,setoresCobertos:[''],acoesRejeitadas:[{ticker:'',motivo:''}],alertasGerais:''}";
   return await acoesCallJSON({system:sys, user:user, useSearch:true});
 }
 
-// ──────── CALL 4: SCREENING DE FIIs ────────
+// ──────── CALL 4: SCREENING DE FIIs (com critérios rigorosos) ────────
 async function allocatorScreeningFII(macroResumo, alocacaoFII, objetivo, restricoes, nFIIs){
-  var sys = ALLOC_SYS + " ETAPA: Screening de FIIs brasileiros. Selecione FIIs estaveis. " +
-    "CRITERIOS PADRAO: DY 12m > 8%, pagamento de DY consistente ultimos 24-36 meses (sem cortes), vacancia < 8% (tijolo), P/VP entre 0.85 e 1.10, liquidez diaria > R$ 500k, gestor reconhecido. " +
+  var sys = ALLOC_SYS + " ETAPA: Screening de FIIs brasileiros. Selecione FIIs com FUNDAMENTOS SOLIDOS E MOMENTO ATRATIVO. " +
+    "===== CRITERIOS FUNDAMENTALISTAS: " +
+    "DY 12m > 8%, pagamento de DY consistente ultimos 24-36 meses (sem cortes), vacancia financeira < 8% (tijolo), liquidez diaria > R$ 500k, gestor reconhecido. " +
+    "===== CRITERIOS DE VALUATION (MOMENTO): " +
+    "(V1) P/VP entre 0.75 e 1.10 - FIIs muito acima de P/VP 1.10 NAO entram (sem premio injustificavel). " +
+    "(V2) FIIs com P/VP abaixo de 0.75 entram apenas se justificar (oportunidade, nao trap). " +
+    "(V3) Cota nao pode estar em tendencia primaria de baixa consistente nos ultimos 6 meses sem motivo claro. " +
+    "(V4) Se FII de tijolo, vacancia em queda ou estavel (NAO em alta). Se FII de papel, qualidade da carteira de credito. " +
+    "===== REGRA CRITICA: " +
+    "Antes de incluir CADA FII, faca checagem interna: 'este FII esta em ponto de entrada AGORA?'. " +
+    "FIIs com fundamentos otimos mas P/VP esticado (1.15+), ou em tendencia de queda sem motivo claro, ou com cortes recentes de dividendo, NAO entram. " +
     "OBRIGATORIO: web_search com dados ATUAIS. " +
-    "DIVERSIFICACAO POR SEGMENTO: distribuir entre logistica, lajes corporativas, shoppings, residencial, papel/recebiveis, hospitais/educacional. Max 30% em qualquer segmento unico. " +
-    "Para CADA FII: ticker, nome, segmento (logistica/lajes/shopping/residencial/papel/hibrido), DY 12m REAL, P/VP atual, vacancia (se aplicavel), gestor, peso sugerido (% do total), briefing de 2-3 frases.";
+    "===== DIVERSIFICACAO POR SEGMENTO: " +
+    "distribuir entre logistica, lajes corporativas, shoppings, residencial, papel/recebiveis, hospitais/educacional. Max 30% em qualquer segmento unico. " +
+    "===== Para CADA FII incluido: " +
+    "ticker, nome, segmento, DY 12m REAL, P/VP atual, vacancia (se tijolo), gestor, " +
+    "veredictoMomento ('ALOCAR' ou 'ACUMULAR' obrigatoriamente, nao pode ser 'AGUARDAR' ou 'EVITAR'), " +
+    "leituraMomento (1 frase descrevendo P/VP + tendencia + qualidade da carteira), " +
+    "peso sugerido, briefing 2-3 frases combinando fundamentos + momento. " +
+    "Se nao encontrar " + nFIIs + " elegiveis com qualidade, retorne menos.";
   var user = "Macro: " + macroResumo + "\n" +
     "Alocacao prevista para FIIs: " + alocacaoFII + "% do total\n" +
     "Objetivo principal: " + objetivo + "\n" +
     "Restricoes do cliente: " + (restricoes||"nenhuma") + "\n" +
-    "Selecione " + nFIIs + " FIIs diversificados por segmento.\n\n" +
-    "Retorne JSON: {fiis:[{ticker:'',nome:'',segmento:'',dy:'',pvp:'',vacancia:'',gestor:'',pesoSugerido:0,briefing:''}],totalSelecionado:0,segmentosCobertos:[''],alertasGerais:''}";
+    "Selecione ate " + nFIIs + " FIIs diversificados que estejam em PONTO DE ENTRADA AGORA.\n\n" +
+    "Retorne JSON: {fiis:[{ticker:'',nome:'',segmento:'',dy:'',pvp:'',vacancia:'',gestor:'',veredictoMomento:'ALOCAR|ACUMULAR',leituraMomento:'',pesoSugerido:0,briefing:''}],totalSelecionado:0,segmentosCobertos:[''],fiisRejeitados:[{ticker:'',motivo:''}],alertasGerais:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 4.5: VALIDAÇÃO TÉCNICA CRUZADA — AÇÕES ────────
+// Cruza com critérios do prompt-mãe e descarta candidatos em momento desfavorável
+async function allocatorValidacaoTecnicaRV(acoes, macroResumo){
+  if(!acoes || !acoes.length) return {aprovadas:[], rejeitadas:[], substituicoes:[]};
+  var tickers = acoes.map(function(a){return a.ticker}).join(", ");
+  var sys = ALLOC_SYS + " ETAPA: VALIDACAO TECNICA cruzada de candidatos a carteira. " +
+    "Voce e o analista tecnico responsavel por aprovar ou rejeitar cada candidato. Esta validacao seguira EXATAMENTE os mesmos criterios da analise individual de acoes do sistema (que retorna 'COMPRAR', 'AGUARDAR' ou 'NAO_RECOMENDADO'). " +
+    "===== PROCEDIMENTO POR ATIVO: " +
+    "Para CADA ticker, busque (web_search) dados tecnicos ATUAIS: tendencia primaria, RSI, MACD, posicao vs MM200, suportes/resistencias, leitura geral do momento. " +
+    "===== CRITERIOS DE APROVACAO (mesmos do prompt-mae acoesFetchTecnica): " +
+    "(A1) Tendencia primaria = 'Alta' ou 'Lateral' (NUNCA 'Baixa'). " +
+    "(A2) RSI entre 30 e 70 (extremos cronicos = rejeicao). " +
+    "(A3) MACD = 'Compra' ou 'Neutro' (NUNCA 'Venda' consistente). " +
+    "(A4) Preco proximo ou acima da MM200. " +
+    "(A5) Veredicto consolidado = 'COMPRAR' ou 'ACUMULAR' (REJEITAR se for 'AGUARDAR' ou 'NAO_RECOMENDADO'). " +
+    "===== POLITICA DE REJEICAO: " +
+    "Se o ativo tem FUNDAMENTOS BONS mas MOMENTO RUIM, REJEITE e sugira: (i) substituto do mesmo setor com momento favoravel, OU (ii) se nao houver substituto, marque o setor para underweight na carteira. " +
+    "Seja RIGOROSO. Quando em duvida, REJEITAR. E preferivel uma carteira menor e tecnicamente solida do que uma carteira maior com pontos fracos. " +
+    "===== Para CADA ativo, retornar:" +
+    "ticker, status ('APROVADO' ou 'REJEITADO'), motivo (1 frase com dados tecnicos atuais), e se REJEITADO, sugerirSubstituto (ticker do mesmo setor) ou null.";
+  var user = "Macro atual: " + macroResumo + "\n\n" +
+    "Lista de candidatos do screening fundamentalista para validar tecnicamente: " + tickers + "\n\n" +
+    "Para CADA candidato, busque dados tecnicos atuais e aplique os 5 criterios. Aprove apenas os que estao em ponto de entrada AGORA. Sugira substitutos para rejeitados.\n\n" +
+    "Retorne JSON: {validacoes:[{ticker:'',status:'APROVADO|REJEITADO',rsi:0,tendencia:'',macd:'',posicaoMM200:'',veredictoTecnico:'COMPRAR|AGUARDAR|NAO_RECOMENDADO',motivo:'',sugerirSubstituto:''}],totalAprovados:0,totalRejeitados:0,resumoValidacao:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 4.6: VALIDAÇÃO TÉCNICA CRUZADA — FIIs ────────
+async function allocatorValidacaoTecnicaFII(fiis, macroResumo){
+  if(!fiis || !fiis.length) return {aprovadas:[], rejeitadas:[], substituicoes:[]};
+  var tickers = fiis.map(function(f){return f.ticker}).join(", ");
+  var sys = ALLOC_SYS + " ETAPA: VALIDACAO de momento para FIIs candidatos. " +
+    "===== CRITERIOS DE APROVACAO (mesmos da analise individual de FII): " +
+    "(F1) P/VP entre 0.75 e 1.10 - rejeitar se acima de 1.10 (premio injustificavel). " +
+    "(F2) Cota nao em tendencia primaria de baixa sem motivo. " +
+    "(F3) FII de tijolo: vacancia em queda ou estavel; FII de papel: qualidade da carteira de credito. " +
+    "(F4) Pagamento de DY consistente nos ultimos 24 meses (sem cortes recentes). " +
+    "(F5) Veredicto = 'ALOCAR' ou 'ACUMULAR' (rejeitar 'AGUARDAR' ou 'EVITAR'). " +
+    "===== Para CADA FII, busque (web_search) dados atuais: cotacao, P/VP, vacancia, ultimo dividendo, qualidade da carteira. " +
+    "Seja RIGOROSO. Se P/VP esticado ou vacancia subindo, REJEITAR.";
+  var user = "Macro: " + macroResumo + "\n\n" +
+    "Candidatos para validar: " + tickers + "\n\n" +
+    "Para cada um, valide momento + valuation. Aprove apenas os em ponto de entrada AGORA. Sugira substitutos.\n\n" +
+    "Retorne JSON: {validacoes:[{ticker:'',status:'APROVADO|REJEITADO',pvp:'',tendencia:'',vacancia:'',ultimoDY:'',veredictoMomento:'ALOCAR|AGUARDAR|EVITAR',motivo:'',sugerirSubstituto:''}],totalAprovados:0,totalRejeitados:0,resumoValidacao:''}";
   return await acoesCallJSON({system:sys, user:user, useSearch:true});
 }
 
@@ -13652,7 +13733,15 @@ function allocRenderEstrategia(d){
     h+='<div style="display:grid;gap:8px;margin-bottom:14px">';
     d.alocacao.forEach(function(a){
       var c=colors[a.classe]||'#8b949e';
-      h+='<div style="padding:12px 14px;background:rgba(255,255,255,.03);border-left:3px solid '+c+';border-radius:6px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><strong style="color:#e6edf3;font-size:14px">'+a.classe+'</strong><span style="color:'+c+';font-weight:700;font-size:18px">'+a.pct+'%</span></div><div style="font-size:13px;color:#c9d1d9;line-height:1.55">'+(a.racional||"")+'</div></div>';
+      var valorClasse = window._allocValorTotal ? (Number(a.pct)||0)/100 * window._allocValorTotal : null;
+      h+='<div style="padding:12px 14px;background:rgba(255,255,255,.03);border-left:3px solid '+c+';border-radius:6px">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:10px;flex-wrap:wrap">';
+      h+='<strong style="color:#e6edf3;font-size:14px">'+a.classe+'</strong>';
+      h+='<div style="display:flex;align-items:baseline;gap:10px">';
+      if(valorClasse)h+='<span style="color:#8b949e;font-size:12px;font-weight:600;font-family:JetBrains Mono,monospace">'+allocFmtBRL(valorClasse)+'</span>';
+      h+='<span style="color:'+c+';font-weight:700;font-size:18px">'+a.pct+'%</span>';
+      h+='</div></div>';
+      h+='<div style="font-size:13px;color:#c9d1d9;line-height:1.55">'+(a.racional||"")+'</div></div>';
     });
     h+='</div>';
   }
@@ -13673,15 +13762,24 @@ function allocRenderEstrategia(d){
 function allocRenderTabelaAtivos(items, tipo){
   if(!items || !items.length) return '<p class="acoes-placeholder">Nenhum ativo desta classe foi incluído.</p>';
   var h='';
-  // Alerta gerais (se houver)
-  // Lista de ativos
   h+='<div style="display:grid;gap:10px">';
   items.forEach(function(a){
     var vc=allocVolColor(a.vol||"media");
+    // Veredicto técnico/momento
+    var verd = tipo==='acao' ? (a.veredictoTecnico||'COMPRAR') : (a.veredictoMomento||'ALOCAR');
+    var verdColor = verd==='COMPRAR'||verd==='ALOCAR'?'#2ecc8a':verd==='ACUMULAR'?'#4c8bf5':'#f8d75e';
     h+='<div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(168,94,255,.12);border-radius:8px">';
     h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:8px">';
-    h+='<div style="display:flex;align-items:baseline;gap:8px"><strong style="color:#e6edf3;font-size:16px;font-family:JetBrains Mono,monospace">'+a.ticker+'</strong><span style="color:#8b949e;font-size:13px">'+a.nome+'</span><span style="font-size:10px;padding:2px 8px;background:rgba(168,94,255,.15);color:#a85eff;border-radius:10px;font-weight:600">'+(tipo==='acao'?a.setor:a.segmento)+'</span></div>';
-    h+='<div style="display:flex;gap:14px;align-items:baseline"><span style="color:#a85eff;font-weight:700;font-size:16px">'+allocFmtPct(a.pesoSugerido)+'</span><button onclick="allocatorAprofundar(\''+a.ticker+'\',\''+tipo+'\')" style="background:rgba(168,94,255,.1);border:1px solid rgba(168,94,255,.3);color:#a85eff;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🔍 Aprofundar</button></div>';
+    h+='<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><strong style="color:#e6edf3;font-size:16px;font-family:JetBrains Mono,monospace">'+a.ticker+'</strong><span style="color:#8b949e;font-size:13px">'+a.nome+'</span><span style="font-size:10px;padding:2px 8px;background:rgba(168,94,255,.15);color:#a85eff;border-radius:10px;font-weight:600">'+(tipo==='acao'?a.setor:a.segmento)+'</span><span style="font-size:10px;padding:2px 9px;background:'+verdColor+'25;color:'+verdColor+';border-radius:10px;font-weight:700;letter-spacing:.04em">✓ '+verd+'</span></div>';
+    // Bloco peso + valor + botão
+    var valorAtivo = window._allocValorTotal ? (Number(a.pesoSugerido)||0)/100 * window._allocValorTotal : null;
+    h+='<div style="display:flex;gap:14px;align-items:center">';
+    h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:0">';
+    h+='<span style="color:#a85eff;font-weight:700;font-size:16px;line-height:1.1">'+allocFmtPct(a.pesoSugerido)+'</span>';
+    if(valorAtivo)h+='<span style="color:#8b949e;font-size:11px;font-weight:600;font-family:JetBrains Mono,monospace;margin-top:2px">'+allocFmtBRL(valorAtivo)+'</span>';
+    h+='</div>';
+    h+='<button onclick="allocatorAprofundar(\''+a.ticker+'\',\''+tipo+'\')" style="background:rgba(168,94,255,.1);border:1px solid rgba(168,94,255,.3);color:#a85eff;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🔍 Aprofundar</button>';
+    h+='</div>';
     h+='</div>';
 
     // Indicadores
@@ -13691,7 +13789,8 @@ function allocRenderTabelaAtivos(items, tipo){
       if(a.pl)h+='<span><strong style="color:#8b949e">P/L:</strong> '+a.pl+'</span>';
       if(a.roe)h+='<span><strong style="color:#8b949e">ROE:</strong> '+a.roe+'</span>';
       if(a.beta)h+='<span><strong style="color:#8b949e">Beta:</strong> '+a.beta+'</span>';
-      if(a.vol)h+='<span><strong style="color:'+vc+'">Vol:</strong> '+a.vol+'</span>';
+      if(a.rsi)h+='<span><strong style="color:#8b949e">RSI:</strong> '+a.rsi+'</span>';
+      if(a.tendencia)h+='<span><strong style="color:#8b949e">Tend:</strong> '+a.tendencia+'</span>';
     } else {
       if(a.dy)h+='<span><strong style="color:#2ecc8a">DY:</strong> '+a.dy+'</span>';
       if(a.pvp)h+='<span><strong style="color:#8b949e">P/VP:</strong> '+a.pvp+'</span>';
@@ -13699,6 +13798,12 @@ function allocRenderTabelaAtivos(items, tipo){
       if(a.gestor)h+='<span><strong style="color:#8b949e">Gestor:</strong> '+a.gestor+'</span>';
     }
     h+='</div>';
+
+    // Leitura técnica (NOVO)
+    var leitura = tipo==='acao' ? a.momentoTecnico : a.leituraMomento;
+    if(leitura){
+      h+='<div style="font-size:11.5px;color:#a85eff;padding:6px 0;border-top:1px solid rgba(168,94,255,.08);margin-top:4px"><strong>📊 Momento:</strong> '+leitura+'</div>';
+    }
 
     // Briefing
     h+='<div style="font-size:13px;color:#e6edf3;line-height:1.55;padding-top:8px;border-top:1px solid rgba(255,255,255,.05)">'+(a.briefing||"")+'</div>';
@@ -13713,6 +13818,18 @@ function allocRenderRV(d){
   if(d.setoresCobertos && d.setoresCobertos.length){
     h+='<div style="margin-bottom:14px;font-size:12px;color:#8b949e"><strong style="color:#a85eff">Setores cobertos:</strong> '+d.setoresCobertos.join(" · ")+'</div>';
   }
+  // Resumo da validação técnica (se houve)
+  if(d.resumoValidacao){
+    h+='<div style="padding:10px 14px;background:rgba(46,204,138,.08);border-left:3px solid #2ecc8a;border-radius:6px;margin-bottom:14px;font-size:12.5px;color:#c9d1d9;line-height:1.55"><strong style="color:#2ecc8a">✓ Validação técnica cruzada:</strong> '+d.resumoValidacao+'</div>';
+  }
+  // Ativos rejeitados pela validação (transparência)
+  if(d.rejeitadasNaValidacao && d.rejeitadasNaValidacao.length){
+    h+='<div style="padding:10px 14px;background:rgba(248,215,94,.06);border-left:3px solid #f8d75e;border-radius:6px;margin-bottom:14px"><div style="font-size:11px;color:#f8d75e;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">⚠ Rejeitados pelo crivo técnico (mesmos critérios da Análise de Ações individual)</div>';
+    d.rejeitadasNaValidacao.forEach(function(r){
+      h+='<div style="font-size:11.5px;color:#c9d1d9;padding:4px 0;line-height:1.5"><strong style="color:#f8d75e;font-family:JetBrains Mono,monospace">'+r.ticker+':</strong> '+r.motivo+(r.substituto?' <span style="color:#8b949e">→ substituto sugerido: <strong style="color:#a85eff;font-family:JetBrains Mono,monospace">'+r.substituto+'</strong></span>':'')+'</div>';
+    });
+    h+='</div>';
+  }
   if(d.alertasGerais)h+='<div class="acoes-callout" style="border-left-color:#f8d75e">'+d.alertasGerais+'</div>';
   h+=allocRenderTabelaAtivos(d.acoes, 'acao');
   alloc$("alloc-body-rv").innerHTML=h;
@@ -13722,6 +13839,16 @@ function allocRenderFII(d){
   var h='';
   if(d.segmentosCobertos && d.segmentosCobertos.length){
     h+='<div style="margin-bottom:14px;font-size:12px;color:#8b949e"><strong style="color:#a85eff">Segmentos cobertos:</strong> '+d.segmentosCobertos.join(" · ")+'</div>';
+  }
+  if(d.resumoValidacao){
+    h+='<div style="padding:10px 14px;background:rgba(46,204,138,.08);border-left:3px solid #2ecc8a;border-radius:6px;margin-bottom:14px;font-size:12.5px;color:#c9d1d9;line-height:1.55"><strong style="color:#2ecc8a">✓ Validação de momento cruzada:</strong> '+d.resumoValidacao+'</div>';
+  }
+  if(d.rejeitadosNaValidacao && d.rejeitadosNaValidacao.length){
+    h+='<div style="padding:10px 14px;background:rgba(248,215,94,.06);border-left:3px solid #f8d75e;border-radius:6px;margin-bottom:14px"><div style="font-size:11px;color:#f8d75e;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">⚠ Rejeitados pelo crivo de momento (P/VP, tendência, vacância)</div>';
+    d.rejeitadosNaValidacao.forEach(function(r){
+      h+='<div style="font-size:11.5px;color:#c9d1d9;padding:4px 0;line-height:1.5"><strong style="color:#f8d75e;font-family:JetBrains Mono,monospace">'+r.ticker+':</strong> '+r.motivo+(r.substituto?' <span style="color:#8b949e">→ substituto sugerido: <strong style="color:#a85eff;font-family:JetBrains Mono,monospace">'+r.substituto+'</strong></span>':'')+'</div>';
+    });
+    h+='</div>';
   }
   if(d.alertasGerais)h+='<div class="acoes-callout" style="border-left-color:#f8d75e">'+d.alertasGerais+'</div>';
   h+=allocRenderTabelaAtivos(d.fiis, 'fii');
@@ -13873,6 +14000,9 @@ async function allocatorStart(){
 
   alloc$("alloc-btn-start").disabled = true;
 
+  // Armazenar valor total pra usar nas renderizações (cálculo % → R$)
+  window._allocValorTotal = valor;
+
   // Trocar para results state
   alloc$("allocator-input-state").style.display="none";
   alloc$("allocator-results-state").classList.remove("acoes-hidden");
@@ -13917,10 +14047,47 @@ async function allocatorStart(){
     // ETAPA 3: SCREENING RV (pula se classes for fii-only)
     var rvData = {acoes:[]};
     if(classes!=='fii-only' && pctRV>0 && nAcoes>0){
-      allocProg("Etapa 3/5: vasculhando ações no mercado (B3)...");
+      allocProg("Etapa 3/7: vasculhando ações no mercado (B3)...");
       allocSt("rv","loading");
-      rvData = await allocatorScreeningRV(macroResumo, pctRV, objetivo, restricoes, nAcoes);
-      console.log("[allocator] rv:", rvData);
+      // Pedir alguns ativos extras já que alguns podem ser rejeitados na validação
+      var nAcoesAmpliado = Math.min(nAcoes + 3, 12);
+      rvData = await allocatorScreeningRV(macroResumo, pctRV, objetivo, restricoes, nAcoesAmpliado);
+      console.log("[allocator] rv (screening bruto):", rvData);
+
+      // VALIDAÇÃO TÉCNICA CRUZADA (passe 4.5)
+      allocProg("Etapa 4/7: validando momento técnico das ações...");
+      try {
+        var validRV = await allocatorValidacaoTecnicaRV(rvData.acoes, macroResumo);
+        console.log("[allocator] rv (validação técnica):", validRV);
+
+        // Filtrar: manter só APROVADAS
+        var aprovadosRV = [];
+        var rejeitadasInfo = [];
+        (rvData.acoes||[]).forEach(function(acao){
+          var v = (validRV.validacoes||[]).find(function(vv){return vv.ticker===acao.ticker});
+          if(v && v.status === 'APROVADO'){
+            // Anexar dados técnicos validados na acao
+            acao.veredictoTecnico = v.veredictoTecnico || acao.veredictoTecnico;
+            acao.momentoTecnico = v.motivo || acao.momentoTecnico;
+            acao.rsi = v.rsi;
+            acao.tendencia = v.tendencia;
+            aprovadosRV.push(acao);
+          } else if(v && v.status === 'REJEITADO'){
+            rejeitadasInfo.push({ticker:acao.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
+          } else {
+            // Sem validação clara — incluir mas marcar
+            acao.veredictoTecnico = acao.veredictoTecnico || 'COMPRAR';
+            aprovadosRV.push(acao);
+          }
+        });
+        rvData.acoes = aprovadosRV.slice(0, nAcoes); // limita ao N alvo
+        rvData.rejeitadasNaValidacao = rejeitadasInfo;
+        rvData.resumoValidacao = validRV.resumoValidacao;
+        console.log("[allocator] rv aprovadas:", rvData.acoes.length, "| rejeitadas:", rejeitadasInfo.length);
+      } catch(vErr){
+        console.warn("[allocator] validação técnica RV falhou (segue sem):", vErr.message);
+      }
+
       allocRenderRV(rvData);
       allocSt("rv","done");
       await new Promise(function(r){setTimeout(r,1500)});
@@ -13932,10 +14099,41 @@ async function allocatorStart(){
     // ETAPA 4: SCREENING FIIs (pula se classes for rv-only)
     var fiiData = {fiis:[]};
     if(classes!=='rv-only' && pctFII>0 && nFIIs>0){
-      allocProg("Etapa 4/5: vasculhando FIIs do mercado...");
+      allocProg("Etapa 5/7: vasculhando FIIs do mercado...");
       allocSt("fii","loading");
-      fiiData = await allocatorScreeningFII(macroResumo, pctFII, objetivo, restricoes, nFIIs);
-      console.log("[allocator] fii:", fiiData);
+      var nFIIsAmpliado = Math.min(nFIIs + 2, 10);
+      fiiData = await allocatorScreeningFII(macroResumo, pctFII, objetivo, restricoes, nFIIsAmpliado);
+      console.log("[allocator] fii (screening bruto):", fiiData);
+
+      // VALIDAÇÃO MOMENTO CRUZADA (passe 5.5)
+      allocProg("Etapa 6/7: validando momento dos FIIs...");
+      try {
+        var validFII = await allocatorValidacaoTecnicaFII(fiiData.fiis, macroResumo);
+        console.log("[allocator] fii (validação momento):", validFII);
+
+        var aprovadosFII = [];
+        var rejeitadasFIIInfo = [];
+        (fiiData.fiis||[]).forEach(function(fii){
+          var v = (validFII.validacoes||[]).find(function(vv){return vv.ticker===fii.ticker});
+          if(v && v.status === 'APROVADO'){
+            fii.veredictoMomento = v.veredictoMomento || fii.veredictoMomento;
+            fii.leituraMomento = v.motivo || fii.leituraMomento;
+            aprovadosFII.push(fii);
+          } else if(v && v.status === 'REJEITADO'){
+            rejeitadasFIIInfo.push({ticker:fii.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
+          } else {
+            fii.veredictoMomento = fii.veredictoMomento || 'ALOCAR';
+            aprovadosFII.push(fii);
+          }
+        });
+        fiiData.fiis = aprovadosFII.slice(0, nFIIs);
+        fiiData.rejeitadosNaValidacao = rejeitadasFIIInfo;
+        fiiData.resumoValidacao = validFII.resumoValidacao;
+        console.log("[allocator] fii aprovados:", fiiData.fiis.length, "| rejeitados:", rejeitadasFIIInfo.length);
+      } catch(vErr){
+        console.warn("[allocator] validação momento FII falhou (segue sem):", vErr.message);
+      }
+
       allocRenderFII(fiiData);
       allocSt("fii","done");
       await new Promise(function(r){setTimeout(r,1500)});
@@ -13945,7 +14143,7 @@ async function allocatorStart(){
     }
 
     // ETAPA 5: CONSOLIDAÇÃO
-    allocProg("Etapa 5/5: consolidando carteira executável...");
+    allocProg("Etapa 7/7: consolidando carteira executável...");
     allocSt("final","loading");
     var consolidacao = await allocatorConsolidacao(valor, estrategia.alocacao, rvData.acoes, fiiData.fiis, perfil, objetivo);
     console.log("[allocator] consolidacao:", consolidacao);
@@ -14047,10 +14245,11 @@ async function allocatorGerarPDF(){
     // S02 — ESTRATÉGIA
     h+=sec("02","Estratégia de Alocação");
     if(est.alocacao && est.alocacao.length){
-      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">CLASSE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td><td style="padding:8px 12px;font-size:10px;font-weight:600">RACIONAL</td></tr>';
+      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">CLASSE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR (R$)</td><td style="padding:8px 12px;font-size:10px;font-weight:600">RACIONAL</td></tr>';
       est.alocacao.forEach(function(a,i){
         var bg=i%2?C.alt:C.bg;
-        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+a.classe+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+a.pct+'%</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';line-height:1.5;border-bottom:1px solid #eee;background:'+bg+'">'+(a.racional||"")+'</td></tr>';
+        var vCl = (Number(a.pct)||0)/100 * (d.valor||0);
+        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+a.classe+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+a.pct+'%</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(vCl?fmtBR(vCl):"—")+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';line-height:1.5;border-bottom:1px solid #eee;background:'+bg+'">'+(a.racional||"")+'</td></tr>';
       });
       h+='</table>';
     }
@@ -14064,11 +14263,12 @@ async function allocatorGerarPDF(){
     // S03 — RV
     if(rv.acoes && rv.acoes.length){
       h+=sec("03","Renda Variável — Screening");
-      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600">SETOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">P/L</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">ROE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td></tr>';
+      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600">SETOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">P/L</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">ROE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR (R$)</td></tr>';
       rv.acoes.forEach(function(a,i){
         var bg=i%2?C.alt:C.bg;
-        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+a.ticker+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(a.setor||"")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.green+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(a.dy||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(a.pl||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(a.roe||"—")+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.violet+';text-align:right;font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(a.pesoSugerido)+'</td></tr>';
-        if(a.briefing)h+='<tr><td colspan="6" style="padding:0 12px 8px 12px;font-size:10.5px;color:'+C.muted+';line-height:1.5;font-style:italic;background:'+bg+'">'+a.briefing+'</td></tr>';
+        var vAt = (Number(a.pesoSugerido)||0)/100 * (d.valor||0);
+        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+a.ticker+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(a.setor||"")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.green+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(a.dy||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(a.pl||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(a.roe||"—")+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.violet+';text-align:right;font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(a.pesoSugerido)+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(vAt?fmtBR(vAt):"—")+'</td></tr>';
+        if(a.briefing)h+='<tr><td colspan="7" style="padding:0 12px 8px 12px;font-size:10.5px;color:'+C.muted+';line-height:1.5;font-style:italic;background:'+bg+'">'+a.briefing+'</td></tr>';
       });
       h+='</table>';
     }
@@ -14076,11 +14276,12 @@ async function allocatorGerarPDF(){
     // S04 — FIIs
     if(fii.fiis && fii.fiis.length){
       h+=sec("04","Fundos Imobiliários — Screening");
-      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600">SEGMENTO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">P/VP</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VAC.</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td></tr>';
+      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600">SEGMENTO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">P/VP</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VAC.</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR (R$)</td></tr>';
       fii.fiis.forEach(function(f,i){
         var bg=i%2?C.alt:C.bg;
-        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+f.ticker+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(f.segmento||"")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.green+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(f.dy||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(f.pvp||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(f.vacancia||"—")+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.violet+';text-align:right;font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(f.pesoSugerido)+'</td></tr>';
-        if(f.briefing)h+='<tr><td colspan="6" style="padding:0 12px 8px 12px;font-size:10.5px;color:'+C.muted+';line-height:1.5;font-style:italic;background:'+bg+'">'+f.briefing+'</td></tr>';
+        var vFi = (Number(f.pesoSugerido)||0)/100 * (d.valor||0);
+        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+f.ticker+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(f.segmento||"")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.green+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(f.dy||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(f.pvp||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(f.vacancia||"—")+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.violet+';text-align:right;font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(f.pesoSugerido)+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(vFi?fmtBR(vFi):"—")+'</td></tr>';
+        if(f.briefing)h+='<tr><td colspan="7" style="padding:0 12px 8px 12px;font-size:10.5px;color:'+C.muted+';line-height:1.5;font-style:italic;background:'+bg+'">'+f.briefing+'</td></tr>';
       });
       h+='</table>';
     }
