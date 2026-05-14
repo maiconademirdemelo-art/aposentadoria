@@ -4743,7 +4743,7 @@ function calcVGBL(){
   
   // ═══════════════════════════════════════════════════════════════
   // CENÁRIO 1: SEM VGBL — RDC mantido na cooperativa
-  // Come-cotas de 15% a cada 2 anos completos sobre rendimento acumulado
+  // IR de 15% no vencimento do RDC a cada 2 anos sobre rendimento acumulado
   // O líquido reinveste e continua rendendo
   // No fim: 15% IR sobre rendimento residual + 17% sucessório (ITCMD/inventário/advogados)
   // ═══════════════════════════════════════════════════════════════
@@ -4753,7 +4753,7 @@ function calcVGBL(){
   const serieSem = [patrimonio];
   for(let i = 1; i <= anosAteSuccessao; i++){
     patSemPlan *= (1 + rentTrad);
-    // Come-cotas a cada 2 anos completos
+    // IR no vencimento do RDC a cada 2 anos completos
     if(i % 2 === 0){
       const rendNoTrienio = Math.max(0, patSemPlan - basisRDC);
       const irTrienio = rendNoTrienio * 0.15;
@@ -4865,7 +4865,7 @@ function calcVGBL(){
   const eficienciaTotal = economia; // herançaCom - herançaSem
   
   // Decomposição da economia (para o detalhe colapsável):
-  // 1. Ganho de crescimento: VGBL bruto > RDC bruto (compounding sem IR periódico)
+  // 1. Ganho de crescimento: VGBL bruto > RDC bruto (compounding sem IR a cada 2 anos)
   const rdcBruto = serieSem[serieSem.length - 1]; // último ponto bruto RDC (antes do ponto Sucessão)
   const vgblBruto = serieCom[serieCom.length - 2]; // último ponto bruto VGBL (antes do ponto Sucessão)
   const ganhoCrescimento = vgblBruto - rdcBruto;
@@ -4901,6 +4901,10 @@ function calcVGBL(){
   setEl('hero-vgbl-valor', '+' + fmtR(eficienciaTotal));
   setEl('hero-vgbl-sem', fmtR(herancaSemPlan));
   setEl('hero-vgbl-com', fmtR(herancaComPlan));
+  setEl('hero-vgbl-ganho-cap', '+' + fmtR(ganhoCrescimento));
+  setEl('hero-vgbl-itcmd', '+' + fmtR(itcmdEliminado));
+  setEl('hero-vgbl-irvgbl', '-' + fmtR(irVgblTotal));
+  setEl('hero-vgbl-irvgbl-sub', tabelaUsada === 'regressiva' ? 'Regressiva, mín. 10%' : 'Progressiva, 15%');
   setEl('hero-vgbl-desc', 
     'Migrando para VGBL, sua família recebe ' + fmtR(eficienciaTotal) + 
     ' a mais na sucessão em ' + anosAteSuccessao + ' anos.'
@@ -4910,7 +4914,7 @@ function calcVGBL(){
   setEl('diag-heranca-rdc-check', fmtR(herancaSemPlan));
   setEl('diag-heranca-vgbl-check', fmtR(herancaComPlan));
   setEl('diag-eficiencia-desc', 
-    'Patrimônio cresce ' + fmtR(ganhoCrescimento) + ' a mais sem IR periódico + ' +
+    'Patrimônio cresce ' + fmtR(ganhoCrescimento) + ' a mais sem IR no vencimento do RDC + ' +
     fmtR(itcmdEliminado) + ' em ITCMD eliminado'
   );
   
@@ -8583,7 +8587,29 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
         <div style="font-size:14px;color:var(--muted);margin-top:14px;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto" id="hero-vgbl-desc">Preencha os campos acima para ver o resultado.</div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid rgba(46,204,138,.15)">
+      <!-- Decomposição do ganho líquido -->
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(46,204,138,.15)">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:center;margin-bottom:14px">De onde vem essa diferença</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div style="padding:14px 10px;background:rgba(46,204,138,.04);border:1px solid rgba(46,204,138,.18);border-radius:10px;text-align:center">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#2ecc8a;font-weight:700;margin-bottom:8px">+ Capitalização</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(16px,2.5vw,22px);font-weight:800;color:#2ecc8a" id="hero-vgbl-ganho-cap">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4">IR só no resgate (não a cada 2 anos)</div>
+          </div>
+          <div style="padding:14px 10px;background:rgba(46,204,138,.04);border:1px solid rgba(46,204,138,.18);border-radius:10px;text-align:center">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#2ecc8a;font-weight:700;margin-bottom:8px">+ ITCMD economizado</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(16px,2.5vw,22px);font-weight:800;color:#2ecc8a" id="hero-vgbl-itcmd">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4">Beneficiários nomeados, sem inventário</div>
+          </div>
+          <div style="padding:14px 10px;background:rgba(240,112,112,.04);border:1px solid rgba(240,112,112,.18);border-radius:10px;text-align:center">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#f07070;font-weight:700;margin-bottom:8px">− IR VGBL na sucessão</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(16px,2.5vw,22px);font-weight:800;color:#f07070" id="hero-vgbl-irvgbl">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4" id="hero-vgbl-irvgbl-sub">Regressiva, mín. 10%</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-top:20px;padding-top:20px;border-top:1px solid rgba(46,204,138,.15)">
         <div style="text-align:center">
           <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#f07070;font-weight:700;margin-bottom:6px">Sem VGBL</div>
           <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(18px,3vw,26px);font-weight:800;color:#f07070" id="hero-vgbl-sem">—</div>
@@ -8671,7 +8697,7 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
       <div class="vgbl-camada-step gold">📊 Passo 2 · Projeção comparativa</div>
       <h3 class="vgbl-camada-titulo">Veja a diferença <span class="green">ao longo do tempo</span>.</h3>
       <p class="vgbl-camada-lead">
-        O gráfico compara a evolução do patrimônio nos dois cenários: mantendo no RDC (com IR a cada 2 anos + ITCMD na sucessão) vs migrando gradualmente para VGBL (sem IR periódico, sem inventário). No último ponto — "Sucessão" — ambas as linhas mostram o valor líquido que a família efetivamente recebe.
+        O gráfico compara a evolução do patrimônio nos dois cenários: mantendo no RDC (com IR a cada 2 anos + ITCMD na sucessão) vs migrando gradualmente para VGBL (sem IR no vencimento, sem inventário). No último ponto — "Sucessão" — ambas as linhas mostram o valor líquido que a família efetivamente recebe.
       </p>
     </div>
 
@@ -8757,7 +8783,7 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
       <div class="vgbl-camada-step gold">📈 Passo 3 · Alpha tributário</div>
       <h3 class="vgbl-camada-titulo">A economia de IR <span class="green">ano a ano</span>.</h3>
       <p class="vgbl-camada-lead">
-        A cada 2 anos, o RDC paga 15% de <strong>IR no vencimento</strong> sobre o rendimento do período. O VGBL não tem IR periódico — paga apenas na sucessão, pela tabela regressiva. As barras mostram o ganho marginal a cada ano, e a linha o alpha acumulado já líquido do IR final do VGBL.
+        A cada 2 anos, o RDC paga 15% de <strong>IR no vencimento</strong> sobre o rendimento do período. O VGBL não tem IR no vencimento — paga apenas na sucessão, pela tabela regressiva. As barras mostram o ganho marginal a cada ano, e a linha o alpha acumulado já líquido do IR final do VGBL.
       </p>
     </div>
 
@@ -8781,7 +8807,7 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
 
       <div style="margin-top:14px;padding:12px;background:rgba(76,139,245,.06);border:1px solid rgba(76,139,245,.2);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.6">
         <strong style="color:#4c8bf5;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase">💡 Como ler:</strong>
-        Barras <span style="color:#2ecc8a;font-weight:700">verdes</span> = ganho marginal do VGBL vs RDC naquele ano (acumulação sem IR periódico + capital trabalhando sobre o IR não pago). Barra <span style="color:#f07070;font-weight:700">vermelha</span> no último ano = impacto do <strong>IR no vencimento do VGBL na sucessão</strong> (regressiva). A <span style="color:#4c8bf5;font-weight:700">linha azul</span> é o alpha acumulado real — já líquido do IR final do VGBL.
+        Barras <span style="color:#2ecc8a;font-weight:700">verdes</span> = ganho marginal do VGBL vs RDC naquele ano (acumulação sem IR a cada 2 anos + capital trabalhando sobre o IR não pago). Barra <span style="color:#f07070;font-weight:700">vermelha</span> no último ano = impacto do <strong>IR no vencimento do VGBL na sucessão</strong> (regressiva). A <span style="color:#4c8bf5;font-weight:700">linha azul</span> é o alpha acumulado real — já líquido do IR final do VGBL.
       </div>
     </div>
 
@@ -8859,7 +8885,7 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
             <span style="color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px" id="diag-vgbl-bruto">—</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px">
-            <span style="color:var(--muted)">IR periódico</span>
+            <span style="color:var(--muted)">IR no vencimento (a cada 2 anos)</span>
             <span style="color:#2ecc8a;font-family:'JetBrains Mono',monospace;font-size:11px">R$ 0</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px">
@@ -11489,7 +11515,7 @@ function gerarTabelaMensal(){
   var N=anos*12,rdcS=patrimonio,rdcB=patrimonio,irAc=0,vgblS=patrimonio,rows=[];
   for(var m=1;m<=N;m++){
     var rdcR=rdcS*rTM;rdcS+=rdcR;var vR=vgblS*rVM;vgblS+=vR;var ev="";
-    if(m%24===0){var rr=Math.max(0,rdcS-rdcB);var ic=rr*0.15;rdcS-=ic;irAc+=ic;rdcB=rdcS;ev="Come-cotas 15%"}
+    if(m%24===0){var rr=Math.max(0,rdcS-rdcB);var ic=rr*0.15;rdcS-=ic;irAc+=ic;rdcB=rdcS;ev="IR no vencimento 15%"}
     if(m<=12||m%12===0||m%24===0||m===N)rows.push({m:m,rs:rdcS,rr:rdcR,vs:vgblS,vr:vR,d:vgblS-rdcS,e:ev});
   }
   var rF=Math.max(0,rdcS-rdcB)*0.15;var rdcH=(rdcS-rF)*0.83;
