@@ -12084,7 +12084,7 @@ function cartRemovePDF(idx){
 }
 
 // ──────── CHAMADA À IA COM PDFs ANEXADOS ────────
-async function carteiraCallWithPDFs({system, userText, pdfs, useSearch}) {
+async function carteiraCallWithPDFs({system, userText, pdfs, useSearch, maxTokens}) {
   if(useSearch === undefined) useSearch = true;
   var content = [];
   if(pdfs && pdfs.length){
@@ -12095,7 +12095,7 @@ async function carteiraCallWithPDFs({system, userText, pdfs, useSearch}) {
   content.push({type:"text", text: userText});
   var body = {
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 4000,
+    max_tokens: maxTokens || 8000,
     system: system,
     messages: [{role:"user", content: content}]
   };
@@ -12135,19 +12135,81 @@ var CART_SYS = "Voce e economista senior e estrategista de portfolio com 20+ ano
 // ──────── CALL 1: EXTRAÇÃO + RATINGS (suporta texto OU PDFs) ────────
 async function carteiraExtracao(carteiraTexto, perfil, pdfs) {
   var hasPDFs = pdfs && pdfs.length > 0;
-  var sys = CART_SYS + " ETAPA: extracao consolidada da carteira. " +
-    (hasPDFs ? "Voce recebeu " + pdfs.length + " PDF" + (pdfs.length>1?"s":"") + " de extratos de instituicoes financeiras diferentes. LEIA cada PDF e consolide TODAS as posicoes em uma unica carteira. Identifique a instituicao de origem de cada documento. " : "") +
-    "Para cada posicao: nome, classe taxonomica, valor R$. Se for credito privado (debentures, CRI, CRA, FIDC, CDCA), BUSQUE rating nas 3 agencias (S&P, Moody's, Fitch). Calcule duration estimada e DV01.";
-  var taxonomia = "Taxonomia obrigatoria: 'Caixa/Pos-fixado' (LFT, CDB pos, fundos DI), 'IPCA+' (NTN-B, IMA-B, IPCA+), 'Pre-fixado' (NTN-F, LTN, CDB pre), 'Credito Privado' (debentures, CRI, CRA, FIDC), 'Multimercado', 'Renda Variavel' (acoes, ETFs, BDRs), 'FIIs', 'Internacional' (fundos exterior, USD), 'Previdencia' (PGBL/VGBL).";
-  var jsonSchema = "Retorne JSON: {posicoes:[{nome:'',classe:'',valor:0,indexador:'',vencimento:'',rating:'',ratingAgencia:'',duration:0,instituicao:'',observacoes:''}],pl:0,nPosicoes:0,distribuicao:[{classe:'',valor:0,pct:0}],dv01Total:0,impacto100bps:0,inconsistencias:[''],dataBase:'AAAA-MM',instituicoes:['']}";
 
+  // Checklist obrigatório de classes — força a IA a vasculhar todas
+  var checklist = "CHECKLIST OBRIGATORIO - voce DEVE procurar posicoes em TODAS estas categorias antes de responder (extratos costumam tratar classes em secoes ou paginas SEPARADAS):\n" +
+    "[1] Renda Fixa Publica: Tesouro Direto (LFT, LTN, NTN-B, NTN-F)\n" +
+    "[2] Renda Fixa Privada Bancaria: CDB, LCI, LCA, LC, LH\n" +
+    "[3] Renda Fixa Privada Corporativa: Debentures (comuns e incentivadas), CRI, CRA, CDCA, FIDC\n" +
+    "[4] Fundos de Investimento: DI/Pos-fixados, Multimercado, Renda Fixa, Acoes, Cambial, Credito Privado, Exterior\n" +
+    "[5] Renda Variavel: ACOES (ON, PN, UNT), ETFs, BDRs, OPCOES, FUTUROS\n" +
+    "[6] Fundos Imobiliarios: FIIs listados (tickers terminam em '11')\n" +
+    "[7] Previdencia: PGBL e VGBL (separados, tem tributacao distinta)\n" +
+    "[8] Investimentos no Exterior: contas USD, fundos exterior, BDRs com lastro externo, REITs, stocks US\n" +
+    "[9] Outros: criptoativos, COE, FIP, FIA\n\n" +
+    "ATENCAO: extratos brasileiros tipicamente tem secoes SEPARADAS para Renda Fixa, Fundos, Renda Variavel e FIIs. SE VOCE SO ENCONTROU UMA CLASSE, ESTA INCOMPLETO - releia procurando as outras categorias.";
+
+  var taxonomia = "Taxonomia para classificacao final: 'Caixa/Pos-fixado' (LFT, CDB pos, fundos DI), 'IPCA+' (NTN-B, IMA-B, IPCA+), 'Pre-fixado' (NTN-F, LTN, CDB pre), 'Credito Privado' (debentures, CRI, CRA, FIDC), 'Multimercado', 'Renda Variavel' (acoes, ETFs, BDRs), 'FIIs', 'Internacional' (fundos exterior, USD, REITs), 'Previdencia' (PGBL/VGBL).";
+
+  // ───── PASSE 1: EXTRAÇÃO COMPLETA (sem web_search, foco total) ─────
+  var sysExtract = CART_SYS +
+    " ETAPA 1A: extracao EXAUSTIVA da carteira. " +
+    (hasPDFs ? "Voce recebeu " + pdfs.length + " PDF" + (pdfs.length>1?"s":"") + " de extratos. LEIA TODAS AS PAGINAS de cada PDF. Identifique a instituicao de origem. " : "") +
+    "Sua MISSAO NESTA ETAPA: listar TODAS as posicoes da carteira, sem omitir nenhuma classe. NAO BUSQUE RATINGS AGORA - isso e em outra etapa. Foque em capturar TUDO que existe na carteira. " +
+    "REGRAS: (a) NENHUMA classe pode ser pulada por preguica de procurar. (b) Se uma classe nao existir na carteira, registre explicitamente em coberturaClasses. (c) Liste cada posicao individualmente - se ha 5 acoes diferentes, liste as 5. (d) Para ratings, deixe vazio nesta etapa.";
+
+  var schemaExtract = "Retorne JSON: {posicoes:[{nome:'',classe:'',valor:0,indexador:'',vencimento:'',duration:0,instituicao:'',observacoes:''}],pl:0,nPosicoes:0,distribuicao:[{classe:'',valor:0,pct:0}],dv01Total:0,impacto100bps:0,inconsistencias:[''],dataBase:'AAAA-MM',instituicoes:[''],coberturaClasses:{rendaFixaPublica:'encontrado|nao_encontrado',cdbLci:'encontrado|nao_encontrado',creditoPrivado:'encontrado|nao_encontrado',fundos:'encontrado|nao_encontrado',rv:'encontrado|nao_encontrado',fii:'encontrado|nao_encontrado',previdencia:'encontrado|nao_encontrado',internacional:'encontrado|nao_encontrado'}}";
+
+  var extracao;
   if(hasPDFs){
-    var userText = "Extratos de carteira anexados acima (" + pdfs.length + " documento" + (pdfs.length>1?"s":"") + ").\n\nConsolide e classifique TODAS as posicoes em uma unica carteira, mantendo a referencia da instituicao de origem em cada posicao.\n\nPerfil do cliente: " + perfil + "\n\n" + taxonomia + "\n\n" + jsonSchema;
-    return await carteiraCallWithPDFs({system:sys, userText:userText, pdfs:pdfs, useSearch:true});
+    var userTextExtract = "Extratos anexados (" + pdfs.length + " documento" + (pdfs.length>1?"s":"") + ").\n\n" + checklist + "\n\n" + taxonomia + "\n\nPerfil do cliente: " + perfil + "\n\n" + schemaExtract + "\n\nIMPORTANTE: antes de responder, verifique se voce procurou em TODAS as 9 categorias do checklist. Preencha coberturaClasses honestamente.";
+    extracao = await carteiraCallWithPDFs({system:sysExtract, userText:userTextExtract, pdfs:pdfs, useSearch:false, maxTokens:8000});
   } else {
-    var user = "Carteira do cliente (texto livre):\n\n" + carteiraTexto + "\n\nPerfil: " + perfil + "\n\n" + taxonomia + "\n\n" + jsonSchema;
-    return await acoesCallJSON({system:sys, user:user, useSearch:true});
+    var userExtract = "Carteira do cliente (texto livre):\n\n" + carteiraTexto + "\n\n" + checklist + "\n\n" + taxonomia + "\n\nPerfil: " + perfil + "\n\n" + schemaExtract;
+    extracao = await acoesCallJSON({system:sysExtract, user:userExtract, useSearch:false});
   }
+
+  // ───── PASSE 2: ENRICHMENT DE RATINGS (só pra crédito privado) ─────
+  var creditosPrivados = (extracao.posicoes||[]).filter(function(p){
+    var c = (p.classe||"").toLowerCase();
+    var n = (p.nome||"").toLowerCase();
+    return c.indexOf("credito") >= 0 || c.indexOf("crédito") >= 0 ||
+           n.indexOf("debenture") >= 0 || n.indexOf("debênture") >= 0 ||
+           n.indexOf("cri ") === 0 || n.indexOf("cra ") === 0 ||
+           n.indexOf(" cri") >= 0 || n.indexOf(" cra") >= 0 ||
+           n.indexOf("fidc") >= 0 || n.indexOf("cdca") >= 0;
+  });
+
+  if(creditosPrivados.length > 0){
+    try {
+      var emissores = creditosPrivados.map(function(p){return p.nome}).join(" | ");
+      var sysRatings = CART_SYS + " ETAPA 1B: enriquecimento de ratings de credito privado. Para cada emissor abaixo, BUSQUE rating nas 3 agencias (S&P, Moody's, Fitch). Se encontrar, retorne rating + agencia. Se nao encontrar em nenhuma, retorne 'N/D'.";
+      var userRatings = "Emissores para pesquisa de rating:\n" + emissores + "\n\nRetorne JSON: {ratings:[{nome:'',rating:'',agencia:''}]}";
+      var ratingsData = await acoesCallJSON({system:sysRatings, user:userRatings, useSearch:true});
+
+      // Merge ratings nas posicoes
+      if(ratingsData && ratingsData.ratings){
+        ratingsData.ratings.forEach(function(r){
+          extracao.posicoes.forEach(function(p){
+            if(p.nome && r.nome && p.nome.toLowerCase().indexOf(r.nome.toLowerCase().slice(0,15)) >= 0){
+              p.rating = r.rating || "N/D";
+              p.ratingAgencia = r.agencia || "";
+            }
+          });
+        });
+      }
+    } catch(e){
+      console.warn("[carteira] enrichment de ratings falhou (segue sem):", e.message);
+    }
+  }
+
+  // Log de cobertura pra debug
+  if(extracao.coberturaClasses){
+    console.log("[carteira] cobertura de classes:", extracao.coberturaClasses);
+  }
+  console.log("[carteira] posicoes extraidas:", (extracao.posicoes||[]).length);
+
+  return extracao;
 }
 
 // ──────── CALL 2: MACRO VIEW ────────
@@ -12203,16 +12265,38 @@ function cartRenderExtracao(d){
   cart$("cart-kpi-pos-sub").textContent=(d.posicoes||[]).length+" posições";
   cart$("cart-kpi-dv-v").textContent=cartFmtBRL(d.impacto100bps||0);cart$("cart-kpi-dv-v").classList.remove("acoes-skeleton");
   cart$("cart-hero-data-base").textContent="data-base "+(d.dataBase||"—");
-  var h='<div style="display:grid;gap:10px;margin-bottom:14px">';
+
+  var h='';
+
+  // Cobertura de classes - mostra o que foi/não foi encontrado
+  if(d.coberturaClasses){
+    var coberLbl={rendaFixaPublica:"Tesouro",cdbLci:"CDB/LCI/LCA",creditoPrivado:"Crédito Privado",fundos:"Fundos",rv:"Renda Variável",fii:"FIIs",previdencia:"Previdência",internacional:"Internacional"};
+    h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,.02);border-radius:6px"><div style="width:100%;font-size:10px;color:#8b949e;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Cobertura de classes na carteira</div>';
+    Object.keys(coberLbl).forEach(function(k){
+      var val=d.coberturaClasses[k];
+      var found=val==='encontrado';
+      h+='<span style="font-size:11px;padding:4px 10px;border-radius:12px;background:'+(found?'rgba(46,204,138,.12)':'rgba(255,255,255,.04)')+';color:'+(found?'#2ecc8a':'#6b7280')+';border:1px solid '+(found?'rgba(46,204,138,.25)':'rgba(255,255,255,.06)')+'">'+(found?'✓ ':'· ')+coberLbl[k]+'</span>';
+    });
+    h+='</div>';
+  }
+
+  // Instituições identificadas
+  if(d.instituicoes && d.instituicoes.length && d.instituicoes[0]){
+    h+='<div style="margin-bottom:14px;font-size:11px;color:#8b949e"><strong style="color:#f8d75e">Instituições:</strong> '+d.instituicoes.join(' · ')+'</div>';
+  }
+
+  // Distribuição por classe
+  h+='<div style="display:grid;gap:10px;margin-bottom:14px">';
   (d.distribuicao||[]).forEach(function(dist){
     h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.03);border-left:3px solid #f8d75e;border-radius:6px"><div><strong style="color:#e6edf3">'+dist.classe+'</strong></div><div style="text-align:right"><div style="color:#f8d75e;font-weight:700">'+cartFmtPct(dist.pct,1)+'</div><div style="font-size:11px;color:#8b949e">'+cartFmtBRL(dist.valor)+'</div></div></div>';
   });
   h+='</div>';
   if(d.posicoes && d.posicoes.length){
-    h+='<div style="margin-top:14px;font-size:11px;color:#8b949e;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Posições detalhadas</div><div style="display:grid;gap:6px">';
+    h+='<div style="margin-top:14px;font-size:11px;color:#8b949e;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Posições detalhadas ('+d.posicoes.length+')</div><div style="display:grid;gap:6px">';
     d.posicoes.forEach(function(p){
       var rating=p.rating&&p.rating!=="N/D"?'<span style="font-size:10px;padding:2px 6px;background:rgba(46,204,138,.15);color:#2ecc8a;border-radius:4px;margin-left:6px">'+p.rating+(p.ratingAgencia?' '+p.ratingAgencia:'')+'</span>':'';
-      h+='<div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:8px 12px;background:rgba(255,255,255,.02);border-radius:4px;font-size:13px"><div style="color:#e6edf3"><strong>'+p.nome+'</strong> <span style="color:#8b949e;font-size:11px">'+(p.classe||"")+'</span>'+rating+'</div><div style="color:#f8d75e;font-weight:600">'+cartFmtBRL(p.valor)+'</div></div>';
+      var inst=p.instituicao?'<span style="font-size:10px;padding:2px 6px;background:rgba(76,139,245,.12);color:#4c8bf5;border-radius:4px;margin-left:6px">'+p.instituicao+'</span>':'';
+      h+='<div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:8px 12px;background:rgba(255,255,255,.02);border-radius:4px;font-size:13px"><div style="color:#e6edf3"><strong>'+p.nome+'</strong> <span style="color:#8b949e;font-size:11px">'+(p.classe||"")+'</span>'+rating+inst+'</div><div style="color:#f8d75e;font-weight:600">'+cartFmtBRL(p.valor)+'</div></div>';
     });
     h+='</div>';
   }
@@ -12429,7 +12513,7 @@ async function carteiraStart(modo){
   cart$("cart-verdict-modo").textContent=modo;
   var perfilCompleto = perfil + " · " + horizonte + " · liquidez " + liquidez + " · " + objetivo + (idade?" · "+idade+" anos":"") + (profissao?" · "+profissao:"");
   console.log("[carteira] iniciando análise modo " + modo + " | input=" + inputMode + (inputMode==='pdf'?" ("+pdfs.length+" PDFs)":""));
-  cartProg(inputMode==='pdf' ? "Etapa 1/6: lendo " + pdfs.length + " PDF" + (pdfs.length>1?"s":"") + " e extraindo posições..." : "Etapa 1/6: extraindo posições da carteira...");
+  cartProg(inputMode==='pdf' ? "Etapa 1/6: lendo " + pdfs.length + " PDF" + (pdfs.length>1?"s":"") + " (extração + ratings)..." : "Etapa 1/6: extraindo posições (extração + ratings)...");
   cartSt("extracao","loading");
   try {
     var extracao = await carteiraExtracao(carteiraTexto, perfilCompleto, pdfs);
