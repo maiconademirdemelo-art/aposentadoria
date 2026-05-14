@@ -1841,7 +1841,21 @@ body.has-rxp{padding-top:48px}
           <div class="modulo-tag">Macro · Coerência · Rebalanceamento</div>
         </div>
 
-        <!-- 7º MÓDULO — SIMULAÇÃO DE RENDA -->
+        <!-- 7º MÓDULO — CONSTRUTOR DE CARTEIRA (BETA) -->
+        <div class="modulo-card modulo-beta anim-element" data-anim-step="4.55" data-modulo="allocator" onclick="toggleModulo('allocator', this)">
+          <div class="modulo-beta-tag">BETA</div>
+          <div class="modulo-check">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="modulo-icon" style="background:rgba(168,94,255,.12)">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a85eff" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="#a85eff" fill-opacity=".2"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="#a85eff" fill-opacity=".15"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="#a85eff" fill-opacity=".15"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="#a85eff" fill-opacity=".25"/></svg>
+          </div>
+          <div class="modulo-tit">Construtor de Carteira</div>
+          <div class="modulo-desc">Monte uma carteira do zero a partir do perfil e do valor a investir</div>
+          <div class="modulo-tag">Screening · Alocação · Execução</div>
+        </div>
+
+        <!-- 8º MÓDULO — SIMULAÇÃO DE RENDA -->
         <div class="modulo-card anim-element" data-anim-step="4.6" data-modulo="renda" onclick="toggleModulo('renda', this)">
           <div class="modulo-check">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -3507,10 +3521,10 @@ function confirmarModulos(){
 // Inicia o fluxo customizado baseado nos módulos selecionados
 function iniciarFluxoSelecionado(modulos){
   if(modulos.includes('raioX')){
-    window._filaExecucao = ['aposentadoria', 'pgbl', 'holding', 'vgbl', 'acoes', 'carteira', 'renda'];
+    window._filaExecucao = ['aposentadoria', 'pgbl', 'holding', 'vgbl', 'acoes', 'carteira', 'allocator', 'renda'];
     fluxoAtual = 'raioX';
   } else {
-    const ordemNatural = ['aposentadoria', 'pgbl', 'holding', 'vgbl', 'acoes', 'carteira', 'renda'];
+    const ordemNatural = ['aposentadoria', 'pgbl', 'holding', 'vgbl', 'acoes', 'carteira', 'allocator', 'renda'];
     window._filaExecucao = ordemNatural.filter(m => modulos.includes(m));
     fluxoAtual = 'raioX'; // Reaproveita lógica do raioX para múltiplos módulos
   }
@@ -3530,6 +3544,14 @@ function iniciarFluxoSelecionado(modulos){
     window._filaExecucao.shift();
     showScreen('s-carteira');
     setTimeout(initCarteiraAnalise, 100);
+    return;
+  }
+
+  // ATALHO: se for SOMENTE Construtor de Carteira, pula o cadastro do cliente
+  if(window._filaExecucao.length === 1 && window._filaExecucao[0] === 'allocator'){
+    window._filaExecucao.shift();
+    showScreen('s-allocator');
+    setTimeout(initAllocator, 100);
     return;
   }
   
@@ -3576,6 +3598,11 @@ function proximoModuloDaFila(){
       setTimeout(initCarteiraAnalise, 100);
       atualizarBotaoNext('carteira');
       break;
+    case 'allocator':
+      showScreen('s-allocator');
+      setTimeout(initAllocator, 100);
+      atualizarBotaoNext('allocator');
+      break;
     case 'renda':
       showScreen('s-renda');
       setTimeout(initRendaSimulator, 100);
@@ -3594,6 +3621,7 @@ function atualizarBotaoNext(modulo){
     'vgbl': 'VGBL Sucessório',
     'acoes': 'Análise de Ativos',
     'carteira': 'Análise de Carteira',
+    'allocator': 'Construtor de Carteira',
     'renda': 'Simulação de Renda'
   };
   
@@ -3603,6 +3631,7 @@ function atualizarBotaoNext(modulo){
     'vgbl': 'vgbl-next-wrap',
     'acoes': 'acoes-next-wrap',
     'carteira': 'carteira-next-wrap',
+    'allocator': 'allocator-next-wrap',
     'renda': 'renda-next-wrap'
   };
   
@@ -7448,7 +7477,7 @@ function animarTelaConsultor(){
             
             // STEP 4: Cards aparecem em cascata
             setTimeout(() => {
-              const stepsCard = ['4.0', '4.1', '4.2', '4.3', '4.4', '4.5'];
+              const stepsCard = ['4.0', '4.1', '4.2', '4.3', '4.4', '4.5', '4.55', '4.6'];
               stepsCard.forEach((s, i) => {
                 setTimeout(() => mostrarElemento(s), i * 120);
               });
@@ -7463,7 +7492,7 @@ function animarTelaConsultor(){
                 setTimeout(() => { 
                   if(cursor2) cursor2.classList.add('hidden'); 
                 }, 1200);
-              }, 6 * 120 + 200);
+              }, 8 * 120 + 200);
             }, 350);
           }, 250);
         });
@@ -9808,6 +9837,276 @@ USD em conta exterior R$ 60.000" style="width:100%;padding:11px 14px;background:
 <div id="carteira-progress" class="acoes-progress-msg acoes-hidden">
   <span class="acoes-spin"></span>
   <span id="cart-progress-text">Conectando às fontes...</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TELA: CONSTRUTOR DE CARTEIRA (ALLOCATOR)
+═══════════════════════════════════════════════════════════════════════════ -->
+<div id="s-allocator" class="screen">
+  <div class="j-grid" style="opacity:0.3"></div>
+  <nav class="pgbl-nav">
+    <div class="logo">
+      <svg width="16" height="16" viewBox="0 0 22 22" fill="none"><path d="M11 2L19.5 7V15L11 20L2.5 15V7L11 2Z" stroke="#a85eff" stroke-width="1.5" fill="none"/><circle cx="11" cy="11" r="3" fill="#a85eff"/></svg>
+      Wealth<span class="logo-sp">Planning</span><span class="logo-sep" id="ls-alloc"></span><span class="logo-user" id="lu-alloc"></span>
+    </div>
+    <button class="bp" onclick="voltarDoAllocator()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Voltar
+    </button>
+  </nav>
+
+  <div class="pgbl-container">
+
+    <!-- HEADER -->
+    <div class="acoes-header">
+      <div class="acoes-eyebrow">
+        <span class="acoes-eyebrow-dot" style="background:#a85eff"></span>
+        Construir do zero
+      </div>
+      <h1 class="acoes-title">Construtor de <span class="acoes-title-accent" style="color:#a85eff">Carteira</span></h1>
+      <p class="acoes-sub">Do perfil ao plano executável. Screening dinâmico de ativos e alocação por classe.</p>
+    </div>
+
+    <!-- ═══════════════════════ INPUT STATE ═══════════════════════ -->
+    <div id="allocator-input-state">
+
+      <!-- BLOCO 1: Identificação e valor -->
+      <div class="acoes-input-card">
+        <label class="acoes-input-label">1. Identificação e valor a investir <span style="color:#f07070;font-weight:700">*</span></label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+          <input type="text" id="alloc-nome" placeholder="Nome do cliente (opcional)" autocomplete="off" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
+          <input type="text" id="alloc-valor" placeholder="Valor a investir (R$) *" inputmode="numeric" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.3);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
+          <input type="number" id="alloc-idade" placeholder="Idade" min="18" max="100" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
+        </div>
+      </div>
+
+      <!-- BLOCO 2: Perfil + objetivo + horizonte -->
+      <div class="acoes-input-card">
+        <label class="acoes-input-label">2. Perfil de risco, objetivo e horizonte</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <select id="alloc-perfil" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit">
+            <option value="">Perfil de risco *</option>
+            <option value="conservador">Conservador</option>
+            <option value="moderado">Moderado</option>
+            <option value="arrojado">Arrojado</option>
+            <option value="agressivo">Agressivo</option>
+          </select>
+          <select id="alloc-horizonte" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit">
+            <option value="">Horizonte *</option>
+            <option value="ate2">Até 2 anos</option>
+            <option value="2a5">2 a 5 anos</option>
+            <option value="5a10">5 a 10 anos</option>
+            <option value="acima10">Acima de 10 anos</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <select id="alloc-objetivo" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit">
+            <option value="">Objetivo prevalente *</option>
+            <option value="renda">Renda (dividendos/cupons)</option>
+            <option value="crescimento">Crescimento de capital</option>
+            <option value="equilibrio">Equilíbrio renda + crescimento</option>
+            <option value="preservacao">Preservação de capital</option>
+            <option value="aposentadoria">Aposentadoria de longo prazo</option>
+          </select>
+          <select id="alloc-tolVol" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit">
+            <option value="">Tolerância à volatilidade *</option>
+            <option value="baixa">Baixa (não tolera perdas &gt;5%)</option>
+            <option value="media">Média (tolera &gt;15%)</option>
+            <option value="alta">Alta (tolera &gt;25%)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BLOCO 3: Restrições e preferências -->
+      <div class="acoes-input-card">
+        <label class="acoes-input-label">3. Restrições e preferências (opcional)</label>
+        <textarea id="alloc-restricoes" rows="3" placeholder="Ex: evitar bancos, máximo 30% em RV, focar em utilities e telecom, sem small caps, evitar setores cíclicos, restrições ESG..." style="width:100%;padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;resize:vertical;line-height:1.5"></textarea>
+      </div>
+
+      <!-- BLOCO 4: Parametrização -->
+      <div class="acoes-input-card">
+        <label class="acoes-input-label">4. Parametrização da carteira</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div style="font-size:11px;color:#8b949e;margin-bottom:6px">N° alvo de ativos</div>
+            <select id="alloc-nAtivos" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
+              <option value="6-8">Concentrada (6-8 ativos)</option>
+              <option value="10-12" selected>Balanceada (10-12 ativos)</option>
+              <option value="14-18">Diversificada (14-18 ativos)</option>
+              <option value="20-25">Pulverizada (20-25 ativos)</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#8b949e;margin-bottom:6px">Classes a incluir</div>
+            <select id="alloc-classes" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
+              <option value="rv+fii" selected>RV + FIIs (foco bolsa)</option>
+              <option value="completa">Completa (RV + FII + RF + Caixa)</option>
+              <option value="renda">Foco renda (FIIs + RF + dividendeiras)</option>
+              <option value="rv-only">Apenas Renda Variável</option>
+              <option value="fii-only">Apenas FIIs</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 5: Botão de construção -->
+      <div class="acoes-input-card">
+        <label class="acoes-input-label">5. Construir a carteira</label>
+        <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5">
+          O sistema buscará dados de mercado em tempo real, definirá a alocação por classe, fará screening de ações e FIIs nos critérios definidos e consolidará tudo em uma carteira executável.<br>
+          <span style="color:#a85eff">⏱ Tempo estimado: 4-6 minutos · 5 chamadas IA com web search</span>
+        </div>
+        <button onclick="allocatorStart()" id="alloc-btn-start" class="acoes-mode-btn acoes-mode-completa" style="border-color:rgba(168,94,255,.4);background:linear-gradient(135deg,rgba(168,94,255,.12),rgba(168,94,255,.04));width:100%">
+          <span class="acoes-mode-icon">⚡</span>
+          <span class="acoes-mode-info">
+            <strong style="color:#a85eff">Construir carteira agora</strong>
+            <small>Inicia pipeline de screening + alocação · ~5 minutos</small>
+          </span>
+        </button>
+      </div>
+
+      <!-- Meta: Como funciona -->
+      <div class="acoes-meta-grid">
+        <div class="acoes-meta-col">
+          <div class="acoes-meta-num">01</div>
+          <h3>Screening dinâmico</h3>
+          <p>O sistema vasculha ações e FIIs do mercado brasileiro buscando candidatos que atendem aos critérios técnicos do perfil (DY, payout, vacância, P/VP, ROE, beta, etc).</p>
+        </div>
+        <div class="acoes-meta-col">
+          <div class="acoes-meta-num">02</div>
+          <h3>Alocação inteligente</h3>
+          <p>A divisão por classe é definida considerando o cenário macro vigente, não apenas o perfil — Selic alta puxa pós-fixado, ciclo de corte abre espaço para pré-fixado e RV.</p>
+        </div>
+        <div class="acoes-meta-col">
+          <div class="acoes-meta-num">03</div>
+          <h3>Aprofundamento sob demanda</h3>
+          <p>Cada ativo da carteira recebe um briefing curto explicando por que entrou na lista. Para análise completa fundamentalista + técnica, clique em "Aprofundar" em qualquer linha.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════ RESULTS STATE ═══════════════════════ -->
+    <div id="allocator-results-state" class="acoes-hidden">
+
+      <!-- HERO -->
+      <div class="acoes-hero">
+        <div class="acoes-hero-mark" style="color:#a85eff">Carteira sugerida · <span id="alloc-hero-modo">construção do zero</span></div>
+        <h2 class="acoes-hero-name" id="alloc-hero-cliente">Cliente em análise...</h2>
+        <div class="acoes-hero-meta">
+          <span id="alloc-hero-perfil">—</span>
+          <span class="acoes-dot">·</span>
+          <span id="alloc-hero-objetivo">—</span>
+          <span class="acoes-dot">·</span>
+          <span class="acoes-pill" id="alloc-hero-valor">R$ —</span>
+        </div>
+      </div>
+
+      <!-- KPIs principais -->
+      <div class="acoes-kpi-grid">
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">Capital alocado</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="alloc-kpi-valor">aguardando</div>
+          <div class="acoes-kpi-sub" id="alloc-kpi-valor-sub">de R$ —</div>
+        </div>
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">N° de ativos</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="alloc-kpi-pos">aguardando</div>
+          <div class="acoes-kpi-sub" id="alloc-kpi-pos-sub">por classe</div>
+        </div>
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">DY esperado</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="alloc-kpi-dy">aguardando</div>
+          <div class="acoes-kpi-sub" id="alloc-kpi-dy-sub">renda anual líquida</div>
+        </div>
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">Vol esperada</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="alloc-kpi-vol" style="font-size:24px">aguardando</div>
+          <div class="acoes-kpi-sub" id="alloc-kpi-vol-sub">a.a. estimada</div>
+        </div>
+      </div>
+
+      <!-- SEÇÕES (5 dobras conforme pipeline) -->
+
+      <article class="acoes-section acoes-open" data-key="macro">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">01 — Macro</span>
+          <h3 class="acoes-section-title">Cenário de Mercado</h3>
+          <span class="acoes-section-status" id="alloc-st-macro">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="alloc-body-macro">
+          <p class="acoes-placeholder">Snapshot dos indicadores macroeconômicos atuais que pautam a montagem da carteira.</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="estrategia">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">02 — Estratégia</span>
+          <h3 class="acoes-section-title">Alocação por Classe</h3>
+          <span class="acoes-section-status" id="alloc-st-estrategia">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="alloc-body-estrategia">
+          <p class="acoes-placeholder">Divisão percentual entre Renda Variável, Fundos Imobiliários, Renda Fixa e Caixa, ancorada no perfil e no cenário.</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="rv">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">03 — RV</span>
+          <h3 class="acoes-section-title">Renda Variável — Screening</h3>
+          <span class="acoes-section-status" id="alloc-st-rv">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="alloc-body-rv">
+          <p class="acoes-placeholder">Ações selecionadas que atendem aos critérios técnicos. Cada uma com briefing e botão "Aprofundar".</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="fii">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">04 — FIIs</span>
+          <h3 class="acoes-section-title">Fundos Imobiliários — Screening</h3>
+          <span class="acoes-section-status" id="alloc-st-fii">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="alloc-body-fii">
+          <p class="acoes-placeholder">FIIs selecionados por estabilidade de yield, vacância e qualidade de gestão.</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="final">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">05 — Final</span>
+          <h3 class="acoes-section-title">Carteira Consolidada — Ordem de Execução</h3>
+          <span class="acoes-section-status" id="alloc-st-final">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="alloc-body-final">
+          <p class="acoes-placeholder">Tabela executável com cada ativo, peso, valor em R$, e ordem sugerida de compra.</p>
+        </div>
+      </article>
+
+      <!-- Botões de ação após análise -->
+      <div id="allocator-actions" class="acoes-hidden" style="display:none;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);gap:10px;flex-wrap:wrap;justify-content:flex-end">
+        <button onclick="allocatorGerarPDF()" id="allocator-pdf-btn" style="background:linear-gradient(135deg,rgba(168,94,255,.15),rgba(168,94,255,.06));border:1px solid rgba(168,94,255,.35);color:#a85eff;padding:11px 22px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;border-radius:8px">📄 Relatório PDF</button>
+        <button onclick="allocatorResetState()" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#e6edf3;padding:11px 22px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;border-radius:8px">← Nova carteira</button>
+      </div>
+
+      <!-- Botão "Próximo módulo" da fila -->
+      <div id="allocator-next-wrap" style="display:none;margin-top:24px"></div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast de progresso do Allocator -->
+<div id="allocator-progress" class="acoes-progress-msg acoes-hidden">
+  <span class="acoes-spin"></span>
+  <span id="alloc-progress-text">Conectando às fontes...</span>
 </div>
 
 
@@ -13175,6 +13474,678 @@ async function carteiraGerarPDF(){
 
   } catch(err) {
     console.error("[carteira] erro no PDF:", err);
+    alert("Erro ao gerar PDF: " + err.message);
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTRUTOR DE CARTEIRA (ALLOCATOR) · 5 chamadas IA com web_search
+// ═══════════════════════════════════════════════════════════════════════════
+
+function alloc$(id){return document.getElementById(id)}
+function allocSt(k,s){
+  var el=alloc$("alloc-st-"+k);if(!el)return;
+  el.textContent={pending:"aguardando",loading:"carregando",done:"pronto",error:"erro"}[s]||s;
+  el.className="acoes-section-status "+(s==="pending"?"":"acoes-"+s);
+}
+function allocProg(msg){
+  var p=alloc$("allocator-progress");
+  if(!msg){if(p)p.classList.add("acoes-hidden");return}
+  if(p){p.classList.remove("acoes-hidden");alloc$("alloc-progress-text").textContent=msg}
+}
+function initAllocator(){
+  alloc$("allocator-input-state").style.display="";
+  alloc$("allocator-results-state").classList.add("acoes-hidden");
+  ["macro","estrategia","rv","fii","final"].forEach(function(k){allocSt(k,"pending")});
+  // Format dinâmico no campo de valor
+  var inp = alloc$("alloc-valor");
+  if(inp && !inp._fmtAttached){
+    inp._fmtAttached = true;
+    inp.addEventListener('input', function(e){
+      var raw = (e.target.value||"").replace(/\D/g,'');
+      if(!raw){e.target.value=""; return}
+      e.target.value = "R$ " + Number(raw).toLocaleString("pt-BR");
+    });
+  }
+}
+function voltarDoAllocator(){
+  if(window._filaExecucao && window._filaExecucao.length>0){
+    var prox=window._filaExecucao.shift();
+    if(typeof handleModuloSelection==="function") handleModuloSelection(prox);
+    else showScreen('s0b');
+  } else {
+    showScreen('s0b');
+  }
+}
+function allocatorResetState(){
+  if(!confirm("Iniciar nova construção? Os dados atuais serão descartados.")) return;
+  window._allocData = null;
+  alloc$("allocator-input-state").style.display="";
+  alloc$("allocator-results-state").classList.add("acoes-hidden");
+  var actionsEl = alloc$("allocator-actions");
+  if(actionsEl){actionsEl.style.display="none"; actionsEl.classList.add("acoes-hidden")}
+  ["macro","estrategia","rv","fii","final"].forEach(function(k){allocSt(k,"pending")});
+  ["valor","pos","dy","vol"].forEach(function(k){
+    var v=alloc$("alloc-kpi-"+k); if(v){v.textContent="aguardando"; v.classList.add("acoes-skeleton")}
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ──────── SYSTEM PROMPT BASE (compartilhado) ────────
+var ALLOC_SYS = "Voce e estrategista de portfolio e analista de investimentos senior com 20+ anos de experiencia no mercado brasileiro. Atua como consultor tecnico do assessor que assinara o relatorio. " +
+"PRINCIPIOS ABSOLUTOS: " +
+"(1) Nunca inventar numeros. Cada dado citado (DY, P/L, P/VP, vacancia, etc) deve ser confirmado por busca real recente. " +
+"(2) Linguagem na PRIMEIRA PESSOA do analista ('avalio que', 'minha leitura e', 'considero adequado'). " +
+"(3) PROIBIDO citar fontes externas: nome de imprensa, banco, casa de analise. As afirmacoes sao SUAS. " +
+"(4) PROIBIDO: jargao sem explicacao, frases genericas, linguagem de IA, disclaimers desnecessarios, emojis. " +
+"(5) OBRIGATORIO: clareza, numeros reais, opiniao formada, autoridade tecnica. " +
+"(6) SAIDA: APENAS JSON sem cercas markdown.";
+
+// ──────── CALL 1: MACRO RÁPIDO ────────
+async function allocatorMacro(){
+  var sys = ALLOC_SYS + " ETAPA: Macro rapido para construcao de carteira. Busque dados ATUAIS (ultima semana). Cobertura sucinta: " +
+    "(A) Selic atual + direcao (alta/queda/manutencao), (B) IPCA 12m + tendencia, (C) USD/BRL nivel atual, (D) Ibovespa YTD + momentum (em alta/lateral/queda), (E) Ciclo de juros, (F) Apetite a risco (risk-on/risk-off), (G) Sintese em 2-3 frases do que isso significa para alocacao.";
+  var user = "Gere snapshot macro atual conciso. Retorne JSON: {selic:'',selicDirecao:'',ipca12m:'',ipcaTendencia:'',usdBrl:'',ibovYTD:'',ibovMomentum:'',cicloJuros:'',apetiteRisco:'',sintese:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 2: ESTRATÉGIA DE ALOCAÇÃO ────────
+async function allocatorEstrategia(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes){
+  var sys = ALLOC_SYS + " ETAPA: Estrategia de alocacao por classe. Defina alocacao PERCENTUAL por classe. " +
+    "REGRAS RIGIDAS POR PERFIL: " +
+    "Conservador: max 25% RV, max 15% FII, min 50% RF (pos+pre+credito), max 5% Internacional. " +
+    "Moderado: max 40% RV, max 25% FII, min 30% RF, max 15% Internacional. " +
+    "Arrojado: max 60% RV, max 35% FII, min 10% RF, max 25% Internacional. " +
+    "Agressivo: max 80% RV, max 40% FII, max 35% Internacional. " +
+    "AJUSTES PELO MACRO: Selic alta = sobrepeso pos-fixado. Ciclo de corte = sobrepeso pre + IPCA+. Cenario favoravel a bolsa = sobrepeso RV. " +
+    "AJUSTES PELO OBJETIVO: 'renda' = sobrepeso FIIs + dividendeiras. 'crescimento' = sobrepeso RV growth. 'equilibrio' = balanceado. 'preservacao' = sobrepeso RF. " +
+    "Soma DEVE ser 100%. Estimar retorno e volatilidade esperados a.a.";
+  var user = "Macro atual:\n" + macroResumo + "\n\n" +
+    "Perfil: " + perfil + " | Objetivo: " + objetivo + " | Horizonte: " + horizonte + " | Tolerancia volatilidade: " + tolVol + "\n" +
+    "Restricoes do cliente: " + (restricoes||"nenhuma") + "\n" +
+    "Classes a incluir (filtro do assessor): " + classes + "\n\n" +
+    "Retorne JSON: {alocacao:[{classe:'',pct:0,racional:''}],retornoEsperadoAA:'',volatilidadeEsperadaAA:'',drawdownEsperadoMax:'',sinteseEstrategia:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 3: SCREENING DE AÇÕES ────────
+async function allocatorScreeningRV(macroResumo, alocacaoRV, objetivo, restricoes, nAtivos){
+  var sys = ALLOC_SYS + " ETAPA: Screening de ACOES brasileiras (B3). Selecione acoes de alta qualidade que atendem aos criterios. " +
+    "CRITERIOS PADRAO (foco renda): DY 12m > 6%, payout estavel ultimos 3 anos, ROE > 12%, Divida liquida/EBITDA < 3x, liquidez diaria > R$ 5M, beta < 1.2. " +
+    "CRITERIOS (foco crescimento): ROE > 15%, ROIC > 15%, crescimento receita > 10%/ano ultimos 3 anos, margens em expansao, baixa alavancagem. " +
+    "OBRIGATORIO: web_search com dados ATUAIS de cada acao. NAO INVENTE numeros. " +
+    "DIVERSIFICACAO OBRIGATORIA: max 25% em qualquer setor unico. Distribuir entre: financeiro, utilities, telecom, varejo, energia, bens industriais, consumo, etc. " +
+    "Para CADA acao: ticker, nome, setor, DY 12m REAL, P/L atual, ROE, classificacao de volatilidade (baixa/media/alta), peso sugerido na carteira (% do total), briefing de 2-3 frases explicando POR QUE entrou na selecao.";
+  var user = "Macro: " + macroResumo + "\n" +
+    "Alocacao prevista para RV: " + alocacaoRV + "% do total\n" +
+    "Objetivo principal: " + objetivo + "\n" +
+    "Restricoes do cliente: " + (restricoes||"nenhuma") + "\n" +
+    "Selecione " + nAtivos + " acoes diversificadas por setor.\n\n" +
+    "Retorne JSON: {acoes:[{ticker:'',nome:'',setor:'',dy:'',pl:'',roe:'',beta:'',vol:'baixa|media|alta',pesoSugerido:0,briefing:''}],totalSelecionado:0,setoresCobertos:[''],alertasGerais:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 4: SCREENING DE FIIs ────────
+async function allocatorScreeningFII(macroResumo, alocacaoFII, objetivo, restricoes, nFIIs){
+  var sys = ALLOC_SYS + " ETAPA: Screening de FIIs brasileiros. Selecione FIIs estaveis. " +
+    "CRITERIOS PADRAO: DY 12m > 8%, pagamento de DY consistente ultimos 24-36 meses (sem cortes), vacancia < 8% (tijolo), P/VP entre 0.85 e 1.10, liquidez diaria > R$ 500k, gestor reconhecido. " +
+    "OBRIGATORIO: web_search com dados ATUAIS. " +
+    "DIVERSIFICACAO POR SEGMENTO: distribuir entre logistica, lajes corporativas, shoppings, residencial, papel/recebiveis, hospitais/educacional. Max 30% em qualquer segmento unico. " +
+    "Para CADA FII: ticker, nome, segmento (logistica/lajes/shopping/residencial/papel/hibrido), DY 12m REAL, P/VP atual, vacancia (se aplicavel), gestor, peso sugerido (% do total), briefing de 2-3 frases.";
+  var user = "Macro: " + macroResumo + "\n" +
+    "Alocacao prevista para FIIs: " + alocacaoFII + "% do total\n" +
+    "Objetivo principal: " + objetivo + "\n" +
+    "Restricoes do cliente: " + (restricoes||"nenhuma") + "\n" +
+    "Selecione " + nFIIs + " FIIs diversificados por segmento.\n\n" +
+    "Retorne JSON: {fiis:[{ticker:'',nome:'',segmento:'',dy:'',pvp:'',vacancia:'',gestor:'',pesoSugerido:0,briefing:''}],totalSelecionado:0,segmentosCobertos:[''],alertasGerais:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 5: CONSOLIDAÇÃO + EXECUÇÃO ────────
+async function allocatorConsolidacao(valor, alocacao, acoes, fiis, perfil, objetivo){
+  var sys = ALLOC_SYS + " ETAPA: Consolidacao final da carteira. Monte a carteira EXECUTAVEL com valores em R$ por posicao. " +
+    "REGRAS: (1) Soma dos pesos = 100%. (2) Respeitar a alocacao por classe da estrategia. (3) Arredondar valores para multiplos de R$ 1.000 (sobra vai para 'caixa pendente'). (4) Validar diversificacao: nao concentrar > 30% em setor unico. (5) Ordem de execucao: priorizar liquidez (RF primeiro), depois RV, depois FIIs. " +
+    "Tambem inclua: DY esperado da carteira (ponderado pelos DYs individuais), volatilidade esperada estimada, drawdown maximo estimado em cenarios adversos.";
+  var user = "Valor total a investir: R$ " + valor + "\n" +
+    "Alocacao por classe: " + JSON.stringify(alocacao) + "\n" +
+    "Acoes selecionadas: " + JSON.stringify((acoes||[]).map(function(a){return {t:a.ticker,p:a.pesoSugerido,dy:a.dy}})) + "\n" +
+    "FIIs selecionados: " + JSON.stringify((fiis||[]).map(function(f){return {t:f.ticker,p:f.pesoSugerido,dy:f.dy}})) + "\n" +
+    "Perfil: " + perfil + " | Objetivo: " + objetivo + "\n\n" +
+    "Retorne JSON: {carteiraFinal:[{ticker:'',tipo:'acao|fii|rf|caixa',classe:'',peso:0,valor:0,dyAtivo:'',briefing:''}],totalAlocado:0,sobraCaixa:0,dyCarteiraPonderado:'',volEsperada:'',drawdownEstimado:'',distribuicaoFinal:[{classe:'',pct:0,valor:0}],setoresFinais:[{setor:'',pct:0}],ordemExecucao:[{etapa:0,acao:'',ativos:[''],motivo:''}],alertasFinais:[''],validacaoDiversificacao:'OK|ATENCAO|CRITICA'}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── HELPERS DE RENDERIZAÇÃO ────────
+function allocFmtBRL(n){if(n==null||isNaN(n))return"—";return"R$ "+Number(n).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:0})}
+function allocFmtPct(n,d){if(n==null||isNaN(n))return"—";return Number(n).toFixed(d||1)+"%"}
+function allocVolColor(v){return v==="baixa"?"#2ecc8a":v==="alta"?"#f07070":"#f8d75e"}
+function allocParseValor(s){return Number(String(s||"").replace(/\D/g,'')) || 0}
+
+// ──────── RENDER FUNCTIONS ────────
+function allocRenderMacro(d){
+  var h='';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">';
+  [['Selic',d.selic],['IPCA 12m',d.ipca12m],['USD/BRL',d.usdBrl],['Ibov YTD',d.ibovYTD],['Ciclo Juros',d.cicloJuros],['Apetite',d.apetiteRisco]].forEach(function(p){
+    h+='<div style="padding:10px 12px;background:rgba(255,255,255,.03);border-radius:6px"><div style="font-size:11px;color:#8b949e;letter-spacing:.08em;text-transform:uppercase;font-weight:600">'+p[0]+'</div><div style="font-size:15px;color:#a85eff;font-weight:700;margin-top:2px">'+(p[1]||"—")+'</div></div>';
+  });
+  h+='</div>';
+  if(d.sintese)h+='<div class="acoes-callout" style="border-left-color:#a85eff"><strong>Síntese:</strong> '+d.sintese+'</div>';
+  alloc$("alloc-body-macro").innerHTML=h;
+}
+
+function allocRenderEstrategia(d){
+  var h='';
+  if(d.alocacao && d.alocacao.length){
+    // Barra horizontal de alocação
+    h+='<div style="display:flex;height:32px;border-radius:6px;overflow:hidden;margin-bottom:14px">';
+    var colors={'Renda Variavel':'#4c8bf5','RV':'#4c8bf5','FIIs':'#a85eff','FII':'#a85eff','Renda Fixa':'#2ecc8a','RF':'#2ecc8a','Internacional':'#f8d75e','Caixa':'#8b949e','Pos-fixado':'#2ecc8a','Pre-fixado':'#1abc9c','IPCA+':'#16a085','Credito Privado':'#27ae60','Multimercado':'#3498db'};
+    d.alocacao.forEach(function(a){
+      var c=colors[a.classe]||'#8b949e';
+      h+='<div style="flex:'+a.pct+';background:'+c+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:0 4px" title="'+a.classe+' '+a.pct+'%">'+(a.pct>=6?a.pct+'%':'')+'</div>';
+    });
+    h+='</div>';
+
+    // Lista detalhada
+    h+='<div style="display:grid;gap:8px;margin-bottom:14px">';
+    d.alocacao.forEach(function(a){
+      var c=colors[a.classe]||'#8b949e';
+      h+='<div style="padding:12px 14px;background:rgba(255,255,255,.03);border-left:3px solid '+c+';border-radius:6px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><strong style="color:#e6edf3;font-size:14px">'+a.classe+'</strong><span style="color:'+c+';font-weight:700;font-size:18px">'+a.pct+'%</span></div><div style="font-size:13px;color:#c9d1d9;line-height:1.55">'+(a.racional||"")+'</div></div>';
+    });
+    h+='</div>';
+  }
+
+  // KPIs de retorno/vol esperados
+  if(d.retornoEsperadoAA || d.volatilidadeEsperadaAA){
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">';
+    if(d.retornoEsperadoAA)h+='<div style="padding:10px 12px;background:rgba(46,204,138,.06);border-left:3px solid #2ecc8a;border-radius:4px"><div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.08em">Retorno esperado a.a.</div><div style="font-size:16px;color:#2ecc8a;font-weight:700">'+d.retornoEsperadoAA+'</div></div>';
+    if(d.volatilidadeEsperadaAA)h+='<div style="padding:10px 12px;background:rgba(248,215,94,.06);border-left:3px solid #f8d75e;border-radius:4px"><div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.08em">Volatilidade a.a.</div><div style="font-size:16px;color:#f8d75e;font-weight:700">'+d.volatilidadeEsperadaAA+'</div></div>';
+    if(d.drawdownEsperadoMax)h+='<div style="padding:10px 12px;background:rgba(240,112,112,.06);border-left:3px solid #f07070;border-radius:4px"><div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.08em">Drawdown máx estimado</div><div style="font-size:16px;color:#f07070;font-weight:700">'+d.drawdownEsperadoMax+'</div></div>';
+    h+='</div>';
+  }
+
+  if(d.sinteseEstrategia)h+='<div class="acoes-callout"><strong>Estratégia:</strong> '+d.sinteseEstrategia+'</div>';
+  alloc$("alloc-body-estrategia").innerHTML=h;
+}
+
+function allocRenderTabelaAtivos(items, tipo){
+  if(!items || !items.length) return '<p class="acoes-placeholder">Nenhum ativo desta classe foi incluído.</p>';
+  var h='';
+  // Alerta gerais (se houver)
+  // Lista de ativos
+  h+='<div style="display:grid;gap:10px">';
+  items.forEach(function(a){
+    var vc=allocVolColor(a.vol||"media");
+    h+='<div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(168,94,255,.12);border-radius:8px">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:8px">';
+    h+='<div style="display:flex;align-items:baseline;gap:8px"><strong style="color:#e6edf3;font-size:16px;font-family:JetBrains Mono,monospace">'+a.ticker+'</strong><span style="color:#8b949e;font-size:13px">'+a.nome+'</span><span style="font-size:10px;padding:2px 8px;background:rgba(168,94,255,.15);color:#a85eff;border-radius:10px;font-weight:600">'+(tipo==='acao'?a.setor:a.segmento)+'</span></div>';
+    h+='<div style="display:flex;gap:14px;align-items:baseline"><span style="color:#a85eff;font-weight:700;font-size:16px">'+allocFmtPct(a.pesoSugerido)+'</span><button onclick="allocatorAprofundar(\''+a.ticker+'\',\''+tipo+'\')" style="background:rgba(168,94,255,.1);border:1px solid rgba(168,94,255,.3);color:#a85eff;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🔍 Aprofundar</button></div>';
+    h+='</div>';
+
+    // Indicadores
+    h+='<div style="display:flex;gap:14px;margin:8px 0;font-size:11.5px;color:#c9d1d9;flex-wrap:wrap">';
+    if(tipo==='acao'){
+      if(a.dy)h+='<span><strong style="color:#2ecc8a">DY:</strong> '+a.dy+'</span>';
+      if(a.pl)h+='<span><strong style="color:#8b949e">P/L:</strong> '+a.pl+'</span>';
+      if(a.roe)h+='<span><strong style="color:#8b949e">ROE:</strong> '+a.roe+'</span>';
+      if(a.beta)h+='<span><strong style="color:#8b949e">Beta:</strong> '+a.beta+'</span>';
+      if(a.vol)h+='<span><strong style="color:'+vc+'">Vol:</strong> '+a.vol+'</span>';
+    } else {
+      if(a.dy)h+='<span><strong style="color:#2ecc8a">DY:</strong> '+a.dy+'</span>';
+      if(a.pvp)h+='<span><strong style="color:#8b949e">P/VP:</strong> '+a.pvp+'</span>';
+      if(a.vacancia)h+='<span><strong style="color:#8b949e">Vacância:</strong> '+a.vacancia+'</span>';
+      if(a.gestor)h+='<span><strong style="color:#8b949e">Gestor:</strong> '+a.gestor+'</span>';
+    }
+    h+='</div>';
+
+    // Briefing
+    h+='<div style="font-size:13px;color:#e6edf3;line-height:1.55;padding-top:8px;border-top:1px solid rgba(255,255,255,.05)">'+(a.briefing||"")+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function allocRenderRV(d){
+  var h='';
+  if(d.setoresCobertos && d.setoresCobertos.length){
+    h+='<div style="margin-bottom:14px;font-size:12px;color:#8b949e"><strong style="color:#a85eff">Setores cobertos:</strong> '+d.setoresCobertos.join(" · ")+'</div>';
+  }
+  if(d.alertasGerais)h+='<div class="acoes-callout" style="border-left-color:#f8d75e">'+d.alertasGerais+'</div>';
+  h+=allocRenderTabelaAtivos(d.acoes, 'acao');
+  alloc$("alloc-body-rv").innerHTML=h;
+}
+
+function allocRenderFII(d){
+  var h='';
+  if(d.segmentosCobertos && d.segmentosCobertos.length){
+    h+='<div style="margin-bottom:14px;font-size:12px;color:#8b949e"><strong style="color:#a85eff">Segmentos cobertos:</strong> '+d.segmentosCobertos.join(" · ")+'</div>';
+  }
+  if(d.alertasGerais)h+='<div class="acoes-callout" style="border-left-color:#f8d75e">'+d.alertasGerais+'</div>';
+  h+=allocRenderTabelaAtivos(d.fiis, 'fii');
+  alloc$("alloc-body-fii").innerHTML=h;
+}
+
+function allocRenderFinal(d, valorTotal){
+  // Atualizar KPIs
+  alloc$("alloc-kpi-valor").textContent=allocFmtBRL(d.totalAlocado||0);
+  alloc$("alloc-kpi-valor").classList.remove("acoes-skeleton");
+  alloc$("alloc-kpi-valor-sub").textContent="de "+allocFmtBRL(valorTotal);
+  alloc$("alloc-kpi-pos").textContent=(d.carteiraFinal||[]).length;
+  alloc$("alloc-kpi-pos").classList.remove("acoes-skeleton");
+  alloc$("alloc-kpi-dy").textContent=d.dyCarteiraPonderado||"—";
+  alloc$("alloc-kpi-dy").classList.remove("acoes-skeleton");
+  alloc$("alloc-kpi-vol").textContent=d.volEsperada||"—";
+  alloc$("alloc-kpi-vol").classList.remove("acoes-skeleton");
+
+  var h='';
+
+  // Validação de diversificação
+  if(d.validacaoDiversificacao){
+    var col=d.validacaoDiversificacao==='OK'?'#2ecc8a':d.validacaoDiversificacao==='ATENCAO'?'#f8d75e':'#f07070';
+    var icon=d.validacaoDiversificacao==='OK'?'✓':'⚠';
+    h+='<div style="padding:12px 16px;background:'+col+'15;border:1px solid '+col+'40;border-radius:8px;margin-bottom:14px;color:'+col+';font-size:13px;font-weight:600">'+icon+' Validação de diversificação: '+d.validacaoDiversificacao+'</div>';
+  }
+
+  // Tabela executável principal
+  h+='<div style="font-size:11px;color:#8b949e;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Carteira final consolidada</div>';
+  h+='<div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:520px">';
+  h+='<thead><tr style="border-bottom:2px solid rgba(168,94,255,.2)"><th style="text-align:left;padding:10px 8px;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em">#</th><th style="text-align:left;padding:10px 8px;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Ativo</th><th style="text-align:left;padding:10px 8px;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Classe</th><th style="text-align:right;padding:10px 8px;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Peso</th><th style="text-align:right;padding:10px 8px;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Valor</th><th style="text-align:right;padding:10px 8px;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em">DY</th><th style="text-align:center;padding:10px 8px;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em">Ação</th></tr></thead><tbody>';
+  (d.carteiraFinal||[]).forEach(function(p, i){
+    var bg=i%2?"rgba(255,255,255,.02)":"transparent";
+    var tipoColor=p.tipo==='acao'?'#4c8bf5':p.tipo==='fii'?'#a85eff':p.tipo==='rf'?'#2ecc8a':'#8b949e';
+    h+='<tr style="background:'+bg+';border-bottom:1px solid rgba(255,255,255,.04)">';
+    h+='<td style="padding:10px 8px;color:#8b949e;font-family:JetBrains Mono,monospace;font-size:11px">'+(i+1)+'</td>';
+    h+='<td style="padding:10px 8px;color:#e6edf3;font-family:JetBrains Mono,monospace;font-weight:700">'+p.ticker+'</td>';
+    h+='<td style="padding:10px 8px"><span style="font-size:10px;padding:3px 8px;background:'+tipoColor+'20;color:'+tipoColor+';border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">'+(p.classe||p.tipo)+'</span></td>';
+    h+='<td style="padding:10px 8px;text-align:right;color:#a85eff;font-weight:700">'+allocFmtPct(p.peso)+'</td>';
+    h+='<td style="padding:10px 8px;text-align:right;color:#e6edf3;font-weight:600">'+allocFmtBRL(p.valor)+'</td>';
+    h+='<td style="padding:10px 8px;text-align:right;color:#2ecc8a;font-weight:600">'+(p.dyAtivo||"—")+'</td>';
+    h+='<td style="padding:10px 8px;text-align:center">';
+    if(p.tipo==='acao'||p.tipo==='fii'){
+      h+='<button onclick="allocatorAprofundar(\''+p.ticker+'\',\''+p.tipo+'\')" style="background:rgba(168,94,255,.1);border:1px solid rgba(168,94,255,.3);color:#a85eff;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit">🔍</button>';
+    } else h+='<span style="color:#8b949e">—</span>';
+    h+='</td></tr>';
+    // Briefing (linha extra)
+    if(p.briefing){
+      h+='<tr style="background:'+bg+'"><td></td><td colspan="6" style="padding:0 8px 10px 8px;color:#c9d1d9;font-size:12px;line-height:1.5;font-style:italic">'+p.briefing+'</td></tr>';
+    }
+  });
+  // Linha de total
+  h+='<tr style="border-top:2px solid rgba(168,94,255,.3);background:rgba(168,94,255,.05)"><td colspan="3" style="padding:12px 8px;color:#e6edf3;font-weight:700;font-size:13px">TOTAL ALOCADO</td><td style="padding:12px 8px;text-align:right;color:#a85eff;font-weight:700">100%</td><td style="padding:12px 8px;text-align:right;color:#a85eff;font-weight:700;font-size:14px">'+allocFmtBRL(d.totalAlocado)+'</td><td colspan="2"></td></tr>';
+  if(d.sobraCaixa){
+    h+='<tr style="background:rgba(139,148,158,.05)"><td colspan="3" style="padding:8px;color:#8b949e;font-size:11px">Sobra (caixa pendente)</td><td colspan="2" style="padding:8px;text-align:right;color:#8b949e">'+allocFmtBRL(d.sobraCaixa)+'</td><td colspan="2"></td></tr>';
+  }
+  h+='</tbody></table></div>';
+
+  // Distribuição final por classe
+  if(d.distribuicaoFinal && d.distribuicaoFinal.length){
+    h+='<div style="font-size:11px;color:#8b949e;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px">Distribuição final por classe</div>';
+    h+='<div style="display:grid;gap:6px">';
+    d.distribuicaoFinal.forEach(function(dist){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:rgba(255,255,255,.02);border-radius:4px"><span style="color:#e6edf3">'+dist.classe+'</span><span style="color:#a85eff;font-weight:700">'+allocFmtPct(dist.pct)+' · '+allocFmtBRL(dist.valor)+'</span></div>';
+    });
+    h+='</div>';
+  }
+
+  // Setores
+  if(d.setoresFinais && d.setoresFinais.length){
+    h+='<div style="font-size:11px;color:#8b949e;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px">Distribuição setorial</div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    d.setoresFinais.forEach(function(s){
+      h+='<span style="padding:5px 11px;background:rgba(168,94,255,.08);border:1px solid rgba(168,94,255,.2);color:#a85eff;border-radius:12px;font-size:11.5px;font-weight:600">'+s.setor+' '+allocFmtPct(s.pct)+'</span>';
+    });
+    h+='</div>';
+  }
+
+  // Ordem de execução
+  if(d.ordemExecucao && d.ordemExecucao.length){
+    h+='<div style="font-size:11px;color:#8b949e;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px">Ordem sugerida de execução</div>';
+    h+='<div style="display:grid;gap:6px">';
+    d.ordemExecucao.forEach(function(o){
+      h+='<div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start;padding:10px 12px;background:rgba(255,255,255,.02);border-radius:6px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(168,94,255,.15);color:#a85eff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">'+o.etapa+'</div><div><div style="color:#e6edf3;font-weight:600;font-size:13px">'+o.acao+'</div>'+(o.ativos&&o.ativos.length?'<div style="font-size:11.5px;color:#a85eff;margin-top:3px;font-family:JetBrains Mono,monospace">'+o.ativos.join(' · ')+'</div>':'')+(o.motivo?'<div style="font-size:11.5px;color:#8b949e;margin-top:3px;line-height:1.5">'+o.motivo+'</div>':'')+'</div></div>';
+    });
+    h+='</div>';
+  }
+
+  // Alertas
+  if(d.alertasFinais && d.alertasFinais.length && d.alertasFinais[0]){
+    h+='<div style="margin-top:14px">'+d.alertasFinais.map(function(a){return '<div class="acoes-callout" style="border-left-color:#f8d75e">⚠ '+a+'</div>'}).join('')+'</div>';
+  }
+
+  alloc$("alloc-body-final").innerHTML=h;
+}
+
+// ──────── BOTÃO "APROFUNDAR" — dispara módulo individual ────────
+function allocatorAprofundar(ticker, tipo){
+  if(!ticker) return;
+  var confirmou = confirm("Aprofundar análise de "+ticker+"?\n\nIsso vai abrir o módulo de "+(tipo==='acao'?"Análise de Ações":"Análise de FIIs")+" com este ativo pré-preenchido. A análise atual será salva.");
+  if(!confirmou) return;
+  if(tipo==='acao'){
+    showScreen('s-acoes');
+    setTimeout(function(){
+      if(typeof initAcoesAnalise==='function') initAcoesAnalise();
+      // Pré-preencher o ticker
+      var input = document.getElementById("acoes-ticker-input");
+      if(input){input.value=ticker.toUpperCase()}
+      // Scroll pra cima
+      window.scrollTo({top:0,behavior:'smooth'});
+    }, 150);
+  } else if(tipo==='fii'){
+    showScreen('s-acoes'); // FIIs estão na mesma tela com aba
+    setTimeout(function(){
+      // Switch pra aba FIIs
+      if(typeof switchAtivosTab==='function') switchAtivosTab('fiis');
+      var input = document.getElementById("fii-ticker-input");
+      if(input){input.value=ticker.toUpperCase()}
+      window.scrollTo({top:0,behavior:'smooth'});
+    }, 150);
+  }
+}
+
+// ──────── ORCHESTRATOR PRINCIPAL ────────
+async function allocatorStart(){
+  // Validação
+  var valor = allocParseValor(alloc$("alloc-valor").value);
+  var perfil = alloc$("alloc-perfil").value;
+  var horizonte = alloc$("alloc-horizonte").value;
+  var objetivo = alloc$("alloc-objetivo").value;
+  var tolVol = alloc$("alloc-tolVol").value;
+  var nAtivos = alloc$("alloc-nAtivos").value;
+  var classes = alloc$("alloc-classes").value;
+  var restricoes = alloc$("alloc-restricoes").value.trim();
+  var nome = alloc$("alloc-nome").value.trim() || "Cliente";
+  var idade = alloc$("alloc-idade").value;
+
+  if(!valor || valor < 10000){alert("Informe o valor a investir (mínimo R$ 10.000).");return}
+  if(!perfil || !horizonte || !objetivo || !tolVol){alert("Preencha os campos obrigatórios: perfil, horizonte, objetivo e tolerância à volatilidade.");return}
+
+  // Determinar quantidade alvo de ações e FIIs
+  var nMap = {'6-8':[4,3],'10-12':[6,5],'14-18':[8,7],'20-25':[12,10]};
+  var nDistribuicao = nMap[nAtivos] || [6,5];
+  var nAcoes = nDistribuicao[0], nFIIs = nDistribuicao[1];
+
+  // Ajustar pelo filtro de classes
+  if(classes==='rv-only'){nFIIs=0; nAcoes=nDistribuicao[0]+nDistribuicao[1]}
+  if(classes==='fii-only'){nAcoes=0; nFIIs=nDistribuicao[0]+nDistribuicao[1]}
+
+  alloc$("alloc-btn-start").disabled = true;
+
+  // Trocar para results state
+  alloc$("allocator-input-state").style.display="none";
+  alloc$("allocator-results-state").classList.remove("acoes-hidden");
+  ["macro","estrategia","rv","fii","final"].forEach(function(k){allocSt(k,"pending")});
+
+  // Hero
+  alloc$("alloc-hero-cliente").textContent = nome + (idade?" · "+idade+" anos":"");
+  alloc$("alloc-hero-perfil").textContent = perfil.charAt(0).toUpperCase()+perfil.slice(1);
+  alloc$("alloc-hero-objetivo").textContent = {renda:"Renda",crescimento:"Crescimento",equilibrio:"Equilíbrio",preservacao:"Preservação",aposentadoria:"Aposentadoria"}[objetivo]||objetivo;
+  alloc$("alloc-hero-valor").textContent = allocFmtBRL(valor);
+
+  console.log("[allocator] iniciando · valor:", valor, "perfil:", perfil, "nAcoes:", nAcoes, "nFIIs:", nFIIs);
+
+  try {
+    // ETAPA 1: MACRO
+    allocProg("Etapa 1/5: lendo cenário macro atual...");
+    allocSt("macro","loading");
+    var macro = await allocatorMacro();
+    console.log("[allocator] macro:", macro);
+    allocRenderMacro(macro);
+    allocSt("macro","done");
+    var macroResumo = "Selic "+(macro.selic||"")+" ("+(macro.selicDirecao||"")+") · IPCA "+(macro.ipca12m||"")+" · USD/BRL "+(macro.usdBrl||"")+" · Ibov "+(macro.ibovYTD||"")+" "+(macro.ibovMomentum||"")+" · "+(macro.sintese||"").slice(0,200);
+    await new Promise(function(r){setTimeout(r,1500)});
+
+    // ETAPA 2: ESTRATÉGIA
+    allocProg("Etapa 2/5: definindo alocação por classe...");
+    allocSt("estrategia","loading");
+    var estrategia = await allocatorEstrategia(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes);
+    console.log("[allocator] estrategia:", estrategia);
+    allocRenderEstrategia(estrategia);
+    allocSt("estrategia","done");
+
+    // Extrair % de RV e FIIs da alocação
+    var pctRV=0, pctFII=0;
+    (estrategia.alocacao||[]).forEach(function(a){
+      var cl=(a.classe||"").toLowerCase();
+      if(cl.indexOf("renda variavel")>=0||cl.indexOf("renda variável")>=0||cl==="rv"||cl.indexOf("acoes")>=0||cl.indexOf("ações")>=0)pctRV+=Number(a.pct)||0;
+      if(cl.indexOf("fii")>=0||cl.indexOf("imobili")>=0)pctFII+=Number(a.pct)||0;
+    });
+    await new Promise(function(r){setTimeout(r,1500)});
+
+    // ETAPA 3: SCREENING RV (pula se classes for fii-only)
+    var rvData = {acoes:[]};
+    if(classes!=='fii-only' && pctRV>0 && nAcoes>0){
+      allocProg("Etapa 3/5: vasculhando ações no mercado (B3)...");
+      allocSt("rv","loading");
+      rvData = await allocatorScreeningRV(macroResumo, pctRV, objetivo, restricoes, nAcoes);
+      console.log("[allocator] rv:", rvData);
+      allocRenderRV(rvData);
+      allocSt("rv","done");
+      await new Promise(function(r){setTimeout(r,1500)});
+    } else {
+      allocSt("rv","done");
+      alloc$("alloc-body-rv").innerHTML='<p class="acoes-placeholder">Renda Variável não incluída nesta configuração.</p>';
+    }
+
+    // ETAPA 4: SCREENING FIIs (pula se classes for rv-only)
+    var fiiData = {fiis:[]};
+    if(classes!=='rv-only' && pctFII>0 && nFIIs>0){
+      allocProg("Etapa 4/5: vasculhando FIIs do mercado...");
+      allocSt("fii","loading");
+      fiiData = await allocatorScreeningFII(macroResumo, pctFII, objetivo, restricoes, nFIIs);
+      console.log("[allocator] fii:", fiiData);
+      allocRenderFII(fiiData);
+      allocSt("fii","done");
+      await new Promise(function(r){setTimeout(r,1500)});
+    } else {
+      allocSt("fii","done");
+      alloc$("alloc-body-fii").innerHTML='<p class="acoes-placeholder">FIIs não incluídos nesta configuração.</p>';
+    }
+
+    // ETAPA 5: CONSOLIDAÇÃO
+    allocProg("Etapa 5/5: consolidando carteira executável...");
+    allocSt("final","loading");
+    var consolidacao = await allocatorConsolidacao(valor, estrategia.alocacao, rvData.acoes, fiiData.fiis, perfil, objetivo);
+    console.log("[allocator] consolidacao:", consolidacao);
+    allocRenderFinal(consolidacao, valor);
+    allocSt("final","done");
+
+    allocProg(null);
+    console.log("[allocator] construção concluída");
+
+    // Mostrar botões de ação
+    var actionsEl = alloc$("allocator-actions");
+    if(actionsEl){actionsEl.style.display="flex"; actionsEl.classList.remove("acoes-hidden")}
+
+    if(window._filaExecucao && window._filaExecucao.length > 0){
+      try { atualizarBotaoNext('allocator'); } catch(e){}
+    }
+
+    // Salvar dados pra eventual PDF
+    window._allocData = {
+      macro:macro, estrategia:estrategia, rv:rvData, fii:fiiData, consolidacao:consolidacao,
+      perfil:perfil, objetivo:objetivo, horizonte:horizonte, tolVol:tolVol, restricoes:restricoes,
+      valor:valor, nome:nome, idade:idade
+    };
+
+  } catch(err) {
+    console.error("[allocator] erro:", err);
+    allocProg("Erro: " + err.message);
+    ["macro","estrategia","rv","fii","final"].forEach(function(k){
+      var e=alloc$("alloc-st-"+k);
+      if(e && e.textContent==="carregando") allocSt(k,"error");
+    });
+    setTimeout(function(){allocProg(null)}, 6000);
+  } finally {
+    alloc$("alloc-btn-start").disabled = false;
+  }
+}
+
+// ──────── PDF DA CARTEIRA CONSTRUÍDA (institucional) ────────
+async function allocatorGerarPDF(){
+  var d = window._allocData;
+  if(!d || !d.consolidacao){alert("Construa a carteira primeiro");return}
+  var btn = document.getElementById("allocator-pdf-btn");
+  var origText = btn.textContent;
+  btn.textContent = "Gerando PDF...";
+  btn.disabled = true;
+
+  try {
+    var C = {navy:"#0D1F2D",dark:"#1C3A4A",petrol:"#2E5D6E",violet:"#5D3B91",body:"#3D3D3D",muted:"#6B6B6B",light:"#A8A8A8",green:"#1A7A4A",red:"#8B1A1A",amber:"#7A5C00",bg:"#FFFFFF",alt:"#F4F5F6",sub:"#EAF0F3"};
+    var mac=d.macro||{}, est=d.estrategia||{}, rv=d.rv||{}, fii=d.fii||{}, cons=d.consolidacao||{};
+    var hoje=new Date().toLocaleDateString("pt-BR");
+
+    function kpi(label,value,sub,color){return '<div style="flex:1;padding:20px 16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:10.5px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:26px;font-weight:300;color:'+(color||C.navy)+';line-height:1.1">'+value+'</div><div style="font-size:10.5px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>'}
+    function sec(num,title){return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:10.5px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:18px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>'}
+    function tr(label,val,alt){return '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+label+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+val+'</td></tr>'}
+    function co(text,color){return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:10px 14px;margin:10px 0;font-size:11.5px;color:'+C.body+';line-height:1.55">'+text+'</div>'}
+    function pr(text){return '<p style="font-size:11.5px;color:'+C.body+';line-height:1.6;margin:8px 0">'+text+'</p>'}
+    function fmtBR(n){if(n==null||isNaN(n))return"—";return"R$ "+Number(n).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:0})}
+    function fmtPct(n,dec){if(n==null||isNaN(n))return"—";return Number(n).toFixed(dec||1)+"%"}
+
+    var h='<div id="alloc-pdf-container" style="width:794px;font-family:Helvetica,Arial,sans-serif;color:'+C.body+';background:white">';
+
+    // CAPA
+    h+='<div style="background:'+C.navy+';padding:40px 36px 30px;color:white">';
+    h+='<div style="font-size:32px;font-weight:300;letter-spacing:-.02em">Construtor de Carteira</div>';
+    h+='<div style="display:inline-block;background:'+C.violet+';padding:4px 12px;border-radius:3px;font-size:10px;color:white;margin-top:10px;letter-spacing:.1em;text-transform:uppercase">Carteira Sugerida</div>';
+    h+='<div style="width:40px;height:1px;background:'+C.petrol+';margin:14px 0"></div>';
+    h+='<div style="font-size:15.5px;color:'+C.light+';margin-bottom:4px">'+d.nome+(d.idade?' · '+d.idade+' anos':'')+'</div>';
+    h+='<div style="font-size:12.5px;color:'+C.light+'">Perfil: '+d.perfil+' · Objetivo: '+d.objetivo+' · Horizonte: '+d.horizonte+'</div>';
+    h+='<div style="font-size:11px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Valor a investir: '+fmtBR(d.valor)+'</div>';
+    h+='</div>';
+
+    // KPIs
+    h+='<div style="background:'+C.alt+';display:flex;border-bottom:1px solid #ddd">';
+    h+=kpi("Total alocado", fmtBR(cons.totalAlocado||0), "em "+(cons.carteiraFinal||[]).length+" ativos");
+    h+=kpi("DY ponderado", cons.dyCarteiraPonderado||"—", "renda anual esperada");
+    h+=kpi("Vol. estimada", cons.volEsperada||"—", "drawdown máx "+(cons.drawdownEstimado||"—"));
+    h+=kpi("Diversificação", cons.validacaoDiversificacao||"—", (cons.setoresFinais||[]).length+" setores", cons.validacaoDiversificacao==='OK'?C.green:cons.validacaoDiversificacao==='CRITICA'?C.red:C.amber);
+    h+='</div>';
+
+    h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9.5px;color:'+C.light+'">';
+    h+='<span>'+d.nome+' — Carteira construída a partir do perfil</span>';
+    h+='<span>Documento informativo — não constitui oferta ou recomendação automatizada.</span>';
+    h+='</div>';
+
+    h+='<div style="padding:0 36px 30px">';
+
+    // S01 — MACRO
+    h+=sec("01","Cenário Macroeconômico");
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">INDICADOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR</td></tr>';
+    if(mac.selic)h+=tr("Selic ("+mac.selicDirecao+")",mac.selic,false);
+    if(mac.ipca12m)h+=tr("IPCA 12m ("+mac.ipcaTendencia+")",mac.ipca12m,true);
+    if(mac.usdBrl)h+=tr("USD/BRL",mac.usdBrl,false);
+    if(mac.ibovYTD)h+=tr("Ibovespa YTD ("+mac.ibovMomentum+")",mac.ibovYTD,true);
+    if(mac.cicloJuros)h+=tr("Ciclo de Juros",mac.cicloJuros,false);
+    if(mac.apetiteRisco)h+=tr("Apetite a Risco",mac.apetiteRisco,true);
+    h+='</table>';
+    if(mac.sintese)h+=co("<strong>Síntese do cenário:</strong> "+mac.sintese);
+
+    // S02 — ESTRATÉGIA
+    h+=sec("02","Estratégia de Alocação");
+    if(est.alocacao && est.alocacao.length){
+      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">CLASSE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td><td style="padding:8px 12px;font-size:10px;font-weight:600">RACIONAL</td></tr>';
+      est.alocacao.forEach(function(a,i){
+        var bg=i%2?C.alt:C.bg;
+        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+a.classe+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+a.pct+'%</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';line-height:1.5;border-bottom:1px solid #eee;background:'+bg+'">'+(a.racional||"")+'</td></tr>';
+      });
+      h+='</table>';
+    }
+    var indEst=[];
+    if(est.retornoEsperadoAA)indEst.push('<strong>Retorno esperado:</strong> '+est.retornoEsperadoAA);
+    if(est.volatilidadeEsperadaAA)indEst.push('<strong>Volatilidade:</strong> '+est.volatilidadeEsperadaAA);
+    if(est.drawdownEsperadoMax)indEst.push('<strong>Drawdown máx:</strong> '+est.drawdownEsperadoMax);
+    if(indEst.length)h+=co(indEst.join(' · '));
+    if(est.sinteseEstrategia)h+=co("<strong>Estratégia:</strong> "+est.sinteseEstrategia, C.violet);
+
+    // S03 — RV
+    if(rv.acoes && rv.acoes.length){
+      h+=sec("03","Renda Variável — Screening");
+      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600">SETOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">P/L</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">ROE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td></tr>';
+      rv.acoes.forEach(function(a,i){
+        var bg=i%2?C.alt:C.bg;
+        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+a.ticker+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(a.setor||"")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.green+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(a.dy||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(a.pl||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(a.roe||"—")+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.violet+';text-align:right;font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(a.pesoSugerido)+'</td></tr>';
+        if(a.briefing)h+='<tr><td colspan="6" style="padding:0 12px 8px 12px;font-size:10.5px;color:'+C.muted+';line-height:1.5;font-style:italic;background:'+bg+'">'+a.briefing+'</td></tr>';
+      });
+      h+='</table>';
+    }
+
+    // S04 — FIIs
+    if(fii.fiis && fii.fiis.length){
+      h+=sec("04","Fundos Imobiliários — Screening");
+      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600">SEGMENTO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">P/VP</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VAC.</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td></tr>';
+      fii.fiis.forEach(function(f,i){
+        var bg=i%2?C.alt:C.bg;
+        h+='<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+f.ticker+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(f.segmento||"")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.green+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(f.dy||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(f.pvp||"—")+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(f.vacancia||"—")+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.violet+';text-align:right;font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(f.pesoSugerido)+'</td></tr>';
+        if(f.briefing)h+='<tr><td colspan="6" style="padding:0 12px 8px 12px;font-size:10.5px;color:'+C.muted+';line-height:1.5;font-style:italic;background:'+bg+'">'+f.briefing+'</td></tr>';
+      });
+      h+='</table>';
+    }
+
+    // S05 — CARTEIRA FINAL CONSOLIDADA
+    h+=sec("05","Carteira Final — Ordem de Execução");
+    if(cons.carteiraFinal && cons.carteiraFinal.length){
+      h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">#</td><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600">CLASSE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">PESO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR (R$)</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td></tr>';
+      cons.carteiraFinal.forEach(function(p,i){
+        var bg=i%2?C.alt:C.bg;
+        h+='<tr><td style="padding:8px 12px;font-size:11px;color:'+C.muted+';border-bottom:1px solid #eee;background:'+bg+'">'+(i+1)+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+'">'+p.ticker+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(p.classe||p.tipo)+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.violet+';font-weight:700;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(p.peso)+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+fmtBR(p.valor)+'</td><td style="padding:8px 12px;font-size:11px;color:'+C.green+';text-align:right;font-weight:600;border-bottom:1px solid #eee;background:'+bg+'">'+(p.dyAtivo||"—")+'</td></tr>';
+        if(p.briefing)h+='<tr><td></td><td colspan="5" style="padding:0 12px 8px 12px;font-size:10.5px;color:'+C.muted+';line-height:1.5;font-style:italic;background:'+bg+'">'+p.briefing+'</td></tr>';
+      });
+      // Total
+      h+='<tr style="background:'+C.sub+'"><td colspan="3" style="padding:10px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700">TOTAL ALOCADO</td><td style="padding:10px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;text-align:right">100%</td><td style="padding:10px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;text-align:right">'+fmtBR(cons.totalAlocado)+'</td><td></td></tr>';
+      if(cons.sobraCaixa) h+='<tr><td colspan="4" style="padding:6px 12px;font-size:10.5px;color:'+C.muted+'">Sobra (caixa pendente)</td><td style="padding:6px 12px;font-size:10.5px;color:'+C.muted+';text-align:right">'+fmtBR(cons.sobraCaixa)+'</td><td></td></tr>';
+      h+='</table>';
+    }
+
+    // Ordem de execução
+    if(cons.ordemExecucao && cons.ordemExecucao.length){
+      h+='<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Ordem Sugerida de Execução</div>';
+      cons.ordemExecucao.forEach(function(o){
+        h+='<div style="margin:6px 0;padding:10px 14px;background:'+C.alt+';border-left:3px solid '+C.violet+';border-radius:0 4px 4px 0"><strong style="color:'+C.navy+'">Etapa '+o.etapa+': '+o.acao+'</strong>'+(o.ativos&&o.ativos.length?'<div style="font-size:11px;color:'+C.violet+';margin-top:3px;font-family:Helvetica,sans-serif">'+o.ativos.join(' · ')+'</div>':'')+(o.motivo?'<div style="font-size:11px;color:'+C.body+';margin-top:3px;line-height:1.5">'+o.motivo+'</div>':'')+'</div>';
+      });
+    }
+
+    if(cons.alertasFinais && cons.alertasFinais.length){
+      cons.alertasFinais.forEach(function(a){if(a)h+=co('⚠ '+a, C.amber)});
+    }
+
+    h+='</div>'; // fim padding
+
+    // Footer
+    h+='<div style="background:'+C.alt+';padding:16px 36px;border-top:1px solid #ddd;font-size:9.5px;color:'+C.light+';text-align:center;line-height:1.55">';
+    h+='Carteira sugerida com base no perfil declarado. Documento informativo, sujeito à validação do consultor antes da execução. ';
+    h+='Não constitui oferta de investimento ou recomendação automatizada. As decisões finais são de responsabilidade do assessor com anuência do cliente.';
+    h+='</div>';
+    h+='</div>'; // fim do container
+
+    // Renderizar e gerar PDF
+    var container = document.createElement("div");
+    container.style.cssText = "position:fixed;left:-99999px;top:0;background:white";
+    container.innerHTML = h;
+    document.body.appendChild(container);
+    var pdfContainer = document.getElementById("alloc-pdf-container");
+    var canvas = await html2canvas(pdfContainer, {scale:2, useCORS:true, backgroundColor:"#ffffff", logging:false});
+    var imgData = canvas.toDataURL("image/jpeg", 0.95);
+    var pdf = new jspdf.jsPDF("p","mm","a4");
+    var pW = pdf.internal.pageSize.getWidth();
+    var pH = pdf.internal.pageSize.getHeight();
+    var imgW = pW;
+    var imgH = (canvas.height * pW) / canvas.width;
+    var pages = Math.ceil(imgH / pH);
+    for(var pg = 0; pg < pages; pg++){
+      if(pg > 0) pdf.addPage();
+      pdf.addImage(imgData, "JPEG", 0, -(pg * pH), imgW, imgH);
+    }
+    var fileName = "carteira_sugerida_" + (d.nome||"cliente").replace(/[^a-zA-Z0-9]/g,'_').slice(0,30) + "_" + new Date().toISOString().slice(0,10) + ".pdf";
+    pdf.save(fileName);
+    container.remove();
+    console.log("[allocator] PDF gerado:", fileName);
+
+  } catch(err) {
+    console.error("[allocator] erro no PDF:", err);
     alert("Erro ao gerar PDF: " + err.message);
   } finally {
     btn.textContent = origText;
