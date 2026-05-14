@@ -9790,6 +9790,12 @@ USD em conta exterior R$ 60.000" style="width:100%;padding:11px 14px;background:
         </div>
       </article>
 
+      <!-- Botões de ação após análise -->
+      <div id="carteira-actions" class="acoes-hidden" style="display:none;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);gap:10px;flex-wrap:wrap;justify-content:flex-end">
+        <button onclick="carteiraGerarPDF()" id="carteira-pdf-btn" style="background:linear-gradient(135deg,rgba(248,215,94,.15),rgba(248,215,94,.06));border:1px solid rgba(248,215,94,.35);color:#f8d75e;padding:11px 22px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;border-radius:8px;transition:all .15s">📄 Relatório PDF</button>
+        <button onclick="carteiraResetState()" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#e6edf3;padding:11px 22px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;border-radius:8px;transition:all .15s">← Nova análise</button>
+      </div>
+
       <!-- Botão "Próximo módulo" da fila -->
       <div id="carteira-next-wrap" style="display:none;margin-top:24px"></div>
 
@@ -11669,20 +11675,20 @@ async function fiiGerarPDF(){
   var vc=d.rv.veredicto==="ALOCAR"?C.green:d.rv.veredicto==="EVITAR"?C.red:C.amber;
 
   function kpiBox(label,value,sub,color){
-    return '<div style="flex:1;padding:16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:9px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:22px;font-weight:300;color:'+(color||C.navy)+'">'+value+'</div><div style="font-size:9px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>';
+    return '<div style="flex:1;padding:20px 16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:10.5px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:26px;font-weight:300;color:'+(color||C.navy)+'">'+value+'</div><div style="font-size:10.5px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>';
   }
   function secHeader(num,title){
-    return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:9px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:16px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>';
+    return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:10.5px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:18px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>';
   }
   function tRow(label,value,highlight){
     var bg=highlight?C.alt:C.bg;
-    return '<tr><td style="padding:6px 10px;font-size:10px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+label+'</td><td style="padding:6px 10px;font-size:10px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+value+'</td></tr>';
+    return '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+label+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+value+'</td></tr>';
   }
   function prose(text){
-    return '<p style="font-size:10.5px;color:'+C.body+';line-height:1.5;margin:8px 0">'+text+'</p>';
+    return '<p style="font-size:12px;color:'+C.body+';line-height:1.5;margin:8px 0">'+text+'</p>';
   }
   function callout(text,color){
-    return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:8px 12px;margin:8px 0;font-size:10px;color:'+C.body+';line-height:1.5">'+text+'</div>';
+    return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:10px 14px;margin:10px 0;font-size:11.5px;color:'+C.body+';line-height:1.5">'+text+'</div>';
   }
 
   var sn=d.sn,mc=d.mc,fd=d.fd,pv=d.pv,rv=d.rv;
@@ -11693,11 +11699,11 @@ async function fiiGerarPDF(){
 
   // ═══ CAPA ═══
   h+='<div style="background:'+C.navy+';padding:40px 36px 30px;color:white">';
-  h+='<div style="font-size:28px;font-weight:300;letter-spacing:-.02em">Relatório de Análise de FII</div>';
-  h+='<div style="display:inline-block;background:'+C.dark+';padding:3px 10px;border-radius:3px;font-size:10px;color:'+C.petrol+';margin-top:10px">Análise Fundamentalista</div>';
+  h+='<div style="font-size:32px;font-weight:300;letter-spacing:-.02em">Relatório de Análise de FII</div>';
+  h+='<div style="display:inline-block;background:'+C.dark+';padding:3px 10px;border-radius:3px;font-size:11.5px;color:'+C.petrol+';margin-top:10px">Análise Fundamentalista</div>';
   h+='<div style="width:40px;height:1px;background:'+C.petrol+';margin:14px 0"></div>';
-  h+='<div style="font-size:14px;color:'+C.light+'">'+(sn.nome||d.tk)+' ('+d.tk+') — '+(sn.segmento||"")+'</div>';
-  h+='<div style="font-size:11px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Data-base: '+(sn.dataBase||hoje)+'</div>';
+  h+='<div style="font-size:15.5px;color:'+C.light+'">'+(sn.nome||d.tk)+' ('+d.tk+') — '+(sn.segmento||"")+'</div>';
+  h+='<div style="font-size:12.5px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Data-base: '+(sn.dataBase||hoje)+'</div>';
   h+='</div>';
 
   // KPIs
@@ -11709,7 +11715,7 @@ async function fiiGerarPDF(){
   h+='</div>';
 
   // Disclaimer
-  h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:8px;color:'+C.light+'">';
+  h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9.5px;color:'+C.light+'">';
   h+='<span>'+(sn.nome||d.tk)+' ('+d.tk+')</span>';
   h+='<span>Este relatório tem finalidade informativa e não constitui oferta ou recomendação.</span>';
   h+='</div>';
@@ -11720,7 +11726,7 @@ async function fiiGerarPDF(){
   // S01 MACRO
   h+=secHeader("01","Macro View — Cenário e Mercado de FIIs");
   h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
-  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">INDICADOR</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>';
+  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">INDICADOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR</td></tr>';
   h+=tRow("Selic Meta",mc.selic||"—",false);
   h+=tRow("IPCA 12 meses",mc.ipca12m||"—",true);
   h+=tRow("IGP-M 12 meses",mc.igpm12m||"—",false);
@@ -11735,7 +11741,7 @@ async function fiiGerarPDF(){
   // S02 FUNDO
   h+=secHeader("02","Caracterização do Fundo");
   h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
-  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">ITEM</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">DADO</td></tr>';
+  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">ITEM</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DADO</td></tr>';
   h+=tRow("Nome",sn.nome||"—",false);
   h+=tRow("Ticker",d.tk,true);
   h+=tRow("Segmento",sn.segmento||"—",false);
@@ -11751,7 +11757,7 @@ async function fiiGerarPDF(){
   // S03 FUNDAMENTALISTA
   h+=secHeader("03","Análise Fundamentalista");
   h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
-  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">INDICADOR</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>';
+  h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">INDICADOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR</td></tr>';
   h+=tRow("Dividend Yield 12m",fd.dy12m?fd.dy12m.toFixed(1)+"%":"—",false);
   h+=tRow("DY Média 3 anos",fd.dyMedia3a?fd.dyMedia3a.toFixed(1)+"%":"—",true);
   h+=tRow("FFO Yield",fd.ffoYield?fd.ffoYield.toFixed(1)+"%":"—",false);
@@ -11770,17 +11776,17 @@ async function fiiGerarPDF(){
   h+=secHeader("04","P/VP — Desconto, Prêmio e Valor Justo");
   h+='<div style="background:'+C.sub+';border:1px solid '+C.dark+';padding:14px;margin:10px 0;border-radius:4px">';
   h+='<div style="display:flex;gap:20px;justify-content:center;text-align:center">';
-  h+='<div><div style="font-size:9px;color:'+C.muted+'">P/VP ATUAL</div><div style="font-size:20px;font-weight:300;color:'+C.navy+'">'+(pv.pvpAtual?pv.pvpAtual.toFixed(2):"—")+'</div></div>';
-  h+='<div><div style="font-size:9px;color:'+C.muted+'">P/VP JUSTO</div><div style="font-size:20px;font-weight:300;color:#4c8bf5">'+(pv.pvpJusto?pv.pvpJusto.toFixed(2):"—")+'</div></div>';
+  h+='<div><div style="font-size:10.5px;color:'+C.muted+'">P/VP ATUAL</div><div style="font-size:20px;font-weight:300;color:'+C.navy+'">'+(pv.pvpAtual?pv.pvpAtual.toFixed(2):"—")+'</div></div>';
+  h+='<div><div style="font-size:10.5px;color:'+C.muted+'">P/VP JUSTO</div><div style="font-size:20px;font-weight:300;color:#4c8bf5">'+(pv.pvpJusto?pv.pvpJusto.toFixed(2):"—")+'</div></div>';
   var dvColor=pv.desvioDir==="desconto"?C.green:pv.desvioDir==="premio"?C.red:C.amber;
-  h+='<div><div style="font-size:9px;color:'+C.muted+'">DESVIO</div><div style="font-size:20px;font-weight:300;color:'+dvColor+'">'+(pv.desvio||"—")+'</div></div>';
+  h+='<div><div style="font-size:10.5px;color:'+C.muted+'">DESVIO</div><div style="font-size:20px;font-weight:300;color:'+dvColor+'">'+(pv.desvio||"—")+'</div></div>';
   h+='</div>';
-  if(pv.metodologia)h+='<div style="margin-top:10px;font-size:9px;color:'+C.muted+';text-align:center"><strong>Metodologia:</strong> '+pv.metodologia+'</div>';
+  if(pv.metodologia)h+='<div style="margin-top:10px;font-size:10.5px;color:'+C.muted+';text-align:center"><strong>Metodologia:</strong> '+pv.metodologia+'</div>';
   h+='</div>';
   if(pv.pares&&pv.pares.length){
     h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
-    h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">TICKER</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">P/VP</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">DY</td></tr>';
-    pv.pares.forEach(function(p,i){if(p.ticker)h+='<tr><td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.ticker+(p.nome?" — "+p.nome:"")+'</td><td style="padding:6px 10px;font-size:10px;text-align:right;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.pvp.toFixed(2)+'</td><td style="padding:6px 10px;font-size:10px;text-align:right;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.dy.toFixed(1)+'%</td></tr>'});
+    h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">TICKER</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">P/VP</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DY</td></tr>';
+    pv.pares.forEach(function(p,i){if(p.ticker)h+='<tr><td style="padding:8px 12px;font-size:11.5px;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.ticker+(p.nome?" — "+p.nome:"")+'</td><td style="padding:8px 12px;font-size:11.5px;text-align:right;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.pvp.toFixed(2)+'</td><td style="padding:8px 12px;font-size:11.5px;text-align:right;border-bottom:1px solid #eee;background:'+(i%2?C.alt:C.bg)+'">'+p.dy.toFixed(1)+'%</td></tr>'});
     h+='</table>';
   }
   if(pv.analise)h+=callout(pv.analise);
@@ -11789,39 +11795,39 @@ async function fiiGerarPDF(){
   h+=secHeader("05","Perfil de Risco");
   if(rv.riscos&&rv.riscos.length){
     h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
-    h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">RISCO</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:center">PROB.</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:center">IMPACTO</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">STATUS</td></tr>';
+    h+='<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">RISCO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:center">PROB.</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:center">IMPACTO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">STATUS</td></tr>';
     rv.riscos.forEach(function(r,i){
       var sc=r.status==="Normal"?C.green:r.status==="Alerta"?C.red:C.amber;
-      h+='<tr style="background:'+(i%2?C.alt:C.bg)+'"><td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #eee">'+r.cat+'</td><td style="padding:6px 10px;font-size:10px;text-align:center;border-bottom:1px solid #eee">'+r.prob+'</td><td style="padding:6px 10px;font-size:10px;text-align:center;border-bottom:1px solid #eee">'+r.imp+'</td><td style="padding:6px 10px;font-size:10px;text-align:right;border-bottom:1px solid #eee;color:'+sc+';font-weight:600">'+r.status+'</td></tr>';
+      h+='<tr style="background:'+(i%2?C.alt:C.bg)+'"><td style="padding:8px 12px;font-size:11.5px;border-bottom:1px solid #eee">'+r.cat+'</td><td style="padding:8px 12px;font-size:11.5px;text-align:center;border-bottom:1px solid #eee">'+r.prob+'</td><td style="padding:8px 12px;font-size:11.5px;text-align:center;border-bottom:1px solid #eee">'+r.imp+'</td><td style="padding:8px 12px;font-size:11.5px;text-align:right;border-bottom:1px solid #eee;color:'+sc+';font-weight:600">'+r.status+'</td></tr>';
     });
     h+='</table>';
   }
   h+='<div style="display:flex;gap:1px;background:#ddd;border-radius:4px;overflow:hidden;margin:12px 0">';
-  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:8px;color:'+C.muted+'">PERFIL</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.perfil||"—")+'</div></div>';
-  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:8px;color:'+C.muted+'">HORIZONTE</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.horizonte||"—")+'</div></div>';
-  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:8px;color:'+C.muted+'">PESO MÁX.</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.pesoMax||"—")+'</div></div>';
+  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:9.5px;color:'+C.muted+'">PERFIL</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.perfil||"—")+'</div></div>';
+  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:9.5px;color:'+C.muted+'">HORIZONTE</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.horizonte||"—")+'</div></div>';
+  h+='<div style="flex:1;padding:10px;text-align:center;background:'+C.alt+'"><div style="font-size:9.5px;color:'+C.muted+'">PESO MÁX.</div><div style="font-size:13px;font-weight:600;color:'+C.navy+'">'+(rv.pesoMax||"—")+'</div></div>';
   h+='</div>';
 
   // S06 VEREDICTO
   h+=secHeader("06","Veredicto Final");
   h+='<div style="background:'+C.navy+';padding:20px;border-radius:6px;text-align:center;margin:12px 0">';
   h+='<div style="font-size:24px;font-weight:600;color:'+vc+'">'+(rv.veredicto||"—")+'</div>';
-  if(rv.tese)h+='<div style="font-size:10.5px;color:white;margin-top:10px;line-height:1.5;text-align:left">'+rv.tese+'</div>';
+  if(rv.tese)h+='<div style="font-size:12px;color:white;margin-top:10px;line-height:1.5;text-align:left">'+rv.tese+'</div>';
   h+='</div>';
   if(rv.condicoes&&rv.condicoes.length){
-    h+='<div style="margin:8px 0"><div style="font-size:9px;font-weight:700;color:'+C.amber+';margin-bottom:4px">CONDIÇÕES PARA REVISÃO:</div>';
-    rv.condicoes.forEach(function(c){h+='<div style="font-size:10px;color:'+C.body+';padding:2px 0">• '+c+'</div>'});
+    h+='<div style="margin:8px 0"><div style="font-size:10.5px;font-weight:700;color:'+C.amber+';margin-bottom:4px">CONDIÇÕES PARA REVISÃO:</div>';
+    rv.condicoes.forEach(function(c){h+='<div style="font-size:11.5px;color:'+C.body+';padding:2px 0">• '+c+'</div>'});
     h+='</div>';
   }
   if(rv.script){
     h+='<div style="background:'+C.sub+';border:1px solid '+C.dark+';padding:12px;border-radius:4px;margin:12px 0">';
-    h+='<div style="font-size:9px;font-weight:700;color:'+C.green+';margin-bottom:6px">SCRIPT PARA O ASSESSOR</div>';
-    h+='<div style="font-size:10.5px;color:'+C.body+';line-height:1.5">'+rv.script+'</div>';
+    h+='<div style="font-size:10.5px;font-weight:700;color:'+C.green+';margin-bottom:6px">SCRIPT PARA O ASSESSOR</div>';
+    h+='<div style="font-size:12px;color:'+C.body+';line-height:1.5">'+rv.script+'</div>';
     h+='</div>';
   }
 
   // Nota final
-  h+='<div style="margin-top:24px;padding-top:12px;border-top:1px solid #eee;font-size:8px;color:'+C.light+';line-height:1.5">';
+  h+='<div style="margin-top:24px;padding-top:12px;border-top:1px solid #eee;font-size:9.5px;color:'+C.light+';line-height:1.5">';
   h+='Este relatório é gerado com base em dados públicos disponíveis na data de geração. O P/VP Justo é uma referência analítica — não constitui garantia de valorização nem preço-alvo formal. O assessor é responsável por validar as informações com o cliente e adequar qualquer recomendação ao perfil de risco e ao objetivo financeiro de cada investidor.';
   h+='</div>';
 
@@ -11867,21 +11873,21 @@ async function acoesGerarPDF(){
   var vc=v.decisao==="COMPRAR"||v.decisao==="ALOCAR"?C.green:v.decisao==="VENDER"||v.decisao==="EVITAR"?C.red:C.amber;
   var hoje=new Date().toLocaleDateString("pt-BR");
 
-  function kpi(label,value,sub,color){return '<div style="flex:1;padding:16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:9px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:22px;font-weight:300;color:'+(color||C.navy)+'">'+value+'</div><div style="font-size:9px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>'}
-  function sec(num,title){return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:9px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:16px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>'}
-  function tr(label,val,alt){return '<tr><td style="padding:6px 10px;font-size:10px;color:'+C.body+';border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+label+'</td><td style="padding:6px 10px;font-size:10px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+val+'</td></tr>'}
-  function co(text,color){return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:8px 12px;margin:8px 0;font-size:10px;color:'+C.body+';line-height:1.5">'+text+'</div>'}
-  function th2(){return '<tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">INDICADOR</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>'}
+  function kpi(label,value,sub,color){return '<div style="flex:1;padding:20px 16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:10.5px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:26px;font-weight:300;color:'+(color||C.navy)+'">'+value+'</div><div style="font-size:10.5px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>'}
+  function sec(num,title){return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:10.5px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:18px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>'}
+  function tr(label,val,alt){return '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+label+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+val+'</td></tr>'}
+  function co(text,color){return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:10px 14px;margin:10px 0;font-size:11.5px;color:'+C.body+';line-height:1.5">'+text+'</div>'}
+  function th2(){return '<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">INDICADOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR</td></tr>'}
 
   var h='<div id="acoes-pdf-container" style="width:794px;font-family:Helvetica,Arial,sans-serif;color:'+C.body+';background:white">';
 
   // CAPA
   h+='<div style="background:'+C.navy+';padding:40px 36px 30px;color:white">';
-  h+='<div style="font-size:28px;font-weight:300">Relatório de Análise de Ação</div>';
-  h+='<div style="display:inline-block;background:'+C.dark+';padding:3px 10px;border-radius:3px;font-size:10px;color:'+C.petrol+';margin-top:10px">Análise Fundamentalista e Técnica</div>';
+  h+='<div style="font-size:32px;font-weight:300">Relatório de Análise de Ação</div>';
+  h+='<div style="display:inline-block;background:'+C.dark+';padding:3px 10px;border-radius:3px;font-size:11.5px;color:'+C.petrol+';margin-top:10px">Análise Fundamentalista e Técnica</div>';
   h+='<div style="width:40px;height:1px;background:'+C.petrol+';margin:14px 0"></div>';
-  h+='<div style="font-size:14px;color:'+C.light+'">'+(s.nome||s.ticker)+' ('+s.ticker+') — '+(s.setor||"")+'</div>';
-  h+='<div style="font-size:11px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Data-base: '+(s.dataBase||hoje)+'</div>';
+  h+='<div style="font-size:15.5px;color:'+C.light+'">'+(s.nome||s.ticker)+' ('+s.ticker+') — '+(s.setor||"")+'</div>';
+  h+='<div style="font-size:12.5px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Data-base: '+(s.dataBase||hoje)+'</div>';
   h+='</div>';
 
   // KPIs
@@ -11892,7 +11898,7 @@ async function acoesGerarPDF(){
   h+=kpi("Veredicto",v.decisao||"—",v.horizonte||"",vc);
   h+='</div>';
 
-  h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:8px;color:'+C.light+'">';
+  h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9.5px;color:'+C.light+'">';
   h+='<span>'+(s.nome||s.ticker)+' ('+s.ticker+')</span>';
   h+='<span>Relatório informativo — não constitui oferta ou recomendação.</span></div>';
 
@@ -11913,7 +11919,7 @@ async function acoesGerarPDF(){
   h+=tr("P/L",mp.pl||"—",false)+tr("P/VP",mp.pvp||"—",true)+tr("EV/EBITDA",mp.evEbitda||"—",false)+tr("ROE",mp.roe?mp.roe+"%":"—",true)+tr("ROIC",mp.roic?mp.roic+"%":"—",false)+tr("Margem Líquida",mp.margemLiquida?mp.margemLiquida+"%":"—",true)+tr("Margem EBITDA",mp.margemEbitda?mp.margemEbitda+"%":"—",false)+tr("Dividend Yield",mp.dy?mp.dy+"%":"—",true)+tr("Payout",mp.payout?mp.payout+"%":"—",false);
   h+='</table>';
   if(en){
-    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:6px 10px;font-size:8.5px;font-weight:600">ENDIVIDAMENTO</td><td style="padding:6px 10px;font-size:8.5px;font-weight:600;text-align:right">VALOR</td></tr>';
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">ENDIVIDAMENTO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR</td></tr>';
     h+=tr("Dívida Líq./EBITDA",en.divLiqEbitda||"—",false)+tr("Dívida Líq./PL",en.divLiqPl||"—",true)+tr("Liquidez Corrente",en.liquidezCorrente||"—",false);
     h+='</table>';
   }
@@ -11937,13 +11943,13 @@ async function acoesGerarPDF(){
   h+='<div style="background:'+C.navy+';padding:20px;border-radius:6px;text-align:center;margin:12px 0">';
   h+='<div style="font-size:24px;font-weight:600;color:'+vc+'">'+(v.decisao||"—")+'</div>';
   if(v.precoAlvo)h+='<div style="font-size:12px;color:white;margin-top:6px">Preço-alvo: R$ '+v.precoAlvo+'</div>';
-  if(v.rationale)h+='<div style="font-size:10.5px;color:white;margin-top:10px;line-height:1.5;text-align:left">'+v.rationale+'</div>';
+  if(v.rationale)h+='<div style="font-size:12px;color:white;margin-top:10px;line-height:1.5;text-align:left">'+v.rationale+'</div>';
   h+='</div>';
   if(v.perfis)h+=co("<strong>Perfis:</strong> "+v.perfis);
   if(v.riscos)h+=co("<strong>Riscos:</strong> "+v.riscos);
 
   // Nota
-  h+='<div style="margin-top:24px;padding-top:12px;border-top:1px solid #eee;font-size:8px;color:'+C.light+';line-height:1.5">';
+  h+='<div style="margin-top:24px;padding-top:12px;border-top:1px solid #eee;font-size:9.5px;color:'+C.light+';line-height:1.5">';
   h+='Relatório gerado com base em dados públicos. Não constitui recomendação de investimento. O assessor é responsável por adequar ao perfil do cliente.</div>';
 
   h+='</div></div>';
@@ -12653,6 +12659,10 @@ async function carteiraStart(modo){
     cartProg(null);
     console.log("[carteira] análise concluída");
 
+    // Mostrar botões de ação (PDF, Nova análise)
+    var actionsEl = cart$("carteira-actions");
+    if(actionsEl){actionsEl.style.display="flex"; actionsEl.classList.remove("acoes-hidden")}
+
     if(window._filaExecucao && window._filaExecucao.length > 0){
       try { atualizarBotaoNext('carteira'); } catch(e){}
     }
@@ -12667,6 +12677,508 @@ async function carteiraStart(modo){
     setTimeout(function(){cartProg(null)}, 6000);
   } finally {
     [cart$("cart-btn-A"),cart$("cart-btn-B")].forEach(function(b){if(b)b.disabled=false});
+  }
+}
+
+// ──────── RESET STATE ────────
+function carteiraResetState(){
+  if(!confirm("Iniciar nova análise? Os dados atuais serão descartados.")) return;
+  window._cartData = null;
+  window._cartPDFs = [];
+  cart$("carteira-input-state").style.display="";
+  cart$("carteira-results-state").classList.add("acoes-hidden");
+  var actionsEl = cart$("carteira-actions");
+  if(actionsEl){actionsEl.style.display="none"; actionsEl.classList.add("acoes-hidden")}
+  ["extracao","macro","historicos","patrimonio","diagnostico","recomendacoes","plano"].forEach(function(k){cartSt(k,"pending")});
+  // Reset KPIs
+  ["pl","pos","ader","dv"].forEach(function(k){
+    var v=cart$("cart-kpi-"+k+"-v"); if(v){v.textContent="aguardando"; v.classList.add("acoes-skeleton")}
+  });
+  cartRenderPDFList();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ──────── GERAÇÃO DO PDF INSTITUCIONAL ────────
+async function carteiraGerarPDF(){
+  var d = window._cartData;
+  if(!d || !d.extracao){alert("Execute a análise primeiro");return}
+  var btn = document.getElementById("carteira-pdf-btn");
+  var origText = btn.textContent;
+  btn.textContent = "Gerando PDF...";
+  btn.disabled = true;
+
+  try {
+    // Paleta institucional (igual aos PDFs de Ações e FIIs)
+    var C = {navy:"#0D1F2D",dark:"#1C3A4A",petrol:"#2E5D6E",body:"#3D3D3D",muted:"#6B6B6B",light:"#A8A8A8",green:"#1A7A4A",red:"#8B1A1A",amber:"#7A5C00",bg:"#FFFFFF",alt:"#F4F5F6",sub:"#EAF0F3"};
+
+    var ext = d.extracao || {};
+    var mac = d.macro || {};
+    var hist = d.historicos || {};
+    var pat = d.patrimonio || {};
+    var diag = d.diagnostico || {};
+    var rec = d.recomendacoes || {};
+    var modo = d.modo || 'A';
+    var nome = d.nome || "Cliente";
+    var perfil = d.perfil || "";
+    var hoje = new Date().toLocaleDateString("pt-BR");
+
+    // Cor do veredicto
+    var vc = diag.veredicto === "MANTER" ? C.green :
+             diag.veredicto === "REBALANCEAR_ESTRUTURAL" ? C.red : C.amber;
+    var vLbl = {REBALANCEAR_ESTRUTURAL:"Rebalancear Estrutural",AJUSTE_TATICO:"Ajuste Tático",MANTER:"Manter"}[diag.veredicto] || "Pendente";
+
+    // Helpers (mesma estrutura dos outros PDFs)
+    function kpi(label, value, sub, color){
+      return '<div style="flex:1;padding:20px 16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:10.5px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:26px;font-weight:300;color:'+(color||C.navy)+';line-height:1.1">'+value+'</div><div style="font-size:10.5px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>';
+    }
+    function sec(num, title){
+      return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:10.5px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:18px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>';
+    }
+    function tr(label, value, alt){
+      var bg = alt ? C.alt : C.bg;
+      return '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+label+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+value+'</td></tr>';
+    }
+    function th2(c1, c2){
+      return '<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">'+(c1||"INDICADOR")+'</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">'+(c2||"VALOR")+'</td></tr>';
+    }
+    function co(text, color){
+      return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:10px 14px;margin:10px 0;font-size:11.5px;color:'+C.body+';line-height:1.55">'+text+'</div>';
+    }
+    function pr(text){
+      return '<p style="font-size:11.5px;color:'+C.body+';line-height:1.6;margin:8px 0;text-align:justify">'+text+'</p>';
+    }
+    function fmtBR(n){
+      if(n==null||isNaN(n)) return "—";
+      return "R$ " + Number(n).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:0});
+    }
+    function fmtPct(n,dec){
+      if(n==null||isNaN(n)) return "—";
+      return Number(n).toFixed(dec||1) + "%";
+    }
+    function statusColor(s){
+      return s==="OK" ? C.green : s==="Fora" ? C.red : s==="Monitorar" ? C.amber : C.muted;
+    }
+
+    // Calcular aderência se disponível
+    var aderencia = (pat.kpis && pat.kpis.aderencia != null) ? Math.round(pat.kpis.aderencia) + "/100" : "—";
+    var aderColor = (pat.kpis && pat.kpis.aderencia >= 70) ? C.green : (pat.kpis && pat.kpis.aderencia >= 40) ? C.amber : C.red;
+
+    // ═══ CONSTRUÇÃO DO HTML ═══
+    var h = '<div id="carteira-pdf-container" style="width:794px;font-family:Helvetica,Arial,sans-serif;color:'+C.body+';background:white">';
+
+    // ─── CAPA ───
+    h += '<div style="background:'+C.navy+';padding:40px 36px 30px;color:white">';
+    h += '<div style="font-size:32px;font-weight:300;letter-spacing:-.02em">Análise de Carteira</div>';
+    h += '<div style="display:inline-block;background:'+C.dark+';padding:4px 12px;border-radius:3px;font-size:10px;color:'+C.petrol+';margin-top:10px;letter-spacing:.1em;text-transform:uppercase">Diagnóstico Top-Down e Recomendações</div>';
+    h += '<div style="width:40px;height:1px;background:'+C.petrol+';margin:14px 0"></div>';
+    h += '<div style="font-size:15.5px;color:'+C.light+';margin-bottom:4px">'+nome+'</div>';
+    h += '<div style="font-size:12.5px;color:'+C.light+';margin-bottom:6px">'+perfil+'</div>';
+    h += '<div style="font-size:11px;color:'+C.light+';margin-top:6px">Gerado em: '+hoje+' — Data-base: '+(ext.dataBase||hoje)+' — Modo: '+(modo==='A'?"Carteira Herdada":"Segunda Opinião")+'</div>';
+    h += '</div>';
+
+    // ─── KPIs (4 boxes) ───
+    h += '<div style="background:'+C.alt+';display:flex;border-bottom:1px solid #ddd">';
+    h += kpi("Patrimônio Total", fmtBR(ext.pl), (ext.posicoes||[]).length + " posições");
+    h += kpi("N° Posições", String((ext.posicoes||[]).length), (ext.instituicoes||[]).length + " instituição(ões)");
+    h += kpi("Aderência ao Cenário", aderencia, "0=contrária | 100=alinhada", aderColor);
+    h += kpi("Veredicto", vLbl, modo==='A'?"plano executável":"roteiro estratégico", vc);
+    h += '</div>';
+
+    // Disclaimer
+    h += '<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9.5px;color:'+C.light+'">';
+    h += '<span>'+nome+' — Análise patrimonial top-down</span>';
+    h += '<span>Documento informativo — não constitui oferta ou recomendação automatizada.</span>';
+    h += '</div>';
+
+    // ─── CONTEÚDO ───
+    h += '<div style="padding:0 36px 30px">';
+
+    // ─── TESE IMPLÍCITA (destaque na entrada) ───
+    if(diag.teseImplicita){
+      h += '<div style="margin-top:24px;padding:18px 22px;background:linear-gradient(135deg,'+C.alt+','+C.bg+');border-left:4px solid '+vc+';border-radius:0 6px 6px 0">';
+      h += '<div style="font-size:10.5px;font-weight:600;color:'+vc+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">Tese Implícita da Carteira</div>';
+      h += '<div style="font-size:14px;color:'+C.navy+';line-height:1.55;font-weight:500">'+diag.teseImplicita+'</div>';
+      if(diag.alinhamento){
+        var alinhLbl = {alinhada:"Alinhada com o cenário macro",defasada:"Defasada em relação ao cenário",contraria:"Contrária ao cenário"}[diag.alinhamento] || diag.alinhamento;
+        h += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid #ddd;font-size:11px;color:'+C.muted+'"><strong style="color:'+C.body+';text-transform:uppercase;letter-spacing:.08em">'+alinhLbl+'</strong></div>';
+      }
+      h += '</div>';
+    }
+
+    // ═══ SEÇÃO 01 — CARTEIRA CONSOLIDADA ═══
+    h += sec("01", "Carteira Consolidada");
+
+    // Conferência (se disponível)
+    if(ext._conferencia){
+      var cf = ext._conferencia;
+      if(cf.conferiu === true){
+        h += co('<strong style="color:'+C.green+'">✓ Conferência OK</strong> — A soma das posições (' + fmtBR(cf.totalCalc) + ') confere com o total declarado nos extratos (' + fmtBR(cf.totalDecl) + ')' + (cf.tentativas>1?' após '+cf.tentativas+' tentativas de leitura':'') + '.', C.green);
+      } else if(cf.conferiu === false){
+        h += co('<strong style="color:'+C.amber+'">⚠ Divergência de '+cf.diffPercent.toFixed(1)+'%</strong> — Capturado '+fmtBR(cf.totalCalc)+' vs. declarado '+fmtBR(cf.totalDecl)+'. Pode haver posições não identificadas nos PDFs.', C.amber);
+      }
+    }
+
+    // Distribuição por classe
+    if(ext.distribuicao && ext.distribuicao.length){
+      h += '<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+      h += '<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">CLASSE</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">%</td></tr>';
+      ext.distribuicao.forEach(function(dist, i){
+        var bg = i%2 ? C.alt : C.bg;
+        h += '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+dist.classe+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+fmtBR(dist.valor)+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(dist.pct)+'</td></tr>';
+      });
+      // Total
+      h += '<tr style="background:'+C.sub+'"><td style="padding:10px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700">TOTAL</td><td style="padding:10px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;text-align:right">'+fmtBR(ext.pl)+'</td><td style="padding:10px 12px;font-size:11.5px;color:'+C.navy+';font-weight:700;text-align:right">100,0%</td></tr>';
+      h += '</table>';
+    }
+
+    // Instituições identificadas
+    if(ext.instituicoes && ext.instituicoes.length && ext.instituicoes[0]){
+      h += co('<strong>Instituições:</strong> ' + ext.instituicoes.join(" · "));
+    }
+
+    // ═══ SEÇÃO 02 — MACRO VIEW ═══
+    h += sec("02", "Macro View — O Cenário Econômico Atual");
+
+    // Indicadores macro
+    h += '<table style="width:100%;border-collapse:collapse;margin:10px 0">' + th2();
+    if(mac.selic) h += tr("Selic", mac.selic, false);
+    if(mac.ipca12m) h += tr("IPCA 12 meses", mac.ipca12m, true);
+    if(mac.ipcaNucleo) h += tr("IPCA Núcleo", mac.ipcaNucleo, false);
+    if(mac.usdBrl) h += tr("USD/BRL", mac.usdBrl, true);
+    if(mac.ibov30d) h += tr("Ibovespa 30d", mac.ibov30d, false);
+    if(mac.fluxoEstrangeiro) h += tr("Fluxo Estrangeiro B3", mac.fluxoEstrangeiro, true);
+    if(mac.curvaCurta) h += tr("Curva DI Curta", mac.curvaCurta, false);
+    if(mac.curvaLonga) h += tr("Curva DI Longa", mac.curvaLonga, true);
+    if(mac.spreadsCP) h += tr("Spreads Crédito Privado", mac.spreadsCP, false);
+    h += '</table>';
+
+    // Texto macro view (4 blocos principais)
+    var tm = mac.textoMacro || {};
+    if(tm.internacional){h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Cenário Internacional</div>'+pr(tm.internacional)}
+    if(tm.politicaMonetaria){h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Política Monetária</div>'+pr(tm.politicaMonetaria)}
+    if(tm.jurosInflacaoBR){h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Brasil — Juros e Inflação</div>'+pr(tm.jurosInflacaoBR)}
+    if(tm.cambioBolsa){h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Brasil — Câmbio e Bolsa</div>'+pr(tm.cambioBolsa)}
+
+    // Por classe
+    if(tm.porClasse){
+      h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">O que isso significa por classe</div>';
+      var lblCl = {posFixado:"Pós-fixado",preFixado:"Pré-fixado",inflacao:"Inflação (IPCA+)",creditoPrivado:"Crédito Privado",rv:"Renda Variável",fii:"FIIs",internacional:"Internacional"};
+      Object.keys(lblCl).forEach(function(k){
+        if(tm.porClasse[k]) h += '<div style="margin:8px 0;padding:9px 12px;background:'+C.alt+';font-size:11.5px;color:'+C.body+';line-height:1.55;border-radius:4px"><strong style="color:'+C.navy+'">'+lblCl[k]+':</strong> '+tm.porClasse[k]+'</div>';
+      });
+    }
+    if(tm.conclusao) h += co('<strong>Conclusão do economista:</strong> ' + tm.conclusao);
+
+    // ═══ SEÇÃO 03 — CENÁRIOS HISTÓRICOS ═══
+    h += sec("03", "Cenários Históricos Análogos");
+    (hist.cenarios||[]).forEach(function(c){
+      h += '<div style="margin-top:12px;padding:14px 16px;background:'+C.alt+';border-left:3px solid '+C.petrol+';border-radius:0 4px 4px 0">';
+      h += '<div style="font-size:10.5px;font-weight:600;color:'+C.petrol+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Cenário '+c.periodo+'</div>';
+      h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.55;margin-bottom:8px">'+c.descricao+'</div>';
+      // Indicadores da época
+      var ind = [];
+      if(c.selic) ind.push('Selic: '+c.selic);
+      if(c.ipca) ind.push('IPCA: '+c.ipca);
+      if(c.ibov) ind.push('Ibov: '+c.ibov);
+      if(c.usd) ind.push('USD: '+c.usd);
+      if(ind.length) h += '<div style="font-size:10.5px;color:'+C.muted+';margin-bottom:8px"><strong>Contexto:</strong> '+ind.join(" · ")+'</div>';
+      // Comportamento
+      if(c.comportamento){
+        var compLbl = {posFixado:"Pós-fixado",inflacao:"Inflação",preFixado:"Pré-fixado",rv:"RV",fii:"FII",internacional:"Internacional"};
+        var compArr = [];
+        Object.keys(compLbl).forEach(function(k){if(c.comportamento[k]) compArr.push('<strong>'+compLbl[k]+':</strong> '+c.comportamento[k])});
+        if(compArr.length) h += '<div style="font-size:11px;color:'+C.body+';line-height:1.5;margin-bottom:6px">'+compArr.join(' · ')+'</div>';
+      }
+      if(c.licoes) h += '<div style="margin-top:8px;padding:8px 10px;background:'+C.bg+';border-radius:3px;font-size:11px;color:'+C.body+';line-height:1.5"><strong style="color:'+C.navy+'">Lições:</strong> '+c.licoes+'</div>';
+      h += '</div>';
+    });
+    if(hist.conexaoPresente) h += co('<strong>Conexão com o presente:</strong> '+hist.conexaoPresente, C.amber);
+
+    // ═══ SEÇÃO 04 — PATRIMÔNIO CONSOLIDADO ═══
+    h += sec("04", "Visão Patrimonial — Nota do Gestor e Alocação");
+
+    // Nota do Gestor
+    if(pat.notaGestor){
+      h += '<div style="margin:12px 0;padding:14px 18px;background:'+C.alt+';border-left:3px solid '+C.navy+';border-radius:0 4px 4px 0">';
+      h += '<div style="font-size:10.5px;font-weight:600;color:'+C.navy+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Nota do Gestor</div>';
+      h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.6">'+pat.notaGestor+'</div>';
+      h += '</div>';
+    }
+
+    // Tabela alocação Real vs Alvo
+    if(pat.alocacao && pat.alocacao.length){
+      h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Alocação Real vs. Alvo</div>';
+      h += '<table style="width:100%;border-collapse:collapse;margin:6px 0">';
+      h += '<tr style="background:'+C.petrol+';color:white">';
+      h += '<td style="padding:8px 12px;font-size:10px;font-weight:600">CLASSE</td>';
+      h += '<td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">ALVO</td>';
+      h += '<td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">REAL</td>';
+      h += '<td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">DESVIO</td>';
+      h += '<td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:center">STATUS</td>';
+      h += '</tr>';
+      pat.alocacao.forEach(function(a, i){
+        var bg = i%2 ? C.alt : C.bg;
+        var sc = statusColor(a.status);
+        h += '<tr>';
+        h += '<td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+a.classe+'</td>';
+        h += '<td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(a.alvo)+'</td>';
+        h += '<td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+fmtPct(a.real)+'</td>';
+        h += '<td style="padding:8px 12px;font-size:11.5px;color:'+(a.desvio>0?C.green:a.desvio<0?C.red:C.body)+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(a.desvio>0?"+":"")+fmtPct(a.desvio)+'</td>';
+        h += '<td style="padding:8px 12px;font-size:10px;color:'+sc+';font-weight:700;text-align:center;border-bottom:1px solid #eee;background:'+bg+';text-transform:uppercase">'+(a.status||"—")+'</td>';
+        h += '</tr>';
+      });
+      h += '</table>';
+      if(pat.premissasAlvo) h += '<div style="font-size:10px;color:'+C.muted+';font-style:italic;margin:6px 0 12px">Nota: '+pat.premissasAlvo+'</div>';
+    }
+
+    // Benchmark composto
+    if(pat.benchmarkComposto && pat.benchmarkComposto.length){
+      h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Benchmark Composto</div>';
+      h += '<table style="width:100%;border-collapse:collapse;margin:6px 0">';
+      pat.benchmarkComposto.forEach(function(b, i){
+        var bg = i%2 ? C.alt : C.bg;
+        h += '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+b.classe+' <span style="color:'+C.muted+';font-size:10.5px">('+b.benchmark+')</span></td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';text-align:right;border-bottom:1px solid #eee;background:'+bg+'">Peso: '+fmtPct(b.peso)+' · Retorno: '+(b.retorno||"—")+'</td></tr>';
+      });
+      h += '</table>';
+    }
+
+    // Attribution
+    if(pat.attribution && pat.attribution.length){
+      h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Attribution de Performance</div>';
+      pat.attribution.forEach(function(a){
+        h += '<div style="margin:6px 0;padding:8px 12px;background:'+C.alt+';border-radius:3px;font-size:11.5px;color:'+C.body+'"><strong>'+a.classe+':</strong> '+a.contribuicao+' <span style="color:'+C.muted+';font-size:10.5px">('+a.driver+')</span></div>';
+      });
+      if(pat.retornoAtivo) h += '<div style="margin-top:8px;padding:10px 14px;background:'+C.sub+';border-radius:3px;font-size:12px;color:'+C.navy+';font-weight:700">Retorno ativo total: '+pat.retornoAtivo+'</div>';
+    }
+
+    // ═══ SEÇÃO 05 — DIAGNÓSTICO DE COERÊNCIA ═══
+    h += sec("05", "Diagnóstico de Coerência com o Cenário");
+
+    // Veredicto destacado
+    h += '<div style="margin:12px 0;padding:18px 22px;background:'+vc+'15;border:1px solid '+vc+';border-radius:6px">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">';
+    h += '<div style="font-size:10.5px;font-weight:600;color:'+vc+';letter-spacing:.12em;text-transform:uppercase">Veredicto</div>';
+    h += '<div style="font-size:20px;font-weight:700;color:'+vc+'">'+vLbl+'</div>';
+    h += '</div>';
+    if(diag.justificativaVeredicto) h += '<div style="font-size:12px;color:'+C.body+';line-height:1.6">'+diag.justificativaVeredicto+'</div>';
+    h += '</div>';
+
+    // Coerência por classe
+    if(diag.coerenciaPorClasse && diag.coerenciaPorClasse.length){
+      h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Coerência por Classe</div>';
+      diag.coerenciaPorClasse.forEach(function(c){
+        h += '<div style="margin:8px 0;padding:12px 14px;background:'+C.alt+';border-radius:4px">';
+        h += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><strong style="font-size:12px;color:'+C.navy+'">'+c.classe+'</strong><span style="font-size:10.5px;color:'+C.muted+'">Atual: '+fmtPct(c.pesoAtual)+' / Coerente: '+fmtPct(c.pesoCoerente)+'</span></div>';
+        h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.55">'+c.diagnostico+'</div>';
+        if(c.direcaoAjuste) h += '<div style="margin-top:6px;font-size:11px;color:'+C.petrol+';font-weight:600">→ '+c.direcaoAjuste+'</div>';
+        h += '</div>';
+      });
+    }
+
+    // Coerência sub-classe
+    if(diag.coerenciaSubClasse && diag.coerenciaSubClasse.length){
+      h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Coerência Sub-classe</div>';
+      diag.coerenciaSubClasse.forEach(function(s){
+        h += '<div style="margin:6px 0;padding:8px 12px;background:'+C.alt+';border-radius:3px;font-size:11.5px;color:'+C.body+';line-height:1.55"><strong style="color:'+C.navy+'">'+s.tema+':</strong> '+s.analise+'</div>';
+      });
+    }
+
+    // Riscos não capturados
+    if(diag.riscosNaoCapturados && diag.riscosNaoCapturados.length){
+      h += '<div style="font-size:11px;font-weight:600;color:'+C.red+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Riscos Não Capturados</div>';
+      diag.riscosNaoCapturados.forEach(function(r){
+        h += '<div style="margin:6px 0;padding:10px 14px;background:#fff5f5;border-left:3px solid '+C.red+';border-radius:0 4px 4px 0">';
+        h += '<div style="font-size:11.5px;color:'+C.navy+';font-weight:600">'+r.risco+'</div>';
+        if(r.impactoEstimado) h += '<div style="margin-top:4px;font-size:11px;color:'+C.red+'">Impacto estimado: '+r.impactoEstimado+'</div>';
+        h += '</div>';
+      });
+    }
+
+    // ═══ SEÇÃO 06 — RECOMENDAÇÕES ═══
+    h += sec("06", "Recomendações de Rebalanceamento");
+
+    if(modo === 'A'){
+      // Modo A — recomendações por classe
+      if(rec.recomendacoes && rec.recomendacoes.length){
+        rec.recomendacoes.forEach(function(r){
+          var tipoColor = r.tipo === "Estrutural" ? C.red : C.amber;
+          h += '<div style="margin:10px 0;padding:14px 16px;background:'+C.alt+';border-left:3px solid '+tipoColor+';border-radius:0 4px 4px 0">';
+          h += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">';
+          h += '<strong style="font-size:13px;color:'+C.navy+'">'+r.classe+'</strong>';
+          h += '<span style="font-size:10px;color:'+tipoColor+';font-weight:700;text-transform:uppercase;letter-spacing:.1em">'+(r.tipo||"")+'</span>';
+          h += '</div>';
+          if(r.movimento) h += '<div style="font-size:11.5px;color:'+C.petrol+';font-weight:600;margin-bottom:4px">'+r.movimento+(r.deltaPercent?' (delta '+(r.deltaPercent>0?'+':'')+r.deltaPercent+'%)':'')+'</div>';
+          if(r.racionalMacro) h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.55">'+r.racionalMacro+'</div>';
+          if(r.gatilhoSaida) h += '<div style="margin-top:8px;padding:6px 10px;background:'+C.bg+';border-radius:3px;font-size:10.5px;color:'+C.amber+'"><strong>Gatilho de saída:</strong> '+r.gatilhoSaida+'</div>';
+          h += '</div>';
+        });
+      }
+
+      // Sub-classe
+      if(rec.subClasse && rec.subClasse.length){
+        h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Detalhamento Sub-classe</div>';
+        rec.subClasse.forEach(function(s){
+          h += '<div style="margin:8px 0;padding:10px 14px;background:'+C.alt+';border-radius:4px">';
+          h += '<div style="font-size:10.5px;font-weight:700;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+s.escopo+'</div>';
+          (s.movimentos||[]).forEach(function(m){h += '<div style="padding:4px 0;font-size:11.5px;color:'+C.body+';line-height:1.5">• '+m+'</div>'});
+          h += '</div>';
+        });
+      }
+
+      // Impacto tributário
+      if(rec.impactoTributario) h += co('<strong>Impacto tributário:</strong> '+rec.impactoTributario, C.amber);
+
+      // Sequência de execução
+      if(rec.sequenciaExecucao && rec.sequenciaExecucao.length){
+        h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Sequência de Execução</div>';
+        h += '<table style="width:100%;border-collapse:collapse;margin:6px 0">';
+        h += '<tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">#</td><td style="padding:8px 12px;font-size:10px;font-weight:600">MOVIMENTO</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">JANELA</td></tr>';
+        rec.sequenciaExecucao.forEach(function(s, i){
+          var bg = i%2 ? C.alt : C.bg;
+          h += '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.petrol+';font-weight:700;border-bottom:1px solid #eee;background:'+bg+';text-align:center">'+(s.ordem||(i+1))+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+bg+'">'+(s.movimento||"")+(s.notas?'<div style="font-size:10px;color:'+C.muted+';margin-top:3px">'+s.notas+'</div>':'')+'</td><td style="padding:8px 12px;font-size:10.5px;color:'+C.petrol+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+bg+'">'+(s.janela||"—")+'</td></tr>';
+        });
+        h += '</table>';
+      }
+
+      // O que NÃO mexer
+      if(rec.naoMexer && rec.naoMexer.length){
+        h += '<div style="font-size:11px;font-weight:600;color:'+C.green+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">O que NÃO mexer</div>';
+        rec.naoMexer.forEach(function(n){
+          h += '<div style="margin:6px 0;padding:10px 14px;background:#f0f9f4;border-left:3px solid '+C.green+';border-radius:0 4px 4px 0;font-size:11.5px;color:'+C.body+';line-height:1.55"><strong style="color:'+C.navy+'">'+n.posicao+':</strong> '+n.motivo+'</div>';
+        });
+      }
+    } else {
+      // Modo B — direção geral
+      h += co('<strong>Modo B — Segunda Opinião:</strong> Recomendações em formato de direção geral. O plano executável detalhado fica reservado para a conversa estruturada com o cliente.', C.petrol);
+      if(rec.direcaoGeral && rec.direcaoGeral.length){
+        rec.direcaoGeral.forEach(function(g){
+          h += '<div style="margin:8px 0;padding:12px 14px;background:'+C.alt+';border-radius:4px">';
+          h += '<div style="margin-bottom:6px"><strong style="font-size:12px;color:'+C.navy+'">'+g.classe+'</strong> <span style="color:'+C.petrol+';font-weight:600">→ '+g.direcao+'</span></div>';
+          h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.55">'+(g.racionalMacro||"")+'</div>';
+          h += '</div>';
+        });
+      }
+    }
+
+    // ═══ SEÇÃO 07 — PLANO / ROTEIRO ═══
+    h += sec("07", modo==='A' ? "Plano de Execução" : "Roteiro de Conversa Estratégica");
+
+    if(modo === 'A' && rec.plano){
+      var p = rec.plano;
+      // Sumário 3 frases
+      if(p.sumario3frases && p.sumario3frases.length){
+        h += '<div style="margin:12px 0;padding:14px 18px;background:#f0f9f4;border-left:3px solid '+C.green+';border-radius:0 4px 4px 0">';
+        h += '<div style="font-size:10.5px;font-weight:600;color:'+C.green+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">Sumário Executivo</div>';
+        p.sumario3frases.forEach(function(f, i){
+          h += '<div style="margin:4px 0;font-size:11.5px;color:'+C.body+';line-height:1.6"><strong style="color:'+C.green+'">'+(i+1)+'.</strong> '+f+'</div>';
+        });
+        h += '</div>';
+      }
+      // Cronograma
+      if(p.cronograma){
+        var labels = [["ate7d","Próximos 7 dias",C.red],["ate30d","Próximos 30 dias",C.amber],["trimestre","Próximo trimestre",C.petrol]];
+        labels.forEach(function(L){
+          var arr = p.cronograma[L[0]];
+          if(arr && arr.length){
+            h += '<div style="margin:10px 0">';
+            h += '<div style="font-size:11px;font-weight:600;color:'+L[2]+';letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+L[1]+'</div>';
+            arr.forEach(function(it){
+              h += '<div style="margin:4px 0;padding:8px 12px;background:'+C.alt+';border-left:2px solid '+L[2]+';font-size:11.5px;color:'+C.body+';line-height:1.5">'+it+'</div>';
+            });
+            h += '</div>';
+          }
+        });
+      }
+      // Checklist operacional
+      if(p.checklistOperacional && p.checklistOperacional.length){
+        h += '<div style="font-size:11px;font-weight:600;color:'+C.petrol+';letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">Checklist Operacional</div>';
+        p.checklistOperacional.forEach(function(c){
+          h += '<div style="margin:4px 0;padding:7px 12px;background:'+C.alt+';font-size:11.5px;color:'+C.body+';line-height:1.5">☐ '+c+'</div>';
+        });
+      }
+    } else if(modo === 'B' && rec.roteiro){
+      var r = rec.roteiro;
+      // Parte 1 — Diagnóstico
+      if(r.parte1Diagnostico){
+        h += '<div style="margin:10px 0;padding:14px 18px;background:#fff5f5;border-left:3px solid '+C.red+';border-radius:0 4px 4px 0">';
+        h += '<div style="font-size:10.5px;font-weight:600;color:'+C.red+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Parte 1 · Diagnóstico de Impacto</div>';
+        h += '<div style="font-size:12px;color:'+C.body+';line-height:1.6">'+r.parte1Diagnostico+'</div>';
+        h += '</div>';
+      }
+      // Parte 2 — 3 perguntas
+      if(r.parte2TresPerguntas && r.parte2TresPerguntas.length){
+        h += '<div style="margin:10px 0">';
+        h += '<div style="font-size:11px;font-weight:600;color:'+C.amber+';letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Parte 2 · Três Perguntas para o Assessor Atual</div>';
+        r.parte2TresPerguntas.forEach(function(pg, i){
+          h += '<div style="margin:6px 0;padding:12px 14px;background:'+C.alt+';border-left:2px solid '+C.amber+';border-radius:0 4px 4px 0">';
+          h += '<div style="font-size:10.5px;font-weight:700;color:'+C.amber+';margin-bottom:4px">PERGUNTA '+(i+1)+'</div>';
+          h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.6">'+pg+'</div>';
+          h += '</div>';
+        });
+        h += '</div>';
+      }
+      // Parte 3 — Direção
+      if(r.parte3Direcao){
+        h += '<div style="margin:10px 0;padding:14px 18px;background:'+C.alt+';border-left:3px solid '+C.petrol+';border-radius:0 4px 4px 0">';
+        h += '<div style="font-size:10.5px;font-weight:600;color:'+C.petrol+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Parte 3 · Direção Geral (sem prescrição)</div>';
+        h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.6">'+r.parte3Direcao+'</div>';
+        h += '</div>';
+      }
+      // Parte 4 — Convite
+      if(r.parte4ConvitePraConversa){
+        h += '<div style="margin:10px 0;padding:14px 18px;background:#f0f5ff;border-left:3px solid #4c8bf5;border-radius:0 4px 4px 0">';
+        h += '<div style="font-size:10.5px;font-weight:600;color:#4c8bf5;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Parte 4 · Convite para Conversa</div>';
+        h += '<div style="font-size:11.5px;color:'+C.body+';line-height:1.6">'+r.parte4ConvitePraConversa+'</div>';
+        h += '</div>';
+      }
+    }
+
+    h += '</div>'; // fim padding
+
+    // Footer institucional
+    h += '<div style="background:'+C.alt+';padding:16px 36px;border-top:1px solid #ddd;font-size:9.5px;color:'+C.light+';text-align:center;line-height:1.55">';
+    h += 'Este relatório tem finalidade exclusivamente informativa e não constitui oferta de investimento ou recomendação automatizada de compra ou venda. ';
+    h += 'As decisões de execução são de responsabilidade do assessor com a anuência do cliente.';
+    h += '</div>';
+
+    h += '</div>'; // fim do container
+
+    // ═══ RENDERIZAR E GERAR PDF VIA HTML2CANVAS + jsPDF ═══
+    var container = document.createElement("div");
+    container.style.cssText = "position:fixed;left:-99999px;top:0;background:white";
+    container.innerHTML = h;
+    document.body.appendChild(container);
+
+    var pdfContainer = document.getElementById("carteira-pdf-container");
+
+    // html2canvas
+    var canvas = await html2canvas(pdfContainer, {scale:2, useCORS:true, backgroundColor:"#ffffff", logging:false});
+    var imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+    // jsPDF A4
+    var pdf = new jspdf.jsPDF("p","mm","a4");
+    var pW = pdf.internal.pageSize.getWidth();
+    var pH = pdf.internal.pageSize.getHeight();
+    var imgW = pW;
+    var imgH = (canvas.height * pW) / canvas.width;
+    var pages = Math.ceil(imgH / pH);
+    for(var pg = 0; pg < pages; pg++){
+      if(pg > 0) pdf.addPage();
+      pdf.addImage(imgData, "JPEG", 0, -(pg * pH), imgW, imgH);
+    }
+
+    var fileName = "analise_carteira_" + (nome||"cliente").replace(/[^a-zA-Z0-9]/g,'_').slice(0,30) + "_" + new Date().toISOString().slice(0,10) + ".pdf";
+    pdf.save(fileName);
+
+    container.remove();
+    console.log("[carteira] PDF gerado:", fileName);
+
+  } catch(err) {
+    console.error("[carteira] erro no PDF:", err);
+    alert("Erro ao gerar PDF: " + err.message);
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
   }
 }
 
