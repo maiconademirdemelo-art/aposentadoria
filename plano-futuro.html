@@ -12142,12 +12142,29 @@ async function carteiraExtracao(carteiraTexto, perfil, pdfs) {
     "[2] Renda Fixa Privada Bancaria: CDB, LCI, LCA, LC, LH\n" +
     "[3] Renda Fixa Privada Corporativa: Debentures (comuns e incentivadas), CRI, CRA, CDCA, FIDC\n" +
     "[4] Fundos de Investimento: DI/Pos-fixados, Multimercado, Renda Fixa, Acoes, Cambial, Credito Privado, Exterior\n" +
-    "[5] Renda Variavel: ACOES (ON, PN, UNT), ETFs, BDRs, OPCOES, FUTUROS\n" +
-    "[6] Fundos Imobiliarios: FIIs listados (tickers terminam em '11')\n" +
+    "[5] Renda Variavel: ACOES (ON, PN, UNT - PETR4, ITUB4, VALE3, BBDC4, etc), ETFs (BOVA11, IVVB11), BDRs (AAPL34, MSFT34), OPCOES, FUTUROS\n" +
+    "[6] Fundos Imobiliarios e FIINFRA: FIIs listados (tickers terminam em '11': HGLG11, BTLG11, VISC11, MXRF11, KNRI11, XPML11, VGIR11). FIINFRA tambem entra aqui (CDII11, BTHI11, KNCR11, KNIP11). NAO PULE direitos de subscricao mesmo com valores pequenos (BTLG12, MXRF12, etc - R$ 5 a 50)\n" +
     "[7] Previdencia: PGBL e VGBL (separados, tem tributacao distinta)\n" +
     "[8] Investimentos no Exterior: contas USD, fundos exterior, BDRs com lastro externo, REITs, stocks US\n" +
     "[9] Outros: criptoativos, COE, FIP, FIA\n\n" +
-    "ATENCAO: extratos brasileiros tipicamente tem secoes SEPARADAS para Renda Fixa, Fundos, Renda Variavel e FIIs. SE VOCE SO ENCONTROU UMA CLASSE, ESTA INCOMPLETO - releia procurando as outras categorias.";
+    "PALAVRAS-CHAVE DE SECOES EM EXTRATOS BRASILEIROS (procure literalmente por estas strings nos PDFs):\n" +
+    "- 'Renda Variavel', 'Renda Variável', 'Posicao - Acoes', 'Posição - Ações'\n" +
+    "- 'Fundos Listados', 'Fundos Imobiliarios', 'FII', 'Imobiliarios'\n" +
+    "- 'Renda Fixa', 'Tesouro Direto', 'CDB', 'LCI', 'LCA', 'Debentures'\n" +
+    "- 'Fundos de Investimento', 'Previdencia', 'PGBL', 'VGBL'\n" +
+    "- 'Conta Investimento', 'Conta Corrente', 'Saldo'\n\n" +
+    "ATENCAO CRITICA: extratos brasileiros tem secoes SEPARADAS em PAGINAS DIFERENTES. Se voce so encontrou Renda Fixa, esta INCOMPLETO. Releia procurando as outras categorias.";
+
+  var instrTotais = "OBRIGATORIO - EXTRACAO DE TOTAIS DECLARADOS:\n" +
+    "Cada PDF tem um TOTAL declarado (busque por: 'Total Geral', 'Total em [classe]', 'Saldo Bruto', 'Patrimonio Liquido', 'Total da Conta', 'Total Consolidado'). " +
+    "EXTRAIA esses totais e coloque em 'totalDeclaradoConsolidado' (soma de todos os PDFs). " +
+    "ESTE CAMPO E CRITICO - usado para verificar se voce capturou TODAS as posicoes. Se a soma das suas posicoes for menor que o total declarado, voce ESTA OMITINDO posicoes.";
+
+  var instrAutoConferencia = "ANTES DE RESPONDER, faca esta CONFERENCIA INTERNA:\n" +
+    "1. Some os valores de TODAS as posicoes que voce listou\n" +
+    "2. Compare com o totalDeclaradoConsolidado dos extratos\n" +
+    "3. Se a diferenca for >3%, voce ESTA FALTANDO POSICOES - releia os PDFs e capture o que falta\n" +
+    "4. Esse processo se repete ate bater (ou ate 3 tentativas no maximo)";
 
   var taxonomia = "Taxonomia para classificacao final: 'Caixa/Pos-fixado' (LFT, CDB pos, fundos DI), 'IPCA+' (NTN-B, IMA-B, IPCA+), 'Pre-fixado' (NTN-F, LTN, CDB pre), 'Credito Privado' (debentures, CRI, CRA, FIDC), 'Multimercado', 'Renda Variavel' (acoes, ETFs, BDRs), 'FIIs', 'Internacional' (fundos exterior, USD, REITs), 'Previdencia' (PGBL/VGBL).";
 
@@ -12156,20 +12173,76 @@ async function carteiraExtracao(carteiraTexto, perfil, pdfs) {
     " ETAPA 1A: extracao EXAUSTIVA da carteira. " +
     (hasPDFs ? "Voce recebeu " + pdfs.length + " PDF" + (pdfs.length>1?"s":"") + " de extratos. LEIA TODAS AS PAGINAS de cada PDF. Identifique a instituicao de origem. " : "") +
     "Sua MISSAO NESTA ETAPA: listar TODAS as posicoes da carteira, sem omitir nenhuma classe. NAO BUSQUE RATINGS AGORA - isso e em outra etapa. Foque em capturar TUDO que existe na carteira. " +
-    "REGRAS: (a) NENHUMA classe pode ser pulada por preguica de procurar. (b) Se uma classe nao existir na carteira, registre explicitamente em coberturaClasses. (c) Liste cada posicao individualmente - se ha 5 acoes diferentes, liste as 5. (d) Para ratings, deixe vazio nesta etapa.";
+    "REGRAS: (a) NENHUMA classe pode ser pulada por preguica de procurar. (b) Se uma classe nao existir na carteira, registre explicitamente em coberturaClasses. (c) Liste cada posicao individualmente - se ha 5 acoes diferentes, liste as 5. (d) Para ratings, deixe vazio nesta etapa. (e) EXTRAIA os totais declarados de cada extrato e calcule o consolidado.";
 
-  var schemaExtract = "Retorne JSON: {posicoes:[{nome:'',classe:'',valor:0,indexador:'',vencimento:'',duration:0,instituicao:'',observacoes:''}],pl:0,nPosicoes:0,distribuicao:[{classe:'',valor:0,pct:0}],dv01Total:0,impacto100bps:0,inconsistencias:[''],dataBase:'AAAA-MM',instituicoes:[''],coberturaClasses:{rendaFixaPublica:'encontrado|nao_encontrado',cdbLci:'encontrado|nao_encontrado',creditoPrivado:'encontrado|nao_encontrado',fundos:'encontrado|nao_encontrado',rv:'encontrado|nao_encontrado',fii:'encontrado|nao_encontrado',previdencia:'encontrado|nao_encontrado',internacional:'encontrado|nao_encontrado'}}";
+  var schemaExtract = "Retorne JSON: {posicoes:[{nome:'',classe:'',valor:0,indexador:'',vencimento:'',duration:0,instituicao:'',observacoes:''}],pl:0,nPosicoes:0,distribuicao:[{classe:'',valor:0,pct:0}],dv01Total:0,impacto100bps:0,inconsistencias:[''],dataBase:'AAAA-MM',instituicoes:[''],totaisDeclaradosPorExtrato:[{instituicao:'',totalDeclarado:0,fonteNoPDF:''}],totalDeclaradoConsolidado:0,coberturaClasses:{rendaFixaPublica:'encontrado|nao_encontrado',cdbLci:'encontrado|nao_encontrado',creditoPrivado:'encontrado|nao_encontrado',fundos:'encontrado|nao_encontrado',rv:'encontrado|nao_encontrado',fii:'encontrado|nao_encontrado',previdencia:'encontrado|nao_encontrado',internacional:'encontrado|nao_encontrado'}}";
 
+  // ───── LOOP DE CONFERÊNCIA (até 3 tentativas) ─────
+  var MAX_TENTATIVAS = 3;
+  var TOLERANCIA_PCT = 3;
   var extracao;
-  if(hasPDFs){
-    var userTextExtract = "Extratos anexados (" + pdfs.length + " documento" + (pdfs.length>1?"s":"") + ").\n\n" + checklist + "\n\n" + taxonomia + "\n\nPerfil do cliente: " + perfil + "\n\n" + schemaExtract + "\n\nIMPORTANTE: antes de responder, verifique se voce procurou em TODAS as 9 categorias do checklist. Preencha coberturaClasses honestamente.";
-    extracao = await carteiraCallWithPDFs({system:sysExtract, userText:userTextExtract, pdfs:pdfs, useSearch:false, maxTokens:8000});
-  } else {
-    var userExtract = "Carteira do cliente (texto livre):\n\n" + carteiraTexto + "\n\n" + checklist + "\n\n" + taxonomia + "\n\nPerfil: " + perfil + "\n\n" + schemaExtract;
-    extracao = await acoesCallJSON({system:sysExtract, user:userExtract, useSearch:false});
+  var tentativa = 0;
+  var feedbackRetentativa = "";
+
+  while(tentativa < MAX_TENTATIVAS){
+    tentativa++;
+    if(tentativa > 1){
+      console.warn("[carteira] divergência detectada, tentativa " + tentativa + "/" + MAX_TENTATIVAS);
+      cartProg("Conferência falhou. Releitura " + tentativa + "/" + MAX_TENTATIVAS + " dos PDFs...");
+    }
+
+    var baseUser = checklist + "\n\n" + instrTotais + "\n\n" + instrAutoConferencia + "\n\n" + taxonomia + "\n\nPerfil do cliente: " + perfil + "\n\n" + schemaExtract;
+
+    if(hasPDFs){
+      var userTextExtract = feedbackRetentativa + "Extratos anexados (" + pdfs.length + " documento" + (pdfs.length>1?"s":"") + ").\n\n" + baseUser + "\n\nIMPORTANTE: antes de responder, faca a conferencia interna (soma das posicoes vs total declarado).";
+      extracao = await carteiraCallWithPDFs({system:sysExtract, userText:userTextExtract, pdfs:pdfs, useSearch:false, maxTokens:8000});
+    } else {
+      var userExtract = feedbackRetentativa + "Carteira do cliente (texto livre):\n\n" + carteiraTexto + "\n\n" + baseUser;
+      extracao = await acoesCallJSON({system:sysExtract, user:userExtract, useSearch:false});
+    }
+
+    // Conferência: soma posições vs total declarado
+    var totalCalc = (extracao.posicoes||[]).reduce(function(a,p){return a + (Number(p.valor)||0)}, 0);
+    var totalDecl = Number(extracao.totalDeclaradoConsolidado) || 0;
+
+    if(!totalDecl){
+      // Total não declarado - não conseguimos validar
+      console.log("[carteira] total declarado não disponível - segue sem conferência");
+      extracao._conferencia = {conferiu:null, motivo:"Total não declarado nos extratos", totalCalc:totalCalc, totalDecl:0, diffPercent:0};
+      break;
+    }
+
+    var diff = Math.abs(totalCalc - totalDecl);
+    var diffPercent = totalDecl > 0 ? (diff / totalDecl * 100) : 0;
+
+    console.log("[carteira] conferência tentativa " + tentativa + ": calc=" + totalCalc.toFixed(2) + " | decl=" + totalDecl.toFixed(2) + " | diff=" + diff.toFixed(2) + " (" + diffPercent.toFixed(1) + "%)");
+
+    if(diffPercent <= TOLERANCIA_PCT){
+      console.log("[carteira] ✓ conferência OK na tentativa " + tentativa);
+      extracao._conferencia = {conferiu:true, motivo:"OK", totalCalc:totalCalc, totalDecl:totalDecl, diffPercent:diffPercent, tentativas:tentativa};
+      break;
+    }
+
+    // Divergência → prepara feedback pra próxima tentativa
+    var faltaCapturar = totalDecl - totalCalc;
+    feedbackRetentativa = "[ATENÇÃO - RELEITURA NECESSÁRIA] Na tentativa anterior voce listou apenas R$ " + totalCalc.toFixed(2) +
+      " em posicoes, mas o(s) extrato(s) declara(m) total de R$ " + totalDecl.toFixed(2) +
+      ". DIFERENCA: R$ " + diff.toFixed(2) + " (" + diffPercent.toFixed(1) + "%) - voce esta FALTANDO posicoes que valem aproximadamente R$ " + faltaCapturar.toFixed(2) + ".\n\n" +
+      "RELEIA os PDFs procurando especificamente o que voce pulou. Foque em:\n" +
+      "- FUNDOS LISTADOS / FIIs (tickers '11': HGLG11, BTLG11, VISC11, VGIR11, MXRF11, KNRI11, etc) e FIINFRA (CDII11, BTHI11)\n" +
+      "- DIREITOS DE SUBSCRICAO de FIIs (tickers tipo BTLG12, MXRF12 - valores pequenos R$ 5-50 mas DEVEM ser listados)\n" +
+      "- RENDA VARIAVEL (acoes ON/PN, ETFs, BDRs - PETR4, ITUB4, VALE3, AAPL34, BOVA11)\n" +
+      "- Sub-secoes do extrato em PAGINAS POSTERIORES que podem ter sido pulado\n" +
+      "- Saldos em conta corrente / movimento\n\n" +
+      "Liste TUDO que aparecer nos extratos. Nao pule nada por valor pequeno. A diferenca de R$ " + faltaCapturar.toFixed(2) + " esta em algum lugar dos PDFs.\n\n";
+
+    if(tentativa >= MAX_TENTATIVAS){
+      console.warn("[carteira] ⚠ MAX_TENTATIVAS atingido - segue com divergência");
+      extracao._conferencia = {conferiu:false, motivo:"Divergência persistente após " + MAX_TENTATIVAS + " tentativas", totalCalc:totalCalc, totalDecl:totalDecl, diffPercent:diffPercent, tentativas:tentativa};
+    }
   }
 
-  // ───── PASSE 2: ENRICHMENT DE RATINGS (só pra crédito privado) ─────
+  // ───── PASSE FINAL: ENRICHMENT DE RATINGS (só pra crédito privado) ─────
   var creditosPrivados = (extracao.posicoes||[]).filter(function(p){
     var c = (p.classe||"").toLowerCase();
     var n = (p.nome||"").toLowerCase();
@@ -12207,7 +12280,7 @@ async function carteiraExtracao(carteiraTexto, perfil, pdfs) {
   if(extracao.coberturaClasses){
     console.log("[carteira] cobertura de classes:", extracao.coberturaClasses);
   }
-  console.log("[carteira] posicoes extraidas:", (extracao.posicoes||[]).length);
+  console.log("[carteira] posicoes extraidas:", (extracao.posicoes||[]).length, "| conferência:", extracao._conferencia);
 
   return extracao;
 }
@@ -12267,6 +12340,26 @@ function cartRenderExtracao(d){
   cart$("cart-hero-data-base").textContent="data-base "+(d.dataBase||"—");
 
   var h='';
+
+  // Status de conferência (CRÍTICO - blindagem contra extração incompleta)
+  if(d._conferencia){
+    var c = d._conferencia;
+    var bg, color, icon, label, sub;
+    if(c.conferiu === null){
+      bg = 'rgba(139,148,158,.06)'; color = '#8b949e'; icon = '○';
+      label = 'Conferência indisponível';
+      sub = c.motivo;
+    } else if(c.conferiu){
+      bg = 'rgba(46,204,138,.08)'; color = '#2ecc8a'; icon = '✓';
+      label = 'Conferência OK';
+      sub = 'Soma das posições bate com o total do extrato' + (c.tentativas>1?' (após '+c.tentativas+' tentativas)':'');
+    } else {
+      bg = 'rgba(248,215,94,.1)'; color = '#f8d75e'; icon = '⚠';
+      label = 'Divergência de ' + c.diffPercent.toFixed(1) + '%';
+      sub = 'Capturado: ' + cartFmtBRL(c.totalCalc) + ' · Declarado no extrato: ' + cartFmtBRL(c.totalDecl) + ' · Diferença: ' + cartFmtBRL(Math.abs(c.totalCalc - c.totalDecl)) + ' (3 tentativas esgotadas — pode faltar posição)';
+    }
+    h+='<div style="padding:12px 14px;background:'+bg+';border:1px solid '+color+'33;border-radius:8px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px;color:'+color+';font-weight:700;font-size:13px;margin-bottom:'+(sub?'4':'0')+'px"><span style="font-size:18px">'+icon+'</span>'+label+'</div>'+(sub?'<div style="font-size:11.5px;color:'+color+'cc;line-height:1.5">'+sub+'</div>':'')+'</div>';
+  }
 
   // Cobertura de classes - mostra o que foi/não foi encontrado
   if(d.coberturaClasses){
@@ -12513,7 +12606,7 @@ async function carteiraStart(modo){
   cart$("cart-verdict-modo").textContent=modo;
   var perfilCompleto = perfil + " · " + horizonte + " · liquidez " + liquidez + " · " + objetivo + (idade?" · "+idade+" anos":"") + (profissao?" · "+profissao:"");
   console.log("[carteira] iniciando análise modo " + modo + " | input=" + inputMode + (inputMode==='pdf'?" ("+pdfs.length+" PDFs)":""));
-  cartProg(inputMode==='pdf' ? "Etapa 1/6: lendo " + pdfs.length + " PDF" + (pdfs.length>1?"s":"") + " (extração + ratings)..." : "Etapa 1/6: extraindo posições (extração + ratings)...");
+  cartProg(inputMode==='pdf' ? "Etapa 1/6: lendo " + pdfs.length + " PDF" + (pdfs.length>1?"s":"") + " (extração + conferência)..." : "Etapa 1/6: extraindo e conferindo posições...");
   cartSt("extracao","loading");
   try {
     var extracao = await carteiraExtracao(carteiraTexto, perfilCompleto, pdfs);
