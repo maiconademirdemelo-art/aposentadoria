@@ -9260,9 +9260,10 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
     </div>
 
     <!-- ABAS ATIVOS -->
-    <div style="display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:28px">
-      <button id="tab-btn-acoes" onclick="switchAtivosTab('acoes')" style="flex:1;padding:12px;background:rgba(76,139,245,.12);border:1px solid rgba(76,139,245,.25);border-radius:9px;color:#4c8bf5;font-size:14px;font-weight:600;cursor:pointer;text-align:center">📈 Ações</button>
-      <button id="tab-btn-fiis" onclick="switchAtivosTab('fiis')" style="flex:1;padding:12px;background:transparent;border:none;border-radius:9px;color:rgba(255,255,255,.4);font-size:14px;font-weight:600;cursor:pointer;text-align:center">🏢 FIIs <span style="font-size:8px;padding:2px 6px;border-radius:99px;background:rgba(168,94,255,.15);color:#a85eff;font-weight:700;margin-left:6px">NOVO</span></button>
+    <div style="display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:28px;flex-wrap:wrap">
+      <button id="tab-btn-acoes" onclick="switchAtivosTab('acoes')" style="flex:1;min-width:120px;padding:12px;background:rgba(76,139,245,.12);border:1px solid rgba(76,139,245,.25);border-radius:9px;color:#4c8bf5;font-size:14px;font-weight:600;cursor:pointer;text-align:center">📈 Ações BR</button>
+      <button id="tab-btn-acoesus" onclick="switchAtivosTab('acoesus')" style="flex:1;min-width:120px;padding:12px;background:transparent;border:none;border-radius:9px;color:rgba(255,255,255,.4);font-size:14px;font-weight:600;cursor:pointer;text-align:center">🇺🇸 Ações EUA <span style="font-size:8px;padding:2px 6px;border-radius:99px;background:rgba(46,204,138,.15);color:#2ecc8a;font-weight:700;margin-left:6px">BETA</span></button>
+      <button id="tab-btn-fiis" onclick="switchAtivosTab('fiis')" style="flex:1;min-width:120px;padding:12px;background:transparent;border:none;border-radius:9px;color:rgba(255,255,255,.4);font-size:14px;font-weight:600;cursor:pointer;text-align:center">🏢 FIIs</button>
     </div>
 
     <!-- INPUT STATE -->
@@ -9425,6 +9426,192 @@ document.getElementById('j-inp').addEventListener('keydown',e=>{if(e.key==='Ente
         <button id="acoes-export-json" onclick="acoesExportJSON()">Exportar JSON</button>
         <button id="acoes-export-md" onclick="acoesExportMD()">Exportar Markdown</button>
         <button id="acoes-export-pdf" onclick="acoesGerarPDF()" style="background:linear-gradient(135deg,rgba(76,139,245,.15),rgba(76,139,245,.08));border-color:rgba(76,139,245,.3);color:#4c8bf5">📄 Relatório PDF</button>
+      </div>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         AÇÕES EUA — INPUT STATE
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="acoesus-input-state" style="display:none">
+      <div class="acoes-input-card">
+        <label class="acoes-input-label" for="acoesus-ticker">Ticker NYSE / NASDAQ</label>
+        <div class="acoes-input-row">
+          <input type="text" id="acoesus-ticker" placeholder="AAPL" maxlength="6" autocomplete="off" spellcheck="false">
+        </div>
+
+        <!-- Lente de análise -->
+        <div style="margin-top:14px">
+          <label class="acoes-input-label" style="font-size:11px">Lente de análise</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px">
+            <button id="usLens-renda" onclick="acoesUSSetLens('renda')" class="acoes-mode-btn" style="padding:8px 10px;font-size:12px;background:rgba(46,204,138,.12);border:1px solid rgba(46,204,138,.3);color:#2ecc8a;border-radius:6px;cursor:pointer;font-weight:600">💰 Renda (DGR + DY)</button>
+            <button id="usLens-cresc" onclick="acoesUSSetLens('crescimento')" class="acoes-mode-btn" style="padding:8px 10px;font-size:12px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);border-radius:6px;cursor:pointer;font-weight:600">🚀 Crescimento (SY + EPS)</button>
+            <button id="usLens-geral" onclick="acoesUSSetLens('geral')" class="acoes-mode-btn" style="padding:8px 10px;font-size:12px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);border-radius:6px;cursor:pointer;font-weight:600">🔍 Geral (balanceado)</button>
+          </div>
+          <div id="usLens-desc" style="font-size:11px;color:#8b949e;margin-top:8px;line-height:1.5;padding:8px 12px;background:rgba(46,204,138,.04);border-left:2px solid #2ecc8a;border-radius:0 4px 4px 0">
+            <strong style="color:#2ecc8a">Renda:</strong> Dividend Growth Rate &gt; 5%/ano por 10+ anos OU DY &gt; 3%. Captura Dividend Aristocrats (KO, PG, JNJ) e altos pagadores como REITs.
+          </div>
+        </div>
+
+        <div class="acoes-btn-row" style="grid-template-columns:1fr;margin-top:14px">
+          <button id="acoesus-btn-completa" class="acoes-mode-btn acoes-mode-completa" onclick="acoesUSIniciarAnalise()" style="border-color:rgba(46,204,138,.4);background:linear-gradient(135deg,rgba(46,204,138,.12),rgba(46,204,138,.04))">
+            <span class="acoes-mode-icon">🇺🇸</span>
+            <span class="acoes-mode-info">
+              <strong style="color:#2ecc8a">Iniciar Análise EUA</strong>
+              <small>Macro Fed · fundamentos · técnica · veredicto em BRL · ~2 min</small>
+            </span>
+          </button>
+        </div>
+        <div class="acoes-examples">
+          <span class="acoes-examples-lab">Exemplos:</span>
+          <button class="acoes-ex-btn" data-tus="AAPL">AAPL</button>
+          <button class="acoes-ex-btn" data-tus="MSFT">MSFT</button>
+          <button class="acoes-ex-btn" data-tus="JNJ">JNJ</button>
+          <button class="acoes-ex-btn" data-tus="KO">KO</button>
+          <button class="acoes-ex-btn" data-tus="O">O (REIT)</button>
+          <button class="acoes-ex-btn" data-tus="BRK.B">BRK.B</button>
+          <button class="acoes-ex-btn" data-tus="VOO">VOO (ETF)</button>
+          <button class="acoes-ex-btn" data-tus="NVDA">NVDA</button>
+        </div>
+      </div>
+
+      <div class="acoes-meta-grid">
+        <div class="acoes-meta-col">
+          <div class="acoes-meta-num">01</div>
+          <h3>Como funciona</h3>
+          <p>Consulta fontes públicas em tempo real (SEC 10-K/10-Q, Yahoo Finance, MarketWatch, Seeking Alpha). Estrutura em cinco eixos com macro do Fed, fundamentos USA, técnica e veredicto.</p>
+        </div>
+        <div class="acoes-meta-col">
+          <div class="acoes-meta-num">02</div>
+          <h3>Conversão para BRL</h3>
+          <p>Preço-alvo, market cap e KPIs são exibidos em BRL usando câmbio USD/BRL atual. Útil para dimensionar a posição em reais sem mental math.</p>
+        </div>
+        <div class="acoes-meta-col">
+          <div class="acoes-meta-num">03</div>
+          <h3>Tributação USA</h3>
+          <p>Dividendos: 30% retidos na fonte (treaty BR-USA não isenta). Ganho de capital: IR Brasil 15-22,5%. IOF e spread cambial em cada movimentação. Considere via BDRs para simplicidade.</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         AÇÕES EUA — RESULTS STATE
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="acoesus-results-state" class="acoes-hidden" style="display:none">
+
+      <div class="acoes-hero" style="border-color:rgba(46,204,138,.15)">
+        <div class="acoes-hero-mark" style="color:#2ecc8a">🇺🇸 Análise · <span id="acoesus-hero-ticker">—</span></div>
+        <h2 class="acoes-hero-name" id="acoesus-hero-name">Carregando empresa...</h2>
+        <div class="acoes-hero-meta">
+          <span id="acoesus-hero-sector">—</span>
+          <span class="acoes-dot">·</span>
+          <span id="acoesus-hero-exchange">—</span>
+          <span class="acoes-dot">·</span>
+          <span class="acoes-pill" id="acoesus-hero-lens">Renda</span>
+          <span class="acoes-dot">·</span>
+          <span class="acoes-pill" id="acoesus-hero-data-base">data-base —</span>
+        </div>
+      </div>
+
+      <div class="acoes-kpi-grid">
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">Preço atual</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="acoesus-kpi-preco-v">aguardando</div>
+          <div class="acoes-kpi-sub" id="acoesus-kpi-preco-sub">—</div>
+        </div>
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">Preço-alvo (12m)</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="acoesus-kpi-alvo-v">aguardando</div>
+          <div class="acoes-kpi-sub" id="acoesus-kpi-alvo-sub">—</div>
+        </div>
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">Score Fundamentalista</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="acoesus-kpi-score-v">aguardando</div>
+          <div class="acoes-kpi-sub" id="acoesus-kpi-score-sub"><span class="acoes-badge" id="acoesus-kpi-score-badge">—</span></div>
+        </div>
+        <div class="acoes-kpi">
+          <div class="acoes-kpi-label">Momento Técnico</div>
+          <div class="acoes-kpi-value acoes-skeleton" id="acoesus-kpi-mom-v" style="font-size:16px">aguardando</div>
+          <div class="acoes-kpi-sub" id="acoesus-kpi-mom-sub">—</div>
+        </div>
+      </div>
+
+      <div class="acoes-verdict" id="acoesus-verdict">
+        <div class="acoes-verdict-label">Veredicto</div>
+        <div class="acoes-verdict-decision" id="acoesus-verdict-decision">Aguardando síntese</div>
+        <p class="acoes-verdict-rationale" id="acoesus-verdict-rationale">A análise está sendo construída. As cinco frentes serão consolidadas ao final.</p>
+        <div class="acoes-verdict-meta">
+          <div><strong>Horizonte</strong><span id="acoesus-verdict-horizonte">—</span></div>
+          <div><strong>Perfis adequados</strong><span id="acoesus-verdict-perfis">—</span></div>
+          <div><strong>Score consolidado</strong><span id="acoesus-verdict-score">—</span></div>
+        </div>
+      </div>
+
+      <article class="acoes-section acoes-open" data-key="macro">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">01 — Macro USA</span>
+          <h3 class="acoes-section-title">Contexto Fed, Treasuries e Setor</h3>
+          <span class="acoes-section-status" id="acoesus-st-macro">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="acoesus-body-macro">
+          <p class="acoes-placeholder">Fed Funds Rate, CPI/PCE, Treasury yields, S&amp;P 500, DXY, ciclo Fed e setor (11 GICS).</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="fund">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">02 — Fundamentos</span>
+          <h3 class="acoes-section-title">Análise Fundamentalista (USA)</h3>
+          <span class="acoes-section-status" id="acoesus-st-fund">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="acoesus-body-fund">
+          <p class="acoes-placeholder">Forward P/E, PEG, EPS Growth, Dividend Growth Rate, Shareholder Yield, FCF Yield, ROIC, Debt/Equity.</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="tec">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">03 — Técnica</span>
+          <h3 class="acoes-section-title">Análise Técnica</h3>
+          <span class="acoes-section-status" id="acoesus-st-tec">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="acoesus-body-tec">
+          <p class="acoes-placeholder">Tendência (SMA 50/200), RSI, MACD, suportes/resistências e ponto de entrada.</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="prazo">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">04 — Prazo & Risco</span>
+          <h3 class="acoes-section-title">Catalisadores, Riscos e Aderência</h3>
+          <span class="acoes-section-status" id="acoesus-st-prazo">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="acoesus-body-prazo">
+          <p class="acoes-placeholder">Próximos earnings, FOMC decisions, riscos cambiais e regulatórios. Perfil adequado.</p>
+        </div>
+      </article>
+
+      <article class="acoes-section acoes-open" data-key="brief">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">05 — Briefing</span>
+          <h3 class="acoes-section-title">Síntese para o Assessor</h3>
+          <span class="acoes-section-status" id="acoesus-st-brief">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="acoesus-body-brief">
+          <p class="acoes-placeholder">Tese central, argumentos, monitoramento e considerações tributárias para o cliente.</p>
+        </div>
+      </article>
+
+      <div class="acoes-actions">
+        <button onclick="acoesUSResetState()">← Nova análise</button>
+        <button onclick="acoesUSGerarPDF()" style="background:linear-gradient(135deg,rgba(46,204,138,.15),rgba(46,204,138,.08));border-color:rgba(46,204,138,.3);color:#2ecc8a">📄 Relatório PDF</button>
       </div>
 
     </div>
@@ -9924,9 +10111,49 @@ USD em conta exterior R$ 60.000" style="width:100%;padding:11px 14px;background:
         <textarea id="alloc-restricoes" rows="3" placeholder="Ex: evitar bancos, máximo 30% em RV, focar em utilities e telecom, sem small caps, evitar setores cíclicos, restrições ESG..." style="width:100%;padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;resize:vertical;line-height:1.5"></textarea>
       </div>
 
-      <!-- BLOCO 4: Parametrização -->
+      <!-- BLOCO 4: Mercado de atuação -->
       <div class="acoes-input-card">
-        <label class="acoes-input-label">4. Parametrização da carteira</label>
+        <label class="acoes-input-label">4. Mercado de atuação</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+          <button type="button" id="alloc-mkt-br" onclick="allocSetMercado('br')" style="padding:14px 8px;background:rgba(76,139,245,.15);border:1px solid rgba(76,139,245,.35);border-radius:8px;color:#4c8bf5;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:center"><div style="font-size:24px;margin-bottom:4px">🇧🇷</div>Brasil</button>
+          <button type="button" id="alloc-mkt-us" onclick="allocSetMercado('us')" style="padding:14px 8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:center"><div style="font-size:24px;margin-bottom:4px">🇺🇸</div>EUA</button>
+          <button type="button" id="alloc-mkt-hib" onclick="allocSetMercado('hib')" style="padding:14px 8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:center"><div style="font-size:24px;margin-bottom:4px">🌎</div>Híbrido BR+EUA</button>
+        </div>
+
+        <!-- Campos condicionais por mercado -->
+        <div id="alloc-mkt-config" style="display:grid;gap:10px">
+          <!-- Lente USA / Híbrido (aparece se mercado != br) -->
+          <div id="alloc-lens-wrap" style="display:none">
+            <div style="font-size:11px;color:#8b949e;margin-bottom:6px">Lente de análise (EUA)</div>
+            <select id="alloc-lens" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
+              <option value="renda" selected>Renda (DGR + DY) — Dividend Aristocrats, REITs</option>
+              <option value="crescimento">Crescimento (Shareholder Yield + EPS 10%+ por 5y)</option>
+              <option value="geral">Geral (balanceado)</option>
+            </select>
+          </div>
+
+          <!-- % Internacional (só Híbrido) -->
+          <div id="alloc-pct-int-wrap" style="display:none">
+            <div style="font-size:11px;color:#8b949e;margin-bottom:6px">% destinado a ativos internacionais (resto vai pra Brasil)</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="range" id="alloc-pct-int" min="10" max="60" value="30" step="5" style="flex:1" oninput="document.getElementById('alloc-pct-int-display').textContent=this.value+'%'">
+              <span id="alloc-pct-int-display" style="color:#a85eff;font-weight:700;font-size:18px;font-family:JetBrains Mono,monospace;min-width:50px;text-align:right">30%</span>
+            </div>
+          </div>
+
+          <!-- Universo de screening -->
+          <div>
+            <div style="font-size:11px;color:#8b949e;margin-bottom:6px">Universo de screening</div>
+            <select id="alloc-universo" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
+              <!-- Options dinâmicas inseridas via JS -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 5: Parametrização da carteira -->
+      <div class="acoes-input-card">
+        <label class="acoes-input-label">5. Parametrização da carteira</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
             <div style="font-size:11px;color:#8b949e;margin-bottom:6px">N° alvo de ativos</div>
@@ -9940,28 +10167,28 @@ USD em conta exterior R$ 60.000" style="width:100%;padding:11px 14px;background:
           <div>
             <div style="font-size:11px;color:#8b949e;margin-bottom:6px">Classes a incluir</div>
             <select id="alloc-classes" style="padding:11px 14px;background:rgba(13,31,45,.4);border:1px solid rgba(168,94,255,.2);border-radius:8px;color:#e6edf3;font-size:14px;font-family:inherit;width:100%">
-              <option value="rv+fii" selected>RV + FIIs (foco bolsa)</option>
+              <option value="rv+fii" selected>RV + FIIs/REITs (foco bolsa)</option>
               <option value="completa">Completa (RV + FII + RF + Caixa)</option>
-              <option value="renda">Foco renda (FIIs + RF + dividendeiras)</option>
+              <option value="renda">Foco renda (FIIs/REITs + RF + dividendeiras)</option>
               <option value="rv-only">Apenas Renda Variável</option>
-              <option value="fii-only">Apenas FIIs</option>
+              <option value="fii-only">Apenas FIIs/REITs</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- BLOCO 5: Botão de construção -->
+      <!-- BLOCO 6: Botão de construção -->
       <div class="acoes-input-card">
-        <label class="acoes-input-label">5. Construir a carteira</label>
+        <label class="acoes-input-label">6. Construir a carteira</label>
         <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5">
-          O sistema buscará dados de mercado em tempo real, definirá a alocação por classe, fará screening de ações e FIIs nos critérios definidos e consolidará tudo em uma carteira executável.<br>
-          <span style="color:#a85eff">⏱ Tempo estimado: 4-6 minutos · 5 chamadas IA com web search</span>
+          O sistema vasculhará o universo selecionado, definirá alocação por classe + mercado, fará screening + validação técnica em cada classe e consolidará tudo em carteira executável.<br>
+          <span style="color:#a85eff" id="alloc-time-estimate">⏱ Tempo estimado: 6-9 minutos · 7-10 chamadas IA com web search</span>
         </div>
         <button onclick="allocatorStart()" id="alloc-btn-start" class="acoes-mode-btn acoes-mode-completa" style="border-color:rgba(168,94,255,.4);background:linear-gradient(135deg,rgba(168,94,255,.12),rgba(168,94,255,.04));width:100%">
           <span class="acoes-mode-icon">⚡</span>
           <span class="acoes-mode-info">
             <strong style="color:#a85eff">Construir carteira agora</strong>
-            <small>Inicia pipeline de screening + alocação · ~5 minutos</small>
+            <small>Pipeline de macro · screening · validação · consolidação</small>
           </span>
         </button>
       </div>
@@ -10050,6 +10277,19 @@ USD em conta exterior R$ 60.000" style="width:100%;padding:11px 14px;background:
         </div>
         <div class="acoes-section-body" id="alloc-body-estrategia">
           <p class="acoes-placeholder">Divisão percentual entre Renda Variável, Fundos Imobiliários, Renda Fixa e Caixa, ancorada no perfil e no cenário.</p>
+        </div>
+      </article>
+
+      <!-- NOVA: Funil de Screening (transparência do universo) -->
+      <article class="acoes-section acoes-open" data-key="funil">
+        <div class="acoes-section-head">
+          <span class="acoes-section-num">02.5 — Universo</span>
+          <h3 class="acoes-section-title">Funil de Screening</h3>
+          <span class="acoes-section-status" id="alloc-st-funil">aguardando</span>
+          <span class="acoes-section-toggle">+</span>
+        </div>
+        <div class="acoes-section-body" id="alloc-body-funil">
+          <p class="acoes-placeholder">Mapeamento do universo de empresas considerado, número que passou em cada filtro e fontes consultadas.</p>
         </div>
       </article>
 
@@ -11852,14 +12092,607 @@ function gerarTabelaMensal(){
 function abrirDiagnostico(){var o=document.createElement("div");o.id="diag-overlay";o.style.cssText="position:fixed;inset:0;z-index:99999;background:#080e1a";var f=document.createElement("iframe");f.src="diagnostico.html";f.style.cssText="width:100%;height:100%;border:none";o.appendChild(f);document.body.appendChild(o);document.body.style.overflow="hidden";window.addEventListener("message",function h(e){if(e.data==="fechar-diagnostico"){var x=document.getElementById("diag-overlay");if(x)x.remove();document.body.style.overflow="";window.removeEventListener("message",h)}})}
 
 function switchAtivosTab(tab){
-  var ba=document.getElementById("tab-btn-acoes"),bf=document.getElementById("tab-btn-fiis");
+  var ba=document.getElementById("tab-btn-acoes"),bu=document.getElementById("tab-btn-acoesus"),bf=document.getElementById("tab-btn-fiis");
   var ai=document.getElementById("acoes-input-state"),ar=document.getElementById("acoes-results-state");
+  var ui=document.getElementById("acoesus-input-state"),ur=document.getElementById("acoesus-results-state");
   var fi=document.getElementById("fii-input-state"),fr=document.getElementById("fii-results-state");
-  ba.style.cssText="flex:1;padding:12px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;"+(tab==="acoes"?"background:rgba(76,139,245,.12);border:1px solid rgba(76,139,245,.25);color:#4c8bf5":"background:transparent;border:none;color:rgba(255,255,255,.4)");
-  bf.style.cssText="flex:1;padding:12px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;"+(tab==="fiis"?"background:rgba(76,139,245,.12);border:1px solid rgba(76,139,245,.25);color:#4c8bf5":"background:transparent;border:none;color:rgba(255,255,255,.4)");
-  if(tab==="acoes"){if(ai)ai.style.display="";if(ar)ar.style.display="";if(fi)fi.style.display="none";if(fr)fr.style.display="none"}
-  else{if(ai)ai.style.display="none";if(ar)ar.style.display="none";if(fi)fi.style.display="";if(fr)fr.style.display="none";setTimeout(function(){var t=document.getElementById("fii-ticker");if(t)t.focus()},200)}
+  function styleTab(btn,active,color){
+    btn.style.cssText="flex:1;min-width:120px;padding:12px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;"+
+      (active?"background:rgba("+color+",.12);border:1px solid rgba("+color+",.25);color:rgb("+color+")":"background:transparent;border:none;color:rgba(255,255,255,.4)");
+  }
+  if(ba)styleTab(ba, tab==="acoes", "76,139,245");
+  if(bu)styleTab(bu, tab==="acoesus", "46,204,138");
+  if(bf)styleTab(bf, tab==="fiis", "76,139,245");
+  // Esconder tudo
+  if(ai)ai.style.display="none"; if(ar)ar.style.display="none";
+  if(ui)ui.style.display="none"; if(ur)ur.style.display="none";
+  if(fi)fi.style.display="none"; if(fr)fr.style.display="none";
+  // Mostrar conforme tab
+  if(tab==="acoes"){
+    if(ai)ai.style.display=""; if(ar)ar.style.display="";
+    setTimeout(function(){var t=document.getElementById("acoes-ticker");if(t)t.focus()},200);
+  } else if(tab==="acoesus"){
+    if(ui)ui.style.display=""; if(ur)ur.style.display="";
+    setTimeout(function(){var t=document.getElementById("acoesus-ticker");if(t)t.focus()},200);
+  } else if(tab==="fiis"){
+    if(fi)fi.style.display=""; if(fr)fr.style.display="";
+    setTimeout(function(){var t=document.getElementById("fii-ticker");if(t)t.focus()},200);
+  }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MÓDULO ANÁLISE DE AÇÕES EUA (NYSE / NASDAQ) — BETA
+// Replica os prompts-mãe de Ações BR adaptados para mercado americano
+// Saídas em BRL (com cotação USD/BRL atual incluída)
+// ═══════════════════════════════════════════════════════════════════════════
+
+var acoesUS$ = function(id){return document.getElementById(id)};
+var acoesUSState = { ticker:'', data:{}, busy:false, lens:'renda' };
+
+function acoesUSSt(k,s){
+  var el=acoesUS$("acoesus-st-"+k);if(!el)return;
+  el.textContent={pending:"aguardando",loading:"carregando",done:"pronto",error:"erro"}[s]||s;
+  el.className="acoes-section-status "+(s==="pending"?"":"acoes-"+s);
+}
+function acoesUSProg(msg){
+  var p=acoesUS$("acoesus-progress"); // pode não existir; usa o próprio body como fallback
+  console.log("[acoesUS] "+msg);
+}
+function acoesUSSetLens(lens){
+  acoesUSState.lens = lens;
+  ['renda','cresc','geral'].forEach(function(l){
+    var key = l==='cresc'?'crescimento':l;
+    var btn = acoesUS$("usLens-"+l);
+    if(!btn) return;
+    var color = key==='renda'?'46,204,138':key==='crescimento'?'168,94,255':'76,139,245';
+    if(lens === key){
+      btn.style.cssText = "padding:8px 10px;font-size:12px;background:rgba("+color+",.12);border:1px solid rgba("+color+",.3);color:rgb("+color+");border-radius:6px;cursor:pointer;font-weight:600";
+    } else {
+      btn.style.cssText = "padding:8px 10px;font-size:12px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);border-radius:6px;cursor:pointer;font-weight:600";
+    }
+  });
+  // Descrição da lente
+  var desc = acoesUS$("usLens-desc");
+  if(desc){
+    var col = lens==='renda'?'46,204,138':lens==='crescimento'?'168,94,255':'76,139,245';
+    var msg = {
+      'renda': '<strong style="color:#2ecc8a">Renda:</strong> Dividend Growth Rate > 5%/ano por 10+ anos OU DY > 3%. Captura Dividend Aristocrats (KO, PG, JNJ) e altos pagadores como REITs.',
+      'crescimento': '<strong style="color:#a85eff">Crescimento:</strong> Shareholder Yield (DY + Buyback Yield) > 5% AND EPS crescendo 10%+ por 5 anos consecutivos. Captura empresas em fase de geração de valor (MSFT, AAPL no início, GOOGL).',
+      'geral': '<strong style="color:#4c8bf5">Geral:</strong> Avalia o ativo em todas as dimensões (renda, crescimento, valuation, momento). Útil quando não sabe ainda qual o perfil do investidor.'
+    }[lens];
+    desc.style.cssText = "font-size:11px;color:#8b949e;margin-top:8px;line-height:1.5;padding:8px 12px;background:rgba("+col+",.04);border-left:2px solid rgb("+col+");border-radius:0 4px 4px 0";
+    desc.innerHTML = msg;
+  }
+  // Atualiza o pill no hero
+  var pill = acoesUS$("acoesus-hero-lens");
+  if(pill) pill.textContent = {renda:"Renda",crescimento:"Crescimento",geral:"Geral"}[lens]||lens;
+}
+function acoesUSResetState(){
+  acoesUS$("acoesus-input-state").style.display="";
+  acoesUS$("acoesus-results-state").style.display="none";
+  acoesUS$("acoesus-results-state").classList.add("acoes-hidden");
+  acoesUS$("acoesus-ticker").value="";
+  acoesUSState.data = {};
+  ["preco","alvo","score","mom"].forEach(function(k){
+    var v=acoesUS$("acoesus-kpi-"+k+"-v"); if(v){v.textContent="aguardando";v.classList.add("acoes-skeleton")}
+  });
+  ["macro","fund","tec","prazo","brief"].forEach(function(k){acoesUSSt(k,"pending")});
+}
+
+// ──────── SYSTEM PROMPT MÃE — USADO PELO CONSTRUTOR DE CARTEIRA ────────
+var ACOES_US_SYS = "Voce e analista senior de equities norte-americanas (NYSE, NASDAQ) com 20+ anos de experiencia em renda variavel global. Atua como consultor tecnico do assessor que assinara o relatorio para o cliente final no Brasil. " +
+"PRINCIPIOS ABSOLUTOS: " +
+"(1) Linguagem em portugues do Brasil. Termos tecnicos USA mantidos quando relevantes (Forward P/E, FCF Yield, EPS, FFO para REITs). " +
+"(2) PROIBIDO inventar numeros. Cada dado deve vir de busca real e atual (10-K, 10-Q, Yahoo Finance, MarketWatch). " +
+"(3) Linguagem em PRIMEIRA PESSOA do analista ('avalio', 'minha leitura'). " +
+"(4) NUNCA citar fontes (jornais, casas de analise). Afirmacoes sao SUAS. " +
+"(5) Apresentar valores em BRL convertidos com cambio atual + USD entre parenteses. Ex: 'preco-alvo R$ 850 (USD 168 com cambio R$ 5,06)'. " +
+"(6) Considerar tributacao USA na recomendacao: 30% retidos na fonte de dividendos, ganho de capital tributado no Brasil. Sugerir BDRs como alternativa quando aplicavel. " +
+"(7) SHAREHOLDER YIELD: para fins de 'renda total', some Dividend Yield + Buyback Yield (recompra liquida / market cap). Recompra e benefico real para o acionista. " +
+"(8) SAIDA: APENAS JSON sem cercas markdown.";
+
+// ──────── CALL 1: SNAPSHOT (preço, cambio, market cap) ────────
+async function acoesUSFetchSnapshot(ticker){
+  var sys = ACOES_US_SYS + " ETAPA: Snapshot inicial. Busque dados ATUAIS do ticker. Identifique nome da empresa, setor GICS (11 setores: Information Technology, Healthcare, Financials, Consumer Discretionary, Consumer Staples, Industrials, Energy, Materials, Real Estate, Utilities, Communication Services), exchange (NYSE ou NASDAQ), preco atual em USD, USD/BRL atual, preco em BRL, market cap, beta 5y, 52-week range.";
+  var user = "Ticker: " + ticker + ". Forneca snapshot atual. Retorne JSON: {ticker:'',nome:'',setor:'',exchange:'',precoUSD:0,usdBrl:0,precoBRL:0,marketCapUSD:'',marketCapBRL:'',beta:'',range52w:'',dataBase:'',tipoAtivo:'stock|reit|etf|adr'}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 2: MACRO USA + SETOR ────────
+async function acoesUSFetchMacro(ticker, setor){
+  var sys = ACOES_US_SYS + " ETAPA: Macro USA + setor. Busque dados ATUAIS. " +
+    "INDICADORES OBRIGATORIOS: " +
+    "(M1) Fed Funds Rate atual + direcao (alta/manutencao/queda/proxima reuniao FOMC). " +
+    "(M2) CPI YoY ultimo dado + tendencia. PCE ultimo dado (Fed prefere). " +
+    "(M3) Treasury yields: 2y, 10y, 30y. Spread 10y-2y (curva invertida?). " +
+    "(M4) S&P 500 YTD + Nasdaq YTD + momentum (alta/lateral/queda). " +
+    "(M5) DXY (Dollar Index) nivel atual. USD/BRL para conversoes. " +
+    "(M6) Setor GICS do ativo + performance YTD do setor (XLK pra Tech, XLF pra Financials, etc) + earnings season status. " +
+    "(M7) Sintese: o que o cenario Fed/Treasury significa para o setor especifico. " +
+    "Apresentar valores em USD com referencia BRL quando relevante.";
+  var user = "Ticker: " + ticker + ", Setor: " + setor + ". Forneca macro USA atual. JSON: {fed:'',fedDirecao:'',proximoFOMC:'',cpi:'',pce:'',ipcaUSAtendencia:'',treasury2y:'',treasury10y:'',treasury30y:'',spread10y2y:'',curvaInvertida:false,sp500YTD:'',nasdaqYTD:'',momentumBolsaUSA:'',dxy:'',usdBrl:'',setorPerformanceYTD:'',earningsSeason:'',sinteseSetor:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 3: FUNDAMENTOS USA (com 3 lentes) ────────
+async function acoesUSFetchFundamental(ticker, nome, lens){
+  var lensSpec = {
+    'renda': "LENTE RENDA: Foco em (i) DY 12m, (ii) Dividend Growth Rate ultimos 5/10 anos, (iii) anos consecutivos aumentando dividendo (CRITICO: 25+ anos = Dividend Aristocrat, 50+ anos = Dividend King), (iv) payout ratio (REITs 90%+ normal; stocks 30-60% saudavel), (v) cobertura do dividendo por FCF. Atende perfil RENDA se DGR 5y > 5%/ano OU DY > 3%.",
+    'crescimento': "LENTE CRESCIMENTO: Foco em (i) Shareholder Yield = DY + Buyback Yield (recompra liquida 12m / market cap), (ii) EPS Growth ultimos 5 anos (CRITICO: precisa estar crescendo 2 digitos / 10%+ em pelo menos 4 dos 5 ultimos anos), (iii) Revenue Growth, (iv) ROIC > 15%, (v) margens em expansao, (vi) PEG ratio (Forward PE / EPS Growth). Atende perfil CRESCIMENTO se Shareholder Yield > 5% E EPS crescendo 10%+ em 4+ dos ultimos 5 anos.",
+    'geral': "LENTE GERAL: Avaliar todas as dimensoes (renda + crescimento + valuation) com peso equilibrado. Identificar em qual perfil o ativo melhor se enquadra."
+  }[lens] || 'renda';
+
+  var sys = ACOES_US_SYS + " ETAPA: Analise fundamentalista USA. " + lensSpec + " " +
+    "VALUATION: Forward P/E, P/E TTM, PEG ratio, P/B, EV/EBITDA, FCF Yield. Comparar com mediana do setor. " +
+    "ENDIVIDAMENTO: Debt/Equity, Net Debt/EBITDA, Interest Coverage. " +
+    "QUALIDADE: ROE, ROIC, Gross Margin, Operating Margin, Net Margin, FCF margin. " +
+    "PARA REITs: usar FFO Yield e AFFO em vez de DY puro. Mencionar AFFO payout ratio. " +
+    "PARA ETFs: expense ratio, AUM, holdings principais, indice replicado. " +
+    "GERAR SCORE FUNDAMENTALISTA 0-100: Considere qualidade (40 pontos), valuation (30), perfil de renda/crescimento conforme lente (30). " +
+    "TESE: 2-3 paragrafos sobre como o ativo se posiciona, vantagens competitivas (moat), riscos fundamentais.";
+  var user = "Ticker: " + ticker + ", Nome: " + nome + ". Faca analise fundamentalista completa com lente '" + lens + "'. JSON: {modelo:'',moat:'',dy:'',dgr5y:'',anosConsecutivosAumentando:0,payout:'',buybackYield:'',shareholderYield:'',epsGrowth5y:[],revenueGrowth5y:[],forwardPE:'',pegRatio:'',pb:'',evEbitda:'',fcfYield:'',roe:'',roic:'',debtEquity:'',netDebtEbitda:'',margemBruta:'',margemOp:'',margemLiq:'',fcfMargin:'',score:0,scoreBreakdown:{qualidade:0,valuation:0,perfilLente:0},perfilIdentificado:'renda|crescimento|valor|growth',tese:'',vantagens:[],riscos:[],ffo:'',affo:'',expenseRatio:'',aum:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 4: TÉCNICA (mesma lógica universal) ────────
+async function acoesUSFetchTecnica(ticker, precoAtual){
+  var sys = ACOES_US_SYS + " ETAPA: Analise tecnica. Lógica universal (mesma do mercado brasileiro). " +
+    "INDICADORES: Tendencia primaria (Alta/Lateral/Baixa), SMA 50 e SMA 200, posicao do preco vs SMA200 (acima/abaixo/cruzamento), RSI 14, MACD (Compra/Neutro/Venda), volume vs media, suportes e resistencias proximos. " +
+    "MOMENTO: classificar como COMPRAR (entrada favoravel), AGUARDAR (sem ponto de entrada claro) ou NAO_RECOMENDADO (tendencia clara de queda ou sobrecompra extrema). " +
+    "Mesmos criterios do prompt-mae de acoes BR: T1 tendencia nao pode ser Baixa, T2 RSI 30-70, T3 MACD nao pode ser Venda consistente, T4 preco proximo/acima MM200.";
+  var user = "Ticker: " + ticker + ", Preco USD: " + precoAtual + ". Faca analise tecnica completa. JSON: {tendenciaPrimaria:'Alta|Lateral|Baixa',sma50:'',sma200:'',posicaoMA200:'Acima|Abaixo|Cruzamento',rsi:0,classifRSI:'sobrevendido|neutro|sobrecomprado',macd:'Compra|Neutro|Venda',volume:'',suporte:'',resistencia:'',momento:'COMPRAR|AGUARDAR|NAO_RECOMENDADO',leitura:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── CALL 5: VEREDICTO CONSOLIDADO ────────
+async function acoesUSFetchVeredicto(ctx){
+  var sys = ACOES_US_SYS + " ETAPA: Veredicto consolidado. " +
+    "CRITERIOS: " +
+    "COMPRAR se score >= 65 E macro nao desfavoravel E momento tecnico = COMPRAR ou ACUMULAR. " +
+    "NAO_RECOMENDADO se score < 45 OU momento tecnico = NAO_RECOMENDADO. " +
+    "AGUARDAR nos demais casos (score 45-64, ou momento tecnico AGUARDAR). " +
+    "Considerar lente solicitada: se perfil do ativo nao se alinha com lente do assessor, ajustar veredicto. " +
+    "TRIBUTACAO: incluir mencao breve a impacto fiscal (30% dividend tax USA + IR Brasil) se relevante.";
+  var user = "Contexto: " + JSON.stringify(ctx) + ". Gere veredicto consolidado. JSON: {decisao:'COMPRAR|AGUARDAR|NAO_RECOMENDADO|ACUMULAR',rationale:'',horizonte:'',perfisAdequados:[],scoreConsolidado:0,catalisadoresPositivos:[],riscosMonitorar:[],consideracaoFiscal:'',precoAlvoUSD:'',precoAlvoBRL:'',briefingAssessor:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── HELPERS DE RENDER ────────
+function usFmtUSD(n){if(n==null||isNaN(n))return"—";return"US$ "+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function usFmtBRL(n){if(n==null||isNaN(n))return"—";return"R$ "+Number(n).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:0})}
+function usFmtPct(v){if(v==null||v==='')return"—";if(typeof v==='number')return v.toFixed(1)+'%';return v}
+function usKV(l,v,c){return '<div class="acoes-info-item"><span class="acoes-info-label">'+l+'</span><span class="acoes-info-value" style="color:'+(c||"var(--text)")+'">'+v+'</span></div>'}
+function usRow(items){return '<div class="acoes-info-row" style="grid-template-columns:repeat('+Math.min(items.length,4)+',1fr)">'+items.join("")+'</div>'}
+function usCallout(text,color){return '<div class="acoes-callout" style="border-left-color:'+(color||"#2ecc8a")+'">'+text+'</div>'}
+
+function acoesUSRenderMacro(d){
+  var h='';
+  h+=usRow([
+    usKV("Fed Funds Rate", d.fed||"—", "#2ecc8a"),
+    usKV("Direção Fed", d.fedDirecao||"—"),
+    usKV("Próximo FOMC", d.proximoFOMC||"—"),
+    usKV("USD/BRL", d.usdBrl||"—", "#a85eff")
+  ]);
+  h+=usRow([
+    usKV("CPI YoY", d.cpi||"—"),
+    usKV("PCE", d.pce||"—"),
+    usKV("Treasury 10y", d.treasury10y||"—"),
+    usKV("DXY", d.dxy||"—")
+  ]);
+  h+=usRow([
+    usKV("S&P 500 YTD", d.sp500YTD||"—", "#2ecc8a"),
+    usKV("Nasdaq YTD", d.nasdaqYTD||"—", "#2ecc8a"),
+    usKV("Setor performance", d.setorPerformanceYTD||"—"),
+    usKV("Earnings season", d.earningsSeason||"—")
+  ]);
+  if(d.curvaInvertida)h+=usCallout("<strong>⚠ Curva de juros invertida</strong> (10y-2y = "+(d.spread10y2y||"—")+") — sinal recessivo histórico.","#f8d75e");
+  if(d.sinteseSetor)h+=usCallout("<strong>Síntese do setor:</strong> "+d.sinteseSetor);
+  acoesUS$("acoesus-body-macro").innerHTML=h;
+}
+
+function acoesUSRenderFundamental(d){
+  var h='';
+  if(d.modelo)h+='<p class="acoes-prose">'+d.modelo+'</p>';
+  if(d.moat)h+=usCallout("<strong>Moat:</strong> "+d.moat,"#4c8bf5");
+
+  // Lente de Renda
+  if(d.dy||d.dgr5y){
+    h+='<div style="margin-top:14px;padding:12px 14px;background:rgba(46,204,138,.05);border-left:3px solid #2ecc8a;border-radius:6px"><div style="font-size:10.5px;color:#2ecc8a;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">💰 Indicadores de Renda</div>';
+    h+=usRow([
+      usKV("DY 12m", d.dy||"—", "#2ecc8a"),
+      usKV("DGR 5y", d.dgr5y||"—"),
+      usKV("Anos consecutivos ↑", d.anosConsecutivosAumentando||"—"),
+      usKV("Payout", d.payout||"—")
+    ]);
+    if(d.anosConsecutivosAumentando >= 50)h+=usCallout('<strong style="color:#a85eff">👑 Dividend King</strong> (50+ anos aumentando dividendo)',"#a85eff");
+    else if(d.anosConsecutivosAumentando >= 25)h+=usCallout('<strong style="color:#2ecc8a">⭐ Dividend Aristocrat</strong> (25+ anos aumentando dividendo)',"#2ecc8a");
+    h+='</div>';
+  }
+
+  // Lente de Crescimento (Shareholder Yield + EPS Growth)
+  if(d.shareholderYield || d.buybackYield || d.epsGrowth5y){
+    h+='<div style="margin-top:10px;padding:12px 14px;background:rgba(168,94,255,.05);border-left:3px solid #a85eff;border-radius:6px"><div style="font-size:10.5px;color:#a85eff;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">🚀 Indicadores de Crescimento</div>';
+    h+=usRow([
+      usKV("Shareholder Yield", d.shareholderYield||"—", "#a85eff"),
+      usKV("Buyback Yield", d.buybackYield||"—"),
+      usKV("ROIC", d.roic||"—"),
+      usKV("PEG ratio", d.pegRatio||"—")
+    ]);
+    // Tabela de EPS Growth 5y
+    if(d.epsGrowth5y && d.epsGrowth5y.length){
+      h+='<div style="margin-top:8px"><div style="font-size:10.5px;color:#a85eff;font-weight:600;margin-bottom:4px">EPS Growth (últimos 5 anos):</div>';
+      h+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      d.epsGrowth5y.forEach(function(g, i){
+        var v = typeof g === 'string' ? parseFloat(g.replace(/[^\d.\-]/g,'')) : g;
+        var c = v >= 10 ? '#2ecc8a' : v >= 0 ? '#f8d75e' : '#f07070';
+        h+='<span style="padding:3px 9px;background:'+c+'15;border:1px solid '+c+'40;color:'+c+';border-radius:10px;font-size:11px;font-weight:600">Ano '+(i+1)+': '+(typeof g === 'string' ? g : g+'%')+'</span>';
+      });
+      h+='</div></div>';
+    }
+    h+='</div>';
+  }
+
+  // Valuation
+  h+='<div style="margin-top:10px;padding:12px 14px;background:rgba(76,139,245,.05);border-left:3px solid #4c8bf5;border-radius:6px"><div style="font-size:10.5px;color:#4c8bf5;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">💎 Valuation</div>';
+  h+=usRow([
+    usKV("Forward P/E", d.forwardPE||"—"),
+    usKV("FCF Yield", d.fcfYield||"—"),
+    usKV("EV/EBITDA", d.evEbitda||"—"),
+    usKV("P/B", d.pb||"—")
+  ]);
+  h+='</div>';
+
+  // Endividamento + Margens
+  h+='<div style="margin-top:10px">'+usRow([
+    usKV("Debt/Equity", d.debtEquity||"—"),
+    usKV("Net Debt/EBITDA", d.netDebtEbitda||"—"),
+    usKV("Margem Operacional", d.margemOp||"—"),
+    usKV("Margem Líquida", d.margemLiq||"—")
+  ])+'</div>';
+
+  // FFO/AFFO se REIT
+  if(d.ffo || d.affo){
+    h+='<div style="margin-top:10px;padding:10px 12px;background:rgba(248,215,94,.06);border-left:3px solid #f8d75e;border-radius:6px;font-size:12px;color:#c9d1d9"><strong style="color:#f8d75e">REIT:</strong> FFO Yield '+(d.ffo||"—")+' · AFFO '+(d.affo||"—")+'</div>';
+  }
+
+  // ETF info se aplicável
+  if(d.expenseRatio || d.aum){
+    h+='<div style="margin-top:10px;padding:10px 12px;background:rgba(46,204,138,.06);border-left:3px solid #2ecc8a;border-radius:6px;font-size:12px;color:#c9d1d9"><strong style="color:#2ecc8a">ETF:</strong> Expense Ratio '+(d.expenseRatio||"—")+' · AUM '+(d.aum||"—")+'</div>';
+  }
+
+  if(d.tese)h+='<div style="margin-top:14px"><p class="acoes-prose">'+d.tese+'</p></div>';
+  if(d.vantagens && d.vantagens.length)h+='<div style="margin-top:8px"><strong style="color:#2ecc8a;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Vantagens competitivas:</strong><ul style="margin:6px 0;padding-left:20px;font-size:13px;color:#c9d1d9;line-height:1.6">'+d.vantagens.map(function(v){return '<li>'+v+'</li>'}).join('')+'</ul></div>';
+  if(d.riscos && d.riscos.length)h+='<div style="margin-top:8px"><strong style="color:#f07070;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Riscos fundamentais:</strong><ul style="margin:6px 0;padding-left:20px;font-size:13px;color:#c9d1d9;line-height:1.6">'+d.riscos.map(function(r){return '<li>'+r+'</li>'}).join('')+'</ul></div>';
+
+  // Score
+  if(d.score!=null){
+    var col = d.score >= 65 ? '#2ecc8a' : d.score >= 45 ? '#f8d75e' : '#f07070';
+    h+='<div style="margin-top:14px;padding:14px 16px;background:'+col+'10;border:1px solid '+col+'40;border-radius:8px;display:flex;justify-content:space-between;align-items:baseline"><div><strong style="color:'+col+';font-size:11px;letter-spacing:.1em;text-transform:uppercase">Score Fundamentalista</strong>'+(d.perfilIdentificado?' <span style="font-size:10px;padding:2px 8px;background:'+col+'25;color:'+col+';border-radius:10px;font-weight:600;margin-left:6px">'+d.perfilIdentificado+'</span>':'')+'</div><div style="font-size:24px;font-weight:700;color:'+col+'">'+d.score+'/100</div></div>';
+    acoesUS$("acoesus-kpi-score-v").textContent=d.score;
+    acoesUS$("acoesus-kpi-score-v").classList.remove("acoes-skeleton");
+    acoesUS$("acoesus-kpi-score-badge").textContent=d.perfilIdentificado||"—";
+    acoesUS$("acoesus-kpi-score-badge").style.color=col;
+  }
+
+  acoesUS$("acoesus-body-fund").innerHTML=h;
+}
+
+function acoesUSRenderTecnica(d){
+  var h='';
+  var momColor = d.momento==='COMPRAR'?'#2ecc8a':d.momento==='AGUARDAR'?'#f8d75e':'#f07070';
+  h+='<div style="margin-bottom:14px;padding:14px 16px;background:'+momColor+'10;border-left:3px solid '+momColor+';border-radius:6px;display:flex;justify-content:space-between;align-items:center"><div><strong style="color:'+momColor+';font-size:11px;letter-spacing:.1em;text-transform:uppercase">Momento técnico</strong></div><div style="font-size:18px;font-weight:700;color:'+momColor+'">'+(d.momento||"—")+'</div></div>';
+
+  h+=usRow([
+    usKV("Tendência primária", d.tendenciaPrimaria||"—"),
+    usKV("RSI(14)", d.rsi||"—"),
+    usKV("MACD", d.macd||"—"),
+    usKV("Posição MM200", d.posicaoMA200||"—")
+  ]);
+  h+=usRow([
+    usKV("SMA 50", d.sma50||"—"),
+    usKV("SMA 200", d.sma200||"—"),
+    usKV("Suporte", d.suporte||"—"),
+    usKV("Resistência", d.resistencia||"—")
+  ]);
+  if(d.leitura)h+='<p class="acoes-prose" style="margin-top:14px">'+d.leitura+'</p>';
+
+  // Atualiza KPI de momento
+  acoesUS$("acoesus-kpi-mom-v").textContent=d.momento||"—";
+  acoesUS$("acoesus-kpi-mom-v").classList.remove("acoes-skeleton");
+  acoesUS$("acoesus-kpi-mom-v").style.color=momColor;
+  acoesUS$("acoesus-kpi-mom-sub").textContent=d.tendenciaPrimaria||"—";
+
+  acoesUS$("acoesus-body-tec").innerHTML=h;
+}
+
+function acoesUSRenderPrazo(d){
+  var h='';
+  if(d.catalisadoresPositivos && d.catalisadoresPositivos.length){
+    h+='<div style="margin-bottom:14px"><strong style="color:#2ecc8a;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Catalisadores positivos:</strong><ul style="margin:6px 0;padding-left:20px;font-size:13px;color:#c9d1d9;line-height:1.6">'+d.catalisadoresPositivos.map(function(c){return '<li>'+c+'</li>'}).join('')+'</ul></div>';
+  }
+  if(d.riscosMonitorar && d.riscosMonitorar.length){
+    h+='<div style="margin-bottom:14px"><strong style="color:#f07070;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Riscos a monitorar:</strong><ul style="margin:6px 0;padding-left:20px;font-size:13px;color:#c9d1d9;line-height:1.6">'+d.riscosMonitorar.map(function(r){return '<li>'+r+'</li>'}).join('')+'</ul></div>';
+  }
+  if(d.perfisAdequados && d.perfisAdequados.length){
+    h+='<div style="margin-bottom:14px"><strong style="color:#a85eff;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Perfis adequados:</strong> <span style="color:#c9d1d9;font-size:13px">'+d.perfisAdequados.join(" · ")+'</span></div>';
+  }
+  if(d.consideracaoFiscal)h+=usCallout("<strong>Tributação:</strong> "+d.consideracaoFiscal,"#f8d75e");
+  acoesUS$("acoesus-body-prazo").innerHTML=h;
+}
+
+function acoesUSRenderBrief(d){
+  var h='';
+  if(d.briefingAssessor){
+    h+='<p class="acoes-prose">'+d.briefingAssessor+'</p>';
+  }
+  acoesUS$("acoesus-body-brief").innerHTML=h;
+}
+
+// ──────── ORCHESTRATOR ────────
+async function acoesUSIniciarAnalise(){
+  var tk = (acoesUS$("acoesus-ticker").value||"").trim().toUpperCase();
+  if(!tk || tk.length < 1 || tk.length > 6){alert("Ticker inválido (ex: AAPL, BRK.B)");return}
+  if(acoesUSState.busy){alert("Análise em andamento");return}
+  acoesUSState.busy = true;
+  acoesUSState.ticker = tk;
+  acoesUSState.data = {};
+
+  acoesUS$("acoesus-input-state").style.display="none";
+  acoesUS$("acoesus-results-state").style.display="";
+  acoesUS$("acoesus-results-state").classList.remove("acoes-hidden");
+  acoesUS$("acoesus-hero-ticker").textContent=tk;
+  acoesUS$("acoesus-hero-lens").textContent = {renda:"Renda",crescimento:"Crescimento",geral:"Geral"}[acoesUSState.lens]||"Renda";
+  ["macro","fund","tec","prazo","brief"].forEach(function(k){acoesUSSt(k,"pending")});
+
+  console.log("[acoesUS] iniciando análise de "+tk+" (lente: "+acoesUSState.lens+")");
+
+  try {
+    // STEP 1: Snapshot
+    acoesUSSt("macro","loading");
+    var snap = await acoesUSFetchSnapshot(tk);
+    console.log("[acoesUS] snapshot:", snap);
+    acoesUSState.data.snapshot = snap;
+    acoesUS$("acoesus-hero-name").textContent = snap.nome || tk;
+    acoesUS$("acoesus-hero-sector").textContent = snap.setor || "—";
+    acoesUS$("acoesus-hero-exchange").textContent = snap.exchange || "—";
+    acoesUS$("acoesus-hero-data-base").textContent = "data-base " + (snap.dataBase || new Date().toLocaleDateString("pt-BR"));
+    // KPI preço
+    acoesUS$("acoesus-kpi-preco-v").textContent = snap.precoBRL ? usFmtBRL(snap.precoBRL) : "—";
+    acoesUS$("acoesus-kpi-preco-v").classList.remove("acoes-skeleton");
+    acoesUS$("acoesus-kpi-preco-sub").textContent = snap.precoUSD ? "US$ "+snap.precoUSD+" · USD/BRL "+(snap.usdBrl||"—") : "—";
+    await new Promise(function(r){setTimeout(r,1500)});
+
+    // STEP 2: Macro
+    var macro = await acoesUSFetchMacro(tk, snap.setor);
+    console.log("[acoesUS] macro:", macro);
+    acoesUSState.data.macro = macro;
+    acoesUSRenderMacro(macro);
+    acoesUSSt("macro","done");
+    await new Promise(function(r){setTimeout(r,1500)});
+
+    // STEP 3: Fundamentos
+    acoesUSSt("fund","loading");
+    var fund = await acoesUSFetchFundamental(tk, snap.nome, acoesUSState.lens);
+    console.log("[acoesUS] fund:", fund);
+    acoesUSState.data.fundamental = fund;
+    acoesUSRenderFundamental(fund);
+    acoesUSSt("fund","done");
+    await new Promise(function(r){setTimeout(r,1500)});
+
+    // STEP 4: Técnica
+    acoesUSSt("tec","loading");
+    var tec = await acoesUSFetchTecnica(tk, snap.precoUSD);
+    console.log("[acoesUS] tec:", tec);
+    acoesUSState.data.tecnica = tec;
+    acoesUSRenderTecnica(tec);
+    acoesUSSt("tec","done");
+    await new Promise(function(r){setTimeout(r,1500)});
+
+    // STEP 5: Veredicto
+    acoesUSSt("prazo","loading");
+    acoesUSSt("brief","loading");
+    var ctx = {ticker:tk, nome:snap.nome, setor:snap.setor, lens:acoesUSState.lens, score:fund.score, momento:tec.momento, macro:macro.sinteseSetor};
+    var ver = await acoesUSFetchVeredicto(ctx);
+    console.log("[acoesUS] veredicto:", ver);
+    acoesUSState.data.veredicto = ver;
+
+    // Renderizar veredicto
+    var decisaoColor = ver.decisao==='COMPRAR'?'#2ecc8a':ver.decisao==='NAO_RECOMENDADO'?'#f07070':'#f8d75e';
+    acoesUS$("acoesus-verdict-decision").textContent = ver.decisao || "—";
+    acoesUS$("acoesus-verdict-decision").style.color = decisaoColor;
+    acoesUS$("acoesus-verdict-rationale").textContent = ver.rationale || "";
+    acoesUS$("acoesus-verdict-horizonte").textContent = ver.horizonte || "—";
+    acoesUS$("acoesus-verdict-perfis").textContent = (ver.perfisAdequados||[]).join(" · ") || "—";
+    acoesUS$("acoesus-verdict-score").textContent = (ver.scoreConsolidado||fund.score||"—") + "/100";
+
+    // KPI preço-alvo
+    if(ver.precoAlvoBRL || ver.precoAlvoUSD){
+      acoesUS$("acoesus-kpi-alvo-v").textContent = ver.precoAlvoBRL ? usFmtBRL(ver.precoAlvoBRL) : "—";
+      acoesUS$("acoesus-kpi-alvo-v").classList.remove("acoes-skeleton");
+      acoesUS$("acoesus-kpi-alvo-sub").textContent = ver.precoAlvoUSD ? "US$ "+ver.precoAlvoUSD : "—";
+    }
+
+    acoesUSRenderPrazo(ver);
+    acoesUSRenderBrief(ver);
+    acoesUSSt("prazo","done");
+    acoesUSSt("brief","done");
+
+    console.log("[acoesUS] análise concluída");
+  } catch(err) {
+    console.error("[acoesUS] erro:", err);
+    alert("Erro na análise: " + err.message);
+    ["macro","fund","tec","prazo","brief"].forEach(function(k){
+      var e = acoesUS$("acoesus-st-"+k);
+      if(e && e.textContent==="carregando") acoesUSSt(k,"error");
+    });
+  } finally {
+    acoesUSState.busy = false;
+  }
+}
+
+// ──────── PDF (institucional, mesmo padrão dos outros) ────────
+async function acoesUSGerarPDF(){
+  var d = acoesUSState.data;
+  if(!d || !d.snapshot){alert("Execute a análise primeiro");return}
+  var btn = event.target;
+  var origText = btn.textContent;
+  btn.textContent = "Gerando PDF...";
+  btn.disabled = true;
+  try {
+    var C = {navy:"#0D1F2D",dark:"#1C3A4A",petrol:"#2E5D6E",green:"#1A7A4A",body:"#3D3D3D",muted:"#6B6B6B",light:"#A8A8A8",red:"#8B1A1A",amber:"#7A5C00",bg:"#FFFFFF",alt:"#F4F5F6",sub:"#EAF0F3"};
+    var snap=d.snapshot||{}, mac=d.macro||{}, fu=d.fundamental||{}, te=d.tecnica||{}, ve=d.veredicto||{};
+    var hoje=new Date().toLocaleDateString("pt-BR");
+    var vc = ve.decisao==='COMPRAR'?C.green:ve.decisao==='NAO_RECOMENDADO'?C.red:C.amber;
+
+    function kpi(label,value,sub,color){return '<div style="flex:1;padding:20px 16px;text-align:center;border-right:1px solid #ddd"><div style="font-size:10.5px;font-weight:600;color:'+C.muted+';letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">'+label+'</div><div style="font-size:24px;font-weight:300;color:'+(color||C.navy)+';line-height:1.1">'+value+'</div><div style="font-size:10.5px;color:'+C.muted+';margin-top:4px">'+sub+'</div></div>'}
+    function sec(num,title){return '<div style="margin-top:28px;margin-bottom:12px"><div style="font-size:10.5px;font-weight:600;color:'+C.petrol+';letter-spacing:.15em">SEÇÃO '+num+'</div><div style="font-size:18px;font-weight:600;color:'+C.navy+';margin-top:2px">'+title+'</div><div style="height:1px;background:'+C.dark+';margin-top:6px"></div></div>'}
+    function tr(label,val,alt){return '<tr><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+label+'</td><td style="padding:8px 12px;font-size:11.5px;color:'+C.body+';font-weight:600;text-align:right;border-bottom:1px solid #eee;background:'+(alt?C.alt:C.bg)+'">'+val+'</td></tr>'}
+    function co(text,color){return '<div style="background:'+C.alt+';border-left:3px solid '+(color||C.petrol)+';padding:10px 14px;margin:10px 0;font-size:11.5px;color:'+C.body+';line-height:1.55">'+text+'</div>'}
+
+    var h='<div id="acoesus-pdf-container" style="width:794px;font-family:Helvetica,Arial,sans-serif;color:'+C.body+';background:white">';
+    // Capa
+    h+='<div style="background:'+C.navy+';padding:40px 36px 30px;color:white">';
+    h+='<div style="font-size:30px;font-weight:300;letter-spacing:-.02em">Análise de Ativo Internacional</div>';
+    h+='<div style="display:inline-block;background:'+C.green+';padding:4px 12px;border-radius:3px;font-size:10px;color:white;margin-top:10px;letter-spacing:.1em;text-transform:uppercase">🇺🇸 '+snap.exchange+' · '+snap.tipoAtivo+'</div>';
+    h+='<div style="width:40px;height:1px;background:'+C.petrol+';margin:14px 0"></div>';
+    h+='<div style="font-size:22px;color:'+C.light+';margin-bottom:4px;font-family:Helvetica,sans-serif;font-weight:600">'+snap.ticker+' · '+snap.nome+'</div>';
+    h+='<div style="font-size:12.5px;color:'+C.light+'">'+(snap.setor||"")+' · Lente: '+(acoesUSState.lens||"renda")+'</div>';
+    h+='<div style="font-size:11px;color:'+C.light+';margin-top:6px">Gerado em '+hoje+' — Câmbio USD/BRL: '+(snap.usdBrl||"—")+'</div>';
+    h+='</div>';
+
+    // KPIs
+    h+='<div style="background:'+C.alt+';display:flex;border-bottom:1px solid #ddd">';
+    h+=kpi("Preço atual", usFmtBRL(snap.precoBRL), "US$ "+(snap.precoUSD||"—"));
+    h+=kpi("Preço-alvo (12m)", usFmtBRL(ve.precoAlvoBRL), "US$ "+(ve.precoAlvoUSD||"—"));
+    h+=kpi("Score Fund.", (fu.score||"—")+"/100", fu.perfilIdentificado||"—");
+    h+=kpi("Veredicto", ve.decisao||"—", ve.horizonte||"—", vc);
+    h+='</div>';
+    h+='<div style="padding:12px 36px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9.5px;color:'+C.light+'"><span>Análise técnica para o assessor</span><span>Documento informativo — não constitui oferta ou recomendação.</span></div>';
+    h+='<div style="padding:0 36px 30px">';
+
+    // Veredicto
+    if(ve.decisao){
+      h+='<div style="margin-top:24px;padding:18px 22px;background:'+vc+'15;border:1px solid '+vc+';border-radius:6px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div style="font-size:10.5px;font-weight:600;color:'+vc+';letter-spacing:.12em;text-transform:uppercase">Veredicto</div><div style="font-size:22px;font-weight:700;color:'+vc+'">'+ve.decisao+'</div></div>';
+      if(ve.rationale)h+='<div style="font-size:12px;color:'+C.body+';line-height:1.6">'+ve.rationale+'</div>';
+      h+='</div>';
+    }
+
+    // S01 — Macro
+    h+=sec("01","Macro USA e Setor");
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0"><tr style="background:'+C.petrol+';color:white"><td style="padding:8px 12px;font-size:10px;font-weight:600">INDICADOR</td><td style="padding:8px 12px;font-size:10px;font-weight:600;text-align:right">VALOR</td></tr>';
+    if(mac.fed)h+=tr("Fed Funds Rate ("+mac.fedDirecao+")", mac.fed, false);
+    if(mac.cpi)h+=tr("CPI YoY", mac.cpi, true);
+    if(mac.treasury10y)h+=tr("Treasury 10y", mac.treasury10y, false);
+    if(mac.spread10y2y)h+=tr("Spread 10y-2y"+(mac.curvaInvertida?" (INVERTIDA)":""), mac.spread10y2y, true);
+    if(mac.sp500YTD)h+=tr("S&P 500 YTD ("+mac.momentumBolsaUSA+")", mac.sp500YTD, false);
+    if(mac.nasdaqYTD)h+=tr("Nasdaq YTD", mac.nasdaqYTD, true);
+    if(mac.dxy)h+=tr("DXY (Dollar Index)", mac.dxy, false);
+    if(mac.usdBrl)h+=tr("USD/BRL", mac.usdBrl, true);
+    if(mac.setorPerformanceYTD)h+=tr("Setor "+(snap.setor||"")+" YTD", mac.setorPerformanceYTD, false);
+    h+='</table>';
+    if(mac.sinteseSetor)h+=co("<strong>Síntese do setor:</strong> "+mac.sinteseSetor);
+
+    // S02 — Fundamentos
+    h+=sec("02","Análise Fundamentalista (lente: "+(acoesUSState.lens||"renda")+")");
+    if(fu.modelo)h+='<p style="font-size:11.5px;color:'+C.body+';line-height:1.6;margin:8px 0">'+fu.modelo+'</p>';
+    if(fu.moat)h+=co("<strong>Moat:</strong> "+fu.moat);
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+    if(fu.dy)h+=tr("Dividend Yield", fu.dy, false);
+    if(fu.dgr5y)h+=tr("Dividend Growth Rate 5y", fu.dgr5y, true);
+    if(fu.anosConsecutivosAumentando)h+=tr("Anos consecutivos aumentando", fu.anosConsecutivosAumentando, false);
+    if(fu.shareholderYield)h+=tr("Shareholder Yield (DY + Buyback)", fu.shareholderYield, true);
+    if(fu.buybackYield)h+=tr("Buyback Yield", fu.buybackYield, false);
+    if(fu.forwardPE)h+=tr("Forward P/E", fu.forwardPE, true);
+    if(fu.pegRatio)h+=tr("PEG ratio", fu.pegRatio, false);
+    if(fu.fcfYield)h+=tr("FCF Yield", fu.fcfYield, true);
+    if(fu.roic)h+=tr("ROIC", fu.roic, false);
+    if(fu.debtEquity)h+=tr("Debt/Equity", fu.debtEquity, true);
+    if(fu.netDebtEbitda)h+=tr("Net Debt/EBITDA", fu.netDebtEbitda, false);
+    h+='</table>';
+    // EPS growth
+    if(fu.epsGrowth5y && fu.epsGrowth5y.length){
+      h+='<div style="margin:10px 0;padding:10px 14px;background:'+C.alt+';border-left:3px solid '+C.petrol+';border-radius:0 4px 4px 0"><strong style="font-size:11px;color:'+C.petrol+';letter-spacing:.08em;text-transform:uppercase">EPS Growth (5 anos):</strong> '+fu.epsGrowth5y.map(function(g,i){return 'Y'+(i+1)+': '+(typeof g==='string'?g:g+'%')}).join(' · ')+'</div>';
+    }
+    if(fu.tese)h+='<p style="font-size:11.5px;color:'+C.body+';line-height:1.6;margin:8px 0">'+fu.tese+'</p>';
+
+    // S03 — Técnica
+    h+=sec("03","Análise Técnica");
+    h+='<div style="margin:10px 0;padding:14px 18px;background:'+(te.momento==='COMPRAR'?'#f0f9f4':te.momento==='NAO_RECOMENDADO'?'#fff5f5':C.alt)+';border-left:3px solid '+(te.momento==='COMPRAR'?C.green:te.momento==='NAO_RECOMENDADO'?C.red:C.amber)+';border-radius:0 4px 4px 0"><div style="display:flex;justify-content:space-between;align-items:baseline"><strong style="color:'+(te.momento==='COMPRAR'?C.green:te.momento==='NAO_RECOMENDADO'?C.red:C.amber)+';font-size:11px;letter-spacing:.1em;text-transform:uppercase">Momento técnico</strong><div style="font-size:18px;font-weight:700;color:'+(te.momento==='COMPRAR'?C.green:te.momento==='NAO_RECOMENDADO'?C.red:C.amber)+'">'+(te.momento||"—")+'</div></div></div>';
+    h+='<table style="width:100%;border-collapse:collapse;margin:10px 0">';
+    if(te.tendenciaPrimaria)h+=tr("Tendência primária", te.tendenciaPrimaria, false);
+    if(te.rsi)h+=tr("RSI(14)", te.rsi+" ("+(te.classifRSI||"")+")", true);
+    if(te.macd)h+=tr("MACD", te.macd, false);
+    if(te.posicaoMA200)h+=tr("Posição vs MM200", te.posicaoMA200, true);
+    if(te.suporte)h+=tr("Suporte próximo", te.suporte, false);
+    if(te.resistencia)h+=tr("Resistência próxima", te.resistencia, true);
+    h+='</table>';
+    if(te.leitura)h+='<p style="font-size:11.5px;color:'+C.body+';line-height:1.6;margin:8px 0">'+te.leitura+'</p>';
+
+    // S04 — Catalisadores e Riscos
+    h+=sec("04","Catalisadores, Riscos e Aderência");
+    if(ve.catalisadoresPositivos && ve.catalisadoresPositivos.length){
+      h+='<div style="margin:8px 0"><strong style="font-size:11px;color:'+C.green+';letter-spacing:.08em;text-transform:uppercase">Catalisadores positivos:</strong><ul style="margin:6px 0;padding-left:20px;font-size:11.5px;color:'+C.body+';line-height:1.55">'+ve.catalisadoresPositivos.map(function(c){return '<li>'+c+'</li>'}).join('')+'</ul></div>';
+    }
+    if(ve.riscosMonitorar && ve.riscosMonitorar.length){
+      h+='<div style="margin:8px 0"><strong style="font-size:11px;color:'+C.red+';letter-spacing:.08em;text-transform:uppercase">Riscos a monitorar:</strong><ul style="margin:6px 0;padding-left:20px;font-size:11.5px;color:'+C.body+';line-height:1.55">'+ve.riscosMonitorar.map(function(r){return '<li>'+r+'</li>'}).join('')+'</ul></div>';
+    }
+    if(ve.perfisAdequados && ve.perfisAdequados.length){
+      h+='<div style="margin:8px 0;padding:10px 14px;background:'+C.alt+';border-radius:4px;font-size:11.5px;color:'+C.body+'"><strong style="color:'+C.navy+'">Perfis adequados:</strong> '+ve.perfisAdequados.join(' · ')+'</div>';
+    }
+    if(ve.consideracaoFiscal)h+=co("<strong>Tributação:</strong> "+ve.consideracaoFiscal, C.amber);
+
+    // S05 — Briefing
+    h+=sec("05","Síntese para o Assessor");
+    if(ve.briefingAssessor)h+='<p style="font-size:11.5px;color:'+C.body+';line-height:1.65;margin:8px 0">'+ve.briefingAssessor+'</p>';
+
+    h+='</div>'; // fim padding
+
+    // Footer
+    h+='<div style="background:'+C.alt+';padding:16px 36px;border-top:1px solid #ddd;font-size:9.5px;color:'+C.light+';text-align:center;line-height:1.55">';
+    h+='Análise técnica de ativo internacional sob lente '+(acoesUSState.lens||"")+'. Valores em BRL convertidos pelo câmbio USD/BRL '+(snap.usdBrl||"—")+'. ';
+    h+='Tributação USA: 30% retidos na fonte de dividendos · IR Brasil sobre ganho de capital · IOF câmbio em movimentações. ';
+    h+='Considere BDRs para exposição simplificada na B3. Documento informativo, não constitui oferta ou recomendação automatizada.';
+    h+='</div>';
+    h+='</div>';
+
+    // Render e gerar PDF
+    var container = document.createElement("div");
+    container.style.cssText = "position:fixed;left:-99999px;top:0;background:white";
+    container.innerHTML = h;
+    document.body.appendChild(container);
+    var pdfContainer = document.getElementById("acoesus-pdf-container");
+    var canvas = await html2canvas(pdfContainer, {scale:2, useCORS:true, backgroundColor:"#ffffff", logging:false});
+    var imgData = canvas.toDataURL("image/jpeg", 0.95);
+    var pdf = new jspdf.jsPDF("p","mm","a4");
+    var pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+    var imgW = pW, imgH = (canvas.height * pW) / canvas.width;
+    var pages = Math.ceil(imgH / pH);
+    for(var pg = 0; pg < pages; pg++){
+      if(pg > 0) pdf.addPage();
+      pdf.addImage(imgData, "JPEG", 0, -(pg * pH), imgW, imgH);
+    }
+    pdf.save("analise_"+snap.ticker+"_"+new Date().toISOString().slice(0,10)+".pdf");
+    container.remove();
+  } catch(err){
+    console.error("[acoesUS] erro PDF:", err);
+    alert("Erro ao gerar PDF: " + err.message);
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
+}
+
+// ──────── Auto-init: handlers de exemplos + foco ────────
+document.addEventListener('DOMContentLoaded', function(){
+  // Exemplos clicáveis
+  document.querySelectorAll('[data-tus]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var t = btn.getAttribute('data-tus');
+      var inp = document.getElementById('acoesus-ticker');
+      if(inp){inp.value = t; inp.focus()}
+    });
+  });
+});
 
 var fii$=function(id){return document.getElementById(id)};
 function fiiSt(k,s){var el=fii$("fii-st-"+k);if(!el)return;el.textContent={pending:"aguardando",loading:"carregando",done:"pronto",error:"erro"}[s]||s;el.className="acoes-section-status "+(s==="pending"?"":"acoes-"+s)}
@@ -13499,7 +14332,7 @@ function allocProg(msg){
 function initAllocator(){
   alloc$("allocator-input-state").style.display="";
   alloc$("allocator-results-state").classList.add("acoes-hidden");
-  ["macro","estrategia","rv","fii","final"].forEach(function(k){allocSt(k,"pending")});
+  ["macro","estrategia","funil","rv","fii","final"].forEach(function(k){allocSt(k,"pending")});
   // Format dinâmico no campo de valor
   var inp = alloc$("alloc-valor");
   if(inp && !inp._fmtAttached){
@@ -13509,6 +14342,62 @@ function initAllocator(){
       if(!raw){e.target.value=""; return}
       e.target.value = "R$ " + Number(raw).toLocaleString("pt-BR");
     });
+  }
+  // Setar mercado default
+  allocSetMercado('br');
+}
+
+// ──────── Mercado: BR / USA / Híbrido ────────
+function allocSetMercado(mkt){
+  window._allocMercado = mkt;
+  // Estilizar botões
+  ['br','us','hib'].forEach(function(m){
+    var btn = alloc$("alloc-mkt-"+m);
+    if(!btn) return;
+    var color = m==='br'?'76,139,245':m==='us'?'46,204,138':'168,94,255';
+    if(mkt === m){
+      btn.style.cssText = "padding:14px 8px;background:rgba("+color+",.15);border:1px solid rgba("+color+",.35);border-radius:8px;color:rgb("+color+");font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:center";
+    } else {
+      btn.style.cssText = "padding:14px 8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:center";
+    }
+  });
+  // Mostrar/esconder campos condicionais
+  var lensWrap = alloc$("alloc-lens-wrap");
+  var pctIntWrap = alloc$("alloc-pct-int-wrap");
+  if(lensWrap) lensWrap.style.display = (mkt==='us' || mkt==='hib') ? "" : "none";
+  if(pctIntWrap) pctIntWrap.style.display = (mkt==='hib') ? "" : "none";
+  // Popular universo conforme mercado
+  var univ = alloc$("alloc-universo");
+  if(univ){
+    var opts;
+    if(mkt==='br'){
+      opts = [
+        ['ibov', 'Ibovespa (~85 mais líquidas) — conservador'],
+        ['ibrx', 'IBrX 100 (~100 ações) — padrão'],
+        ['ibrxmais', 'IBrX + Small Caps líquidas (~150) — abrangente']
+      ];
+    } else if(mkt==='us'){
+      opts = [
+        ['sp500', 'S&P 500 (~500 maiores) — padrão'],
+        ['russell1000', 'Russell 1000 (~1000) — abrangente'],
+        ['aristocrats', 'Apenas Dividend Aristocrats (~67) — foco renda'],
+        ['reits', 'Apenas REITs líquidos (~30) — foco renda imobiliária']
+      ];
+    } else { // hib
+      opts = [
+        ['ibrx-sp500', 'IBrX 100 (BR) + S&P 500 (USA) — padrão'],
+        ['ibov-aristocrats', 'Ibovespa (BR) + Dividend Aristocrats (USA) — conservador'],
+        ['ibrxmais-russell', 'IBrX + Small Caps (BR) + Russell 1000 (USA) — abrangente']
+      ];
+    }
+    univ.innerHTML = opts.map(function(o, i){return '<option value="'+o[0]+'"'+(i===0?' selected':'')+'>'+o[1]+'</option>'}).join('');
+  }
+  // Estimar tempo
+  var est = alloc$("alloc-time-estimate");
+  if(est){
+    var tmin = mkt==='br'?6:mkt==='us'?7:10, tmax = mkt==='br'?9:mkt==='us'?10:14;
+    var calls = mkt==='br'?'7-9':mkt==='us'?'8-10':'12-14';
+    est.textContent = "⏱ Tempo estimado: "+tmin+"-"+tmax+" minutos · "+calls+" chamadas IA com web search";
   }
 }
 function voltarDoAllocator(){
@@ -13686,6 +14575,194 @@ async function allocatorValidacaoTecnicaFII(fiis, macroResumo){
 }
 
 // ──────── CALL 5: CONSOLIDAÇÃO + EXECUÇÃO ────────
+// ═══════════════════════════════════════════════════════════════════════════
+// FUNÇÕES PARA MERCADO USA E HÍBRIDO
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ──────── MAPEAMENTO DE UNIVERSO (transparência) ────────
+// Declara explicitamente quantas empresas serão consideradas e suas fontes
+async function allocatorMapearUniverso(mercado, universoKey, classes){
+  var labels = {
+    'ibov':'Ibovespa (~85 ações mais líquidas)',
+    'ibrx':'IBrX 100 (~100 ações de média/alta liquidez)',
+    'ibrxmais':'IBrX 100 + Small Caps líquidas (~150 ações)',
+    'sp500':'S&P 500 (~500 maiores empresas USA)',
+    'russell1000':'Russell 1000 (~1000 maiores empresas USA)',
+    'aristocrats':'Dividend Aristocrats (~67 empresas S&P 500 com 25+ anos aumentando dividendo)',
+    'reits':'REITs líquidos NYSE/NASDAQ (~30 com market cap > $2bi)',
+    'ibrx-sp500':'IBrX 100 (BR) + S&P 500 (USA)',
+    'ibov-aristocrats':'Ibovespa (BR) + Dividend Aristocrats (USA)',
+    'ibrxmais-russell':'IBrX + Small Caps (BR) + Russell 1000 (USA)'
+  };
+  var sys = ALLOC_SYS + " ETAPA: Mapeamento de Universo. Declare o universo de empresas que sera considerado no screening. Seja preciso e honesto sobre o numero. Para FIIs e REITs, considere apenas os mais liquidos. Estimar numero total tambem para FIIs (Brasil ~80 liquidos) e REITs (USA ~30 acima de market cap $2bi).";
+  var user = "Mercado: " + mercado + ". Universo selecionado: " + (labels[universoKey] || universoKey) + ". Classes incluidas: " + classes + ". " +
+    "Retorne JSON listando o universo: {mercado:'br|us|hib',universoLabel:'',universoTotalAcoes:0,universoTotalFIIsOuREITs:0,fontes:[''],descricaoUniverso:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── MACRO USA ────────
+async function allocatorMacroUSA(){
+  var sys = ALLOC_SYS + " ETAPA: Macro USA para construcao de carteira. Busque dados ATUAIS (ultima semana). " +
+    "Cobertura: (A) Fed Funds Rate atual + direcao (alta/queda/manutencao) + proxima reuniao FOMC, (B) CPI YoY + PCE + tendencia, (C) Treasury 2y, 10y, 30y + spread (curva invertida?), (D) S&P 500 YTD + Nasdaq YTD + momentum, (E) DXY (Dollar Index), USD/BRL, (F) Apetite a risco, (G) Sintese de impacto na alocacao.";
+  var user = "Gere snapshot macro USA atual conciso. JSON: {fed:'',fedDirecao:'',proximoFOMC:'',cpi:'',pce:'',treasury10y:'',spread10y2y:'',sp500YTD:'',nasdaqYTD:'',dxy:'',usdBrl:'',apetiteRisco:'',sintese:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── MACRO HÍBRIDO (combina BR + USA) ────────
+async function allocatorMacroHibrido(){
+  var sys = ALLOC_SYS + " ETAPA: Macro consolidado Brasil + USA para carteira internacional de cliente brasileiro. Cobertura: Brasil (Selic, IPCA, USD/BRL, Ibov) + USA (Fed, CPI, Treasury 10y, S&P 500) + Cambio (USD/BRL nivel e direcao) + Apetite a risco global + Sintese de qual mercado oferece melhor risco/retorno agora.";
+  var user = "Gere macro consolidado BR + USA. JSON: {brasil:{selic:'',ipca:'',usdBrl:'',ibov:'',cicloJuros:''},usa:{fed:'',cpi:'',treasury10y:'',sp500YTD:'',cicloFed:''},cambio:'',apetiteRiscoGlobal:'',sintese:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── ESTRATÉGIA USA / HÍBRIDA ────────
+async function allocatorEstrategiaUSA(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes, lens){
+  var sys = ALLOC_SYS + " ETAPA: Estrategia de alocacao por classe para carteira USA pura. " +
+    "REGRAS POR PERFIL (USA): Conservador: max 30% Stocks, max 15% REITs, min 40% Treasury/Bonds. Moderado: max 50% Stocks, max 20% REITs, min 25% Bonds. Arrojado: max 65% Stocks, max 25% REITs, min 10% Bonds. Agressivo: max 80% Stocks, max 30% REITs. " +
+    "AJUSTES PELO CICLO FED: Fed em queda = sobrepeso Stocks e REITs (juro cai, ativos sobem). Fed em alta = sobrepeso Treasuries curtos (juro real). Fed em manutencao = balanceado. " +
+    "LENTE: " + lens + " — Renda = sobrepeso Dividend Aristocrats + REITs. Crescimento = sobrepeso Growth stocks. Geral = balanceado.";
+  var user = "Macro USA: " + macroResumo + "\nPerfil: " + perfil + " | Objetivo: " + objetivo + " | Horizonte: " + horizonte + " | Tol vol: " + tolVol + "\nRestricoes: " + (restricoes||"nenhuma") + " | Classes: " + classes + " | Lente: " + lens + "\n\nJSON: {alocacao:[{classe:'',pct:0,racional:''}],retornoEsperadoAA:'',volatilidadeEsperadaAA:'',drawdownEsperadoMax:'',sinteseEstrategia:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+async function allocatorEstrategiaHibrido(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes, lens, pctInt){
+  var sys = ALLOC_SYS + " ETAPA: Estrategia de carteira HIBRIDA Brasil + USA para cliente brasileiro com " + pctInt + "% destinado a exposicao internacional. " +
+    "REGRA CHAVE: A soma das alocacoes BR + USA deve ser 100%. " +
+    "Brasil (" + (100-pctInt) + "% do total): pode incluir RV BR, FIIs BR, RF BR (pos/pre/IPCA+). " +
+    "USA (" + pctInt + "% do total): pode incluir Stocks USA, REITs USA. Sem RF USA (Treasury) pra simplicidade. " +
+    "REGRAS POR PERFIL: respeitar os mesmos limites do BR e USA proporcionalmente. Conservador: prioriza RF BR + Dividend Aristocrats USA. Moderado: balanceado. Arrojado: pode aumentar Stocks USA + RV BR. " +
+    "AJUSTES PELO CICLO: Selic em queda + Fed em queda = momento favoravel a RV em ambos. Fed em alta + Selic alta = mais RF BR (juro real maior). " +
+    "Identificar cada classe com prefixo BR ou USA. Ex: 'RV BR', 'Stocks USA', 'FIIs BR', 'REITs USA', 'RF BR Pos-Fixado'.";
+  var user = "Macro consolidado: " + macroResumo + "\nPerfil: " + perfil + " | Objetivo: " + objetivo + " | Horizonte: " + horizonte + " | Tol vol: " + tolVol + "\nRestricoes: " + (restricoes||"nenhuma") + " | Classes: " + classes + " | Lente USA: " + lens + " | % Internacional alvo: " + pctInt + "%\n\nJSON: {alocacao:[{classe:'',pct:0,mercado:'br|us|cambio',racional:''}],retornoEsperadoAA:'',volatilidadeEsperadaAA:'',drawdownEsperadoMax:'',sinteseEstrategia:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── SCREENING RV USA (com lente) ────────
+async function allocatorScreeningRVUSA(macroResumo, alocacaoRV, objetivo, restricoes, nAtivos, lens, universoKey){
+  var lensSpec = {
+    'renda': "LENTE RENDA: Foco em DGR (Dividend Growth Rate) > 5%/ano em 10 anos OU DY > 3%. CRITICO: anos consecutivos aumentando dividendo (25+ = Dividend Aristocrat, 50+ = Dividend King). Payout sustentavel. Cobertura por FCF.",
+    'crescimento': "LENTE CRESCIMENTO: Foco em Shareholder Yield (DY + Buyback Yield) > 5%. EPS crescendo 10%+ em pelo menos 4 dos 5 ultimos anos. ROIC > 15%. PEG ratio razoavel. Margens em expansao.",
+    'geral': "LENTE GERAL: balanceado renda + crescimento + valuation."
+  }[lens] || 'renda';
+  var universoFiltro = universoKey==='aristocrats' ? "APENAS Dividend Aristocrats (25+ anos aumentando)" : universoKey==='reits' ? "APENAS REITs liquidos (NAO retornar stocks comuns)" : universoKey==='russell1000' ? "Russell 1000 (1000 maiores empresas)" : "S&P 500 (500 maiores empresas)";
+
+  var sys = ALLOC_SYS + " ETAPA: Screening de STOCKS USA (NYSE/NASDAQ). " + lensSpec + " " +
+    "===== UNIVERSO: " + universoFiltro + ". " +
+    "===== CRITERIOS TECNICOS OBRIGATORIOS (mesmos do prompt-mae): " +
+    "(T1) Tendencia primaria nao pode ser 'Baixa'. (T2) RSI 30-70. (T3) MACD nao pode ser 'Venda' consistente. (T4) Preco proximo ou acima da SMA 200. (T5) Veredicto tecnico = 'COMPRAR' ou 'ACUMULAR'. " +
+    "===== TRIBUTACAO: lembre que dividendos USA tem 30% retidos na fonte para residentes brasileiros. Ainda assim, ativos de qualidade fazem sentido. " +
+    "===== Antes de incluir CADA acao, faca checagem interna: tem fundamentos OK PARA A LENTE escolhida E momento tecnico OK? " +
+    "===== Para CADA acao: ticker, nome, setor GICS, DY 12m, DGR 5y, shareholderYield, anosConsecutivosAumentando, forwardPE, ROIC, classifVolatilidade, veredictoTecnico (COMPRAR|ACUMULAR), momentoTecnico (1 frase), pesoSugerido (% do total), briefing 2-3 frases. " +
+    "PREFIRA QUALIDADE A QUANTIDADE - se nao encontrar N elegiveis, retorne menos.";
+  var user = "Macro USA: " + macroResumo + "\nAlocacao prevista para Stocks USA: " + alocacaoRV + "% do total\nObjetivo: " + objetivo + " | Lente: " + lens + "\nRestricoes: " + (restricoes||"nenhuma") + "\nUniverso: " + universoFiltro + "\nSelecione ate " + nAtivos + " stocks diversificados por setor GICS que estejam EM PONTO DE ENTRADA AGORA.\n\nJSON: {acoes:[{ticker:'',nome:'',setor:'',dy:'',dgr5y:'',shareholderYield:'',anosConsecutivos:0,forwardPE:'',roic:'',vol:'baixa|media|alta',veredictoTecnico:'COMPRAR|ACUMULAR',momentoTecnico:'',pesoSugerido:0,briefing:''}],totalSelecionado:0,setoresCobertos:[''],universoAnalisado:0,acoesRejeitadas:[{ticker:'',motivo:''}],alertasGerais:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── VALIDAÇÃO TÉCNICA RV USA ────────
+async function allocatorValidacaoTecnicaRVUSA(acoes, macroResumo){
+  if(!acoes || !acoes.length) return {validacoes:[], totalAprovados:0, totalRejeitados:0, resumoValidacao:''};
+  var tickers = acoes.map(function(a){return a.ticker}).join(", ");
+  var sys = ACOES_US_SYS + " ETAPA: VALIDACAO TECNICA cruzada de stocks USA candidatos. Voce e o analista tecnico que aprova/rejeita cada candidato seguindo EXATAMENTE os mesmos criterios da analise individual USA. " +
+    "===== Para CADA ticker, busque (web_search) dados tecnicos ATUAIS no mercado USA. Criterios: T1 tendencia != Baixa, T2 RSI 30-70, T3 MACD != Venda consistente, T4 preco proximo/acima SMA200, T5 veredicto = COMPRAR ou ACUMULAR. " +
+    "Seja RIGOROSO. Quando em duvida, REJEITAR e sugerir substituto do mesmo setor com momento favoravel.";
+  var user = "Macro: " + macroResumo + "\nCandidatos a validar: " + tickers + "\n\nJSON: {validacoes:[{ticker:'',status:'APROVADO|REJEITADO',rsi:0,tendencia:'',macd:'',posicaoSMA200:'',veredictoTecnico:'COMPRAR|AGUARDAR|NAO_RECOMENDADO',motivo:'',sugerirSubstituto:''}],totalAprovados:0,totalRejeitados:0,resumoValidacao:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── SCREENING REITs USA ────────
+async function allocatorScreeningREITs(macroResumo, alocacaoREITs, objetivo, restricoes, nREITs){
+  var sys = ALLOC_SYS + " ETAPA: Screening de REITs USA (Real Estate Investment Trusts listados em NYSE/NASDAQ). " +
+    "===== CRITERIOS FUNDAMENTALISTAS: DY > 4% (REITs pagam mais que stocks comuns), FFO Yield robusto, AFFO payout < 90% (sustentabilidade), patrimonio diversificado, gestao reconhecida (Realty Income, Public Storage, AMT, WELL, etc). " +
+    "===== CRITERIOS DE VALUATION/MOMENTO: P/FFO razoavel (8-20x dependendo do segmento), nao em tendencia primaria de baixa cronica. " +
+    "===== CRITERIOS TECNICOS: mesmos T1-T5 universais. " +
+    "===== DIVERSIFICACAO: distribuir entre residential, retail, industrial, office, healthcare, data center, infrastructure. " +
+    "===== Para CADA REIT: ticker, nome, segmento, DY 12m, P/FFO, AFFO payout, marketCap, veredictoTecnico, momentoTecnico, pesoSugerido, briefing.";
+  var user = "Macro USA: " + macroResumo + "\nAlocacao prevista REITs: " + alocacaoREITs + "%\nObjetivo: " + objetivo + "\nRestricoes: " + (restricoes||"nenhuma") + "\nSelecione ate " + nREITs + " REITs diversificados em ponto de entrada.\n\nJSON: {reits:[{ticker:'',nome:'',segmento:'',dy:'',pffo:'',affoPayout:'',marketCap:'',veredictoTecnico:'COMPRAR|ACUMULAR',momentoTecnico:'',pesoSugerido:0,briefing:''}],totalSelecionado:0,segmentosCobertos:[''],universoAnalisado:0,reitsRejeitados:[{ticker:'',motivo:''}],alertasGerais:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+async function allocatorValidacaoREITs(reits, macroResumo){
+  if(!reits || !reits.length) return {validacoes:[], totalAprovados:0, totalRejeitados:0, resumoValidacao:''};
+  var tickers = reits.map(function(r){return r.ticker}).join(", ");
+  var sys = ACOES_US_SYS + " ETAPA: VALIDACAO de REITs USA. Para cada um, busque dados ATUAIS de P/FFO, AFFO payout, vacancia (se aplicavel), tendencia de cota nos ultimos 6m, ultimo dividendo. " +
+    "Aprove apenas REITs com momento OK e valuation razoavel.";
+  var user = "Macro: " + macroResumo + "\nCandidatos: " + tickers + "\n\nJSON: {validacoes:[{ticker:'',status:'APROVADO|REJEITADO',pffo:'',tendencia:'',affoPayout:'',ultimoDY:'',veredictoMomento:'ALOCAR|AGUARDAR|EVITAR',motivo:'',sugerirSubstituto:''}],totalAprovados:0,totalRejeitados:0,resumoValidacao:''}";
+  return await acoesCallJSON({system:sys, user:user, useSearch:true});
+}
+
+// ──────── RENDER DO FUNIL DE SCREENING ────────
+function allocRenderFunil(universo, screeningRV, validacaoRV, screeningFIIs, validacaoFII, screeningREITs, validacaoREITs, screeningRVUSA, validacaoRVUSA){
+  var h='';
+  // Cabeçalho do universo
+  h+='<div style="margin-bottom:18px;padding:14px 16px;background:rgba(168,94,255,.05);border-left:3px solid #a85eff;border-radius:6px">';
+  h+='<div style="font-size:11px;color:#a85eff;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Universo Analisado</div>';
+  h+='<div style="font-size:14px;color:#e6edf3;font-weight:600;margin-bottom:4px">'+(universo.universoLabel||"—")+'</div>';
+  h+='<div style="font-size:12.5px;color:#c9d1d9;line-height:1.55">'+(universo.descricaoUniverso||"")+'</div>';
+  if(universo.fontes && universo.fontes.length){
+    h+='<div style="margin-top:8px;font-size:11px;color:#8b949e">Fontes: '+universo.fontes.join(" · ")+'</div>';
+  }
+  h+='</div>';
+
+  // Funis por classe
+  function renderFunilClasse(titulo, color, screening, validacao, tipoChave){
+    if(!screening) return '';
+    var universoTotal = (screening.universoAnalisado || universo.universoTotalAcoes || universo.universoTotalFIIsOuREITs || 0);
+    var passaramScreening = (screening[tipoChave] || []).length + ((screening[tipoChave==='acoes'?'acoesRejeitadas':tipoChave==='fiis'?'fiisRejeitados':tipoChave==='reits'?'reitsRejeitados':'rejeitados'] || []).length);
+    var aprovadosValidacao = validacao ? (validacao.totalAprovados || (screening[tipoChave] || []).length) : (screening[tipoChave] || []).length;
+    var rejeitadosValidacao = validacao ? (validacao.totalRejeitados || 0) : 0;
+    var selecionados = (screening[tipoChave] || []).length;
+
+    var hh = '<div style="margin-bottom:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid '+color+'20;border-radius:8px">';
+    hh += '<div style="font-size:12px;color:'+color+';font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'+titulo+'</div>';
+
+    // Funil visual
+    var etapas = [
+      {label:"Universo considerado", valor:universoTotal || "—", color:'#8b949e'},
+      {label:"Passaram fundamentos", valor:passaramScreening || "—", color:'#f8d75e'},
+      {label:"Passaram validação técnica", valor:aprovadosValidacao || selecionados, color:'#4c8bf5'},
+      {label:"Selecionadas final", valor:selecionados, color:color}
+    ];
+    hh += '<div style="display:grid;gap:6px">';
+    etapas.forEach(function(e, i){
+      var w = (i+1) * 22 + 22; // largura do funil decresce
+      hh += '<div style="display:flex;align-items:center;gap:10px;font-size:12.5px"><div style="width:'+w+'%;background:'+e.color+'20;border-left:3px solid '+e.color+';padding:5px 10px;color:'+e.color+';font-weight:600;border-radius:0 4px 4px 0">'+e.label+'</div><strong style="color:'+e.color+';font-family:JetBrains Mono,monospace;font-size:14px">'+e.valor+'</strong></div>';
+    });
+    hh += '</div>';
+
+    // Rejeitados resumo
+    var rejArr = (screening[tipoChave==='acoes'?'acoesRejeitadas':tipoChave==='fiis'?'fiisRejeitados':tipoChave==='reits'?'reitsRejeitados':'rejeitados'] || []);
+    if(validacao && validacao.validacoes){
+      validacao.validacoes.forEach(function(v){
+        if(v.status === 'REJEITADO') rejArr.push({ticker:v.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
+      });
+    }
+    if(rejArr.length){
+      hh += '<details style="margin-top:10px;cursor:pointer"><summary style="font-size:11px;color:#f8d75e;font-weight:600;letter-spacing:.06em;text-transform:uppercase">⚠ Ver '+rejArr.length+' ativos rejeitados no funil</summary><div style="margin-top:8px;padding:8px 10px;background:rgba(248,215,94,.05);border-radius:4px">';
+      rejArr.slice(0,12).forEach(function(r){
+        hh += '<div style="font-size:11.5px;color:#c9d1d9;padding:3px 0;line-height:1.5"><strong style="color:#f8d75e;font-family:JetBrains Mono,monospace">'+r.ticker+':</strong> '+r.motivo+(r.substituto?' <span style="color:#8b949e">→ substituto: <strong style="color:#a85eff;font-family:JetBrains Mono,monospace">'+r.substituto+'</strong></span>':'')+'</div>';
+      });
+      hh += '</div></details>';
+    }
+    hh += '</div>';
+    return hh;
+  }
+
+  // Funil RV BR
+  if(screeningRV) h += renderFunilClasse('🇧🇷 Renda Variável Brasil', '#4c8bf5', screeningRV, validacaoRV, 'acoes');
+  // Funil FIIs
+  if(screeningFIIs) h += renderFunilClasse('🇧🇷 Fundos Imobiliários', '#a85eff', screeningFIIs, validacaoFII, 'fiis');
+  // Funil RV USA
+  if(screeningRVUSA) h += renderFunilClasse('🇺🇸 Stocks USA', '#2ecc8a', screeningRVUSA, validacaoRVUSA, 'acoes');
+  // Funil REITs
+  if(screeningREITs) h += renderFunilClasse('🇺🇸 REITs USA', '#f8d75e', screeningREITs, validacaoREITs, 'reits');
+
+  alloc$("alloc-body-funil").innerHTML = h;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FIM FUNÇÕES USA/HÍBRIDO
+// ═══════════════════════════════════════════════════════════════════════════
+
 async function allocatorConsolidacao(valor, alocacao, acoes, fiis, perfil, objetivo){
   var sys = ALLOC_SYS + " ETAPA: Consolidacao final da carteira. Monte a carteira EXECUTAVEL com valores em R$ por posicao. " +
     "REGRAS: (1) Soma dos pesos = 100%. (2) Respeitar a alocacao por classe da estrategia. (3) Arredondar valores para multiplos de R$ 1.000 (sobra vai para 'caixa pendente'). (4) Validar diversificacao: nao concentrar > 30% em setor unico. (5) Ordem de execucao: priorizar liquidez (RF primeiro), depois RV, depois FIIs. " +
@@ -13768,9 +14845,13 @@ function allocRenderTabelaAtivos(items, tipo){
     // Veredicto técnico/momento
     var verd = tipo==='acao' ? (a.veredictoTecnico||'COMPRAR') : (a.veredictoMomento||'ALOCAR');
     var verdColor = verd==='COMPRAR'||verd==='ALOCAR'?'#2ecc8a':verd==='ACUMULAR'?'#4c8bf5':'#f8d75e';
-    h+='<div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(168,94,255,.12);border-radius:8px">';
+    // Chip de mercado
+    var mkt = a.mercado || 'br';
+    var mktFlag = mkt==='us' ? '🇺🇸' : '🇧🇷';
+    var mktColor = mkt==='us' ? '#2ecc8a' : '#4c8bf5';
+    h+='<div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid '+(mkt==='us'?'rgba(46,204,138,.18)':'rgba(168,94,255,.12)')+';border-radius:8px">';
     h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:8px">';
-    h+='<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><strong style="color:#e6edf3;font-size:16px;font-family:JetBrains Mono,monospace">'+a.ticker+'</strong><span style="color:#8b949e;font-size:13px">'+a.nome+'</span><span style="font-size:10px;padding:2px 8px;background:rgba(168,94,255,.15);color:#a85eff;border-radius:10px;font-weight:600">'+(tipo==='acao'?a.setor:a.segmento)+'</span><span style="font-size:10px;padding:2px 9px;background:'+verdColor+'25;color:'+verdColor+';border-radius:10px;font-weight:700;letter-spacing:.04em">✓ '+verd+'</span></div>';
+    h+='<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:14px">'+mktFlag+'</span><strong style="color:#e6edf3;font-size:16px;font-family:JetBrains Mono,monospace">'+a.ticker+'</strong><span style="color:#8b949e;font-size:13px">'+a.nome+'</span><span style="font-size:10px;padding:2px 8px;background:'+mktColor+'20;color:'+mktColor+';border-radius:10px;font-weight:600">'+(tipo==='acao'?a.setor:a.segmento)+'</span><span style="font-size:10px;padding:2px 9px;background:'+verdColor+'25;color:'+verdColor+';border-radius:10px;font-weight:700;letter-spacing:.04em">✓ '+verd+'</span></div>';
     // Bloco peso + valor + botão
     var valorAtivo = window._allocValorTotal ? (Number(a.pesoSugerido)||0)/100 * window._allocValorTotal : null;
     h+='<div style="display:flex;gap:14px;align-items:center">';
@@ -13778,7 +14859,9 @@ function allocRenderTabelaAtivos(items, tipo){
     h+='<span style="color:#a85eff;font-weight:700;font-size:16px;line-height:1.1">'+allocFmtPct(a.pesoSugerido)+'</span>';
     if(valorAtivo)h+='<span style="color:#8b949e;font-size:11px;font-weight:600;font-family:JetBrains Mono,monospace;margin-top:2px">'+allocFmtBRL(valorAtivo)+'</span>';
     h+='</div>';
-    h+='<button onclick="allocatorAprofundar(\''+a.ticker+'\',\''+tipo+'\')" style="background:rgba(168,94,255,.1);border:1px solid rgba(168,94,255,.3);color:#a85eff;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🔍 Aprofundar</button>';
+    // Botão aprofundar: rota correta conforme mercado
+    var tipoAprof = (tipo==='acao') ? (mkt==='us'?'acaoUS':'acao') : (mkt==='us'?'reit':'fii');
+    h+='<button onclick="allocatorAprofundar(\''+a.ticker+'\',\''+tipoAprof+'\')" style="background:rgba(168,94,255,.1);border:1px solid rgba(168,94,255,.3);color:#a85eff;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🔍 Aprofundar</button>';
     h+='</div>';
     h+='</div>';
 
@@ -13787,19 +14870,26 @@ function allocRenderTabelaAtivos(items, tipo){
     if(tipo==='acao'){
       if(a.dy)h+='<span><strong style="color:#2ecc8a">DY:</strong> '+a.dy+'</span>';
       if(a.pl)h+='<span><strong style="color:#8b949e">P/L:</strong> '+a.pl+'</span>';
+      if(a.forwardPE)h+='<span><strong style="color:#8b949e">Fwd P/E:</strong> '+a.forwardPE+'</span>';
+      if(a.dgr5y)h+='<span><strong style="color:#a85eff">DGR 5y:</strong> '+a.dgr5y+'</span>';
+      if(a.shareholderYield)h+='<span><strong style="color:#a85eff">SY:</strong> '+a.shareholderYield+'</span>';
       if(a.roe)h+='<span><strong style="color:#8b949e">ROE:</strong> '+a.roe+'</span>';
+      if(a.roic)h+='<span><strong style="color:#8b949e">ROIC:</strong> '+a.roic+'</span>';
       if(a.beta)h+='<span><strong style="color:#8b949e">Beta:</strong> '+a.beta+'</span>';
       if(a.rsi)h+='<span><strong style="color:#8b949e">RSI:</strong> '+a.rsi+'</span>';
       if(a.tendencia)h+='<span><strong style="color:#8b949e">Tend:</strong> '+a.tendencia+'</span>';
+      if(a.anosConsecutivos && a.anosConsecutivos >= 25)h+='<span style="color:#a85eff;font-weight:700">👑 '+a.anosConsecutivos+'y</span>';
     } else {
       if(a.dy)h+='<span><strong style="color:#2ecc8a">DY:</strong> '+a.dy+'</span>';
       if(a.pvp)h+='<span><strong style="color:#8b949e">P/VP:</strong> '+a.pvp+'</span>';
+      if(a.pffo)h+='<span><strong style="color:#8b949e">P/FFO:</strong> '+a.pffo+'</span>';
       if(a.vacancia)h+='<span><strong style="color:#8b949e">Vacância:</strong> '+a.vacancia+'</span>';
+      if(a.affoPayout)h+='<span><strong style="color:#8b949e">AFFO payout:</strong> '+a.affoPayout+'</span>';
       if(a.gestor)h+='<span><strong style="color:#8b949e">Gestor:</strong> '+a.gestor+'</span>';
     }
     h+='</div>';
 
-    // Leitura técnica (NOVO)
+    // Leitura técnica
     var leitura = tipo==='acao' ? a.momentoTecnico : a.leituraMomento;
     if(leitura){
       h+='<div style="font-size:11.5px;color:#a85eff;padding:6px 0;border-top:1px solid rgba(168,94,255,.08);margin-top:4px"><strong>📊 Momento:</strong> '+leitura+'</div>';
@@ -13948,24 +15038,31 @@ function allocRenderFinal(d, valorTotal){
 // ──────── BOTÃO "APROFUNDAR" — dispara módulo individual ────────
 function allocatorAprofundar(ticker, tipo){
   if(!ticker) return;
-  var confirmou = confirm("Aprofundar análise de "+ticker+"?\n\nIsso vai abrir o módulo de "+(tipo==='acao'?"Análise de Ações":"Análise de FIIs")+" com este ativo pré-preenchido. A análise atual será salva.");
+  var labelTipo = {acao:"Análise de Ações BR",acaoUS:"Análise de Ações EUA",fii:"Análise de FIIs",reit:"Análise de Ações EUA (REIT)"}[tipo]||tipo;
+  var confirmou = confirm("Aprofundar análise de "+ticker+"?\n\nIsso vai abrir o módulo de "+labelTipo+" com este ativo pré-preenchido.");
   if(!confirmou) return;
   if(tipo==='acao'){
     showScreen('s-acoes');
     setTimeout(function(){
       if(typeof initAcoesAnalise==='function') initAcoesAnalise();
-      // Pré-preencher o ticker
-      var input = document.getElementById("acoes-ticker-input");
+      if(typeof switchAtivosTab==='function') switchAtivosTab('acoes');
+      var input = document.getElementById("acoes-ticker");
       if(input){input.value=ticker.toUpperCase()}
-      // Scroll pra cima
+      window.scrollTo({top:0,behavior:'smooth'});
+    }, 150);
+  } else if(tipo==='acaoUS' || tipo==='reit'){
+    showScreen('s-acoes');
+    setTimeout(function(){
+      if(typeof switchAtivosTab==='function') switchAtivosTab('acoesus');
+      var input = document.getElementById("acoesus-ticker");
+      if(input){input.value=ticker.toUpperCase()}
       window.scrollTo({top:0,behavior:'smooth'});
     }, 150);
   } else if(tipo==='fii'){
-    showScreen('s-acoes'); // FIIs estão na mesma tela com aba
+    showScreen('s-acoes');
     setTimeout(function(){
-      // Switch pra aba FIIs
       if(typeof switchAtivosTab==='function') switchAtivosTab('fiis');
-      var input = document.getElementById("fii-ticker-input");
+      var input = document.getElementById("fii-ticker");
       if(input){input.value=ticker.toUpperCase()}
       window.scrollTo({top:0,behavior:'smooth'});
     }, 150);
@@ -13985,9 +15082,14 @@ async function allocatorStart(){
   var restricoes = alloc$("alloc-restricoes").value.trim();
   var nome = alloc$("alloc-nome").value.trim() || "Cliente";
   var idade = alloc$("alloc-idade").value;
+  // Novos campos: mercado + lente + universo + % internacional (híbrido)
+  var mercado = window._allocMercado || 'br';
+  var lens = (alloc$("alloc-lens") && alloc$("alloc-lens").value) || 'renda';
+  var universoKey = (alloc$("alloc-universo") && alloc$("alloc-universo").value) || 'ibrx';
+  var pctInt = parseInt((alloc$("alloc-pct-int") && alloc$("alloc-pct-int").value) || '30');
 
   if(!valor || valor < 10000){alert("Informe o valor a investir (mínimo R$ 10.000).");return}
-  if(!perfil || !horizonte || !objetivo || !tolVol){alert("Preencha os campos obrigatórios: perfil, horizonte, objetivo e tolerância à volatilidade.");return}
+  if(!perfil || !horizonte || !objetivo || !tolVol){alert("Preencha os campos obrigatórios.");return}
 
   // Determinar quantidade alvo de ações e FIIs
   var nMap = {'6-8':[4,3],'10-12':[6,5],'14-18':[8,7],'20-25':[12,10]};
@@ -13998,162 +15100,285 @@ async function allocatorStart(){
   if(classes==='rv-only'){nFIIs=0; nAcoes=nDistribuicao[0]+nDistribuicao[1]}
   if(classes==='fii-only'){nAcoes=0; nFIIs=nDistribuicao[0]+nDistribuicao[1]}
 
-  alloc$("alloc-btn-start").disabled = true;
+  // Pra híbrido, distribuir nAcoes entre BR e USA proporcionalmente ao % internacional
+  var nAcoesBR = nAcoes, nAcoesUSA = 0, nREITs = 0;
+  if(mercado === 'us'){
+    nAcoesUSA = nAcoes;
+    nAcoesBR = 0;
+    nREITs = nFIIs; // REITs ocupam o slot de "FIIs" no modo USA
+    nFIIs = 0;
+  } else if(mercado === 'hib'){
+    var alocBR = (100 - pctInt) / 100;
+    var alocUSA = pctInt / 100;
+    nAcoesBR = Math.max(2, Math.round(nAcoes * alocBR));
+    nAcoesUSA = Math.max(2, Math.round(nAcoes * alocUSA));
+    nFIIs = Math.max(1, Math.round(nFIIs * alocBR));
+    nREITs = (classes==='rv-only') ? 0 : Math.max(0, Math.round(nDistribuicao[1] * alocUSA * 0.5)); // metade do slot FII vai pra REIT no híbrido
+  }
 
-  // Armazenar valor total pra usar nas renderizações (cálculo % → R$)
+  alloc$("alloc-btn-start").disabled = true;
   window._allocValorTotal = valor;
+  window._allocMercadoAtivo = mercado;
+  window._allocLens = lens;
 
   // Trocar para results state
   alloc$("allocator-input-state").style.display="none";
   alloc$("allocator-results-state").classList.remove("acoes-hidden");
-  ["macro","estrategia","rv","fii","final"].forEach(function(k){allocSt(k,"pending")});
+  ["macro","estrategia","funil","rv","fii","final"].forEach(function(k){allocSt(k,"pending")});
 
   // Hero
+  var mktLabel = mercado==='br'?'🇧🇷 Brasil':mercado==='us'?'🇺🇸 EUA':'🌎 Híbrido BR+USA ('+pctInt+'% intl)';
   alloc$("alloc-hero-cliente").textContent = nome + (idade?" · "+idade+" anos":"");
-  alloc$("alloc-hero-perfil").textContent = perfil.charAt(0).toUpperCase()+perfil.slice(1);
+  alloc$("alloc-hero-perfil").textContent = perfil.charAt(0).toUpperCase()+perfil.slice(1) + " · " + mktLabel;
   alloc$("alloc-hero-objetivo").textContent = {renda:"Renda",crescimento:"Crescimento",equilibrio:"Equilíbrio",preservacao:"Preservação",aposentadoria:"Aposentadoria"}[objetivo]||objetivo;
   alloc$("alloc-hero-valor").textContent = allocFmtBRL(valor);
 
-  console.log("[allocator] iniciando · valor:", valor, "perfil:", perfil, "nAcoes:", nAcoes, "nFIIs:", nFIIs);
+  console.log("[allocator] iniciando · mercado:", mercado, "· valor:", valor, "· nAcoesBR:", nAcoesBR, "· nAcoesUSA:", nAcoesUSA, "· nFIIs:", nFIIs, "· nREITs:", nREITs);
+
+  // Storage de dados pra render final
+  var dados = {macro:null, estrategia:null, universo:null, rv:{acoes:[]}, fii:{fiis:[]}, rvUSA:{acoes:[]}, reits:{reits:[]}, consolidacao:null};
 
   try {
-    // ETAPA 1: MACRO
-    allocProg("Etapa 1/5: lendo cenário macro atual...");
+    // ═══ ETAPA 1: MACRO (BR / USA / Híbrido) ═══
+    allocProg("Etapa 1: lendo cenário macro...");
     allocSt("macro","loading");
-    var macro = await allocatorMacro();
+    var macro;
+    if(mercado==='br'){
+      macro = await allocatorMacro();
+    } else if(mercado==='us'){
+      macro = await allocatorMacroUSA();
+    } else { // hib
+      macro = await allocatorMacroHibrido();
+    }
     console.log("[allocator] macro:", macro);
+    dados.macro = macro;
     allocRenderMacro(macro);
     allocSt("macro","done");
-    var macroResumo = "Selic "+(macro.selic||"")+" ("+(macro.selicDirecao||"")+") · IPCA "+(macro.ipca12m||"")+" · USD/BRL "+(macro.usdBrl||"")+" · Ibov "+(macro.ibovYTD||"")+" "+(macro.ibovMomentum||"")+" · "+(macro.sintese||"").slice(0,200);
+
+    var macroResumo;
+    if(mercado==='br'){
+      macroResumo = "Selic "+(macro.selic||"")+" · IPCA "+(macro.ipca12m||"")+" · USD/BRL "+(macro.usdBrl||"")+" · Ibov "+(macro.ibovYTD||"")+" · "+(macro.sintese||"").slice(0,200);
+    } else if(mercado==='us'){
+      macroResumo = "Fed "+(macro.fed||"")+" ("+(macro.fedDirecao||"")+") · CPI "+(macro.cpi||"")+" · Treasury 10y "+(macro.treasury10y||"")+" · S&P 500 YTD "+(macro.sp500YTD||"")+" · USD/BRL "+(macro.usdBrl||"")+" · "+(macro.sintese||"").slice(0,180);
+    } else {
+      var br = macro.brasil||{}, us = macro.usa||{};
+      macroResumo = "BR: Selic "+(br.selic||"")+" · IPCA "+(br.ipca||"")+" · Ibov "+(br.ibov||"")+" | USA: Fed "+(us.fed||"")+" · S&P "+(us.sp500YTD||"")+" | "+(macro.sintese||"").slice(0,180);
+    }
     await new Promise(function(r){setTimeout(r,1500)});
 
-    // ETAPA 2: ESTRATÉGIA
-    allocProg("Etapa 2/5: definindo alocação por classe...");
+    // ═══ ETAPA 2: ESTRATÉGIA DE ALOCAÇÃO ═══
+    allocProg("Etapa 2: definindo alocação por classe...");
     allocSt("estrategia","loading");
-    var estrategia = await allocatorEstrategia(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes);
+    var estrategia;
+    if(mercado==='br'){
+      estrategia = await allocatorEstrategia(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes);
+    } else if(mercado==='us'){
+      estrategia = await allocatorEstrategiaUSA(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes, lens);
+    } else {
+      estrategia = await allocatorEstrategiaHibrido(macroResumo, perfil, objetivo, horizonte, tolVol, restricoes, classes, lens, pctInt);
+    }
     console.log("[allocator] estrategia:", estrategia);
+    dados.estrategia = estrategia;
     allocRenderEstrategia(estrategia);
     allocSt("estrategia","done");
 
-    // Extrair % de RV e FIIs da alocação
-    var pctRV=0, pctFII=0;
+    // Extrair % por classe e mercado
+    var pctRV=0, pctFII=0, pctRVUSA=0, pctREITs=0;
     (estrategia.alocacao||[]).forEach(function(a){
       var cl=(a.classe||"").toLowerCase();
-      if(cl.indexOf("renda variavel")>=0||cl.indexOf("renda variável")>=0||cl==="rv"||cl.indexOf("acoes")>=0||cl.indexOf("ações")>=0)pctRV+=Number(a.pct)||0;
-      if(cl.indexOf("fii")>=0||cl.indexOf("imobili")>=0)pctFII+=Number(a.pct)||0;
+      var mkt=(a.mercado||"").toLowerCase();
+      var ehUSA = mkt==='us' || cl.indexOf('usa')>=0 || cl.indexOf('eua')>=0 || cl.indexOf('stocks')>=0 || cl.indexOf('aristocrat')>=0;
+      var ehREIT = cl.indexOf('reit')>=0;
+      var ehFII = !ehREIT && (cl.indexOf("fii")>=0 || cl.indexOf("imobili")>=0);
+      var ehRV = !ehUSA && !ehFII && !ehREIT && (cl.indexOf("renda variavel")>=0 || cl.indexOf("renda variável")>=0 || cl==='rv' || cl.indexOf("acoes")>=0 || cl.indexOf("ações")>=0 || cl.indexOf('rv br')>=0);
+      var v = Number(a.pct)||0;
+      if(ehREIT) pctREITs += v;
+      else if(ehUSA) pctRVUSA += v;
+      else if(ehFII) pctFII += v;
+      else if(ehRV) pctRV += v;
     });
+    console.log("[allocator] alocações detectadas: RV BR="+pctRV+"% FIIs="+pctFII+"% RV USA="+pctRVUSA+"% REITs="+pctREITs+"%");
     await new Promise(function(r){setTimeout(r,1500)});
 
-    // ETAPA 3: SCREENING RV (pula se classes for fii-only)
-    var rvData = {acoes:[]};
-    if(classes!=='fii-only' && pctRV>0 && nAcoes>0){
-      allocProg("Etapa 3/7: vasculhando ações no mercado (B3)...");
-      allocSt("rv","loading");
-      // Pedir alguns ativos extras já que alguns podem ser rejeitados na validação
-      var nAcoesAmpliado = Math.min(nAcoes + 3, 12);
-      rvData = await allocatorScreeningRV(macroResumo, pctRV, objetivo, restricoes, nAcoesAmpliado);
-      console.log("[allocator] rv (screening bruto):", rvData);
+    // ═══ ETAPA 2.5: MAPEAR UNIVERSO ═══
+    allocProg("Etapa 3: mapeando universo de empresas considerado...");
+    allocSt("funil","loading");
+    var universo = await allocatorMapearUniverso(mercado, universoKey, classes);
+    console.log("[allocator] universo:", universo);
+    dados.universo = universo;
+    await new Promise(function(r){setTimeout(r,1500)});
 
-      // VALIDAÇÃO TÉCNICA CRUZADA (passe 4.5)
-      allocProg("Etapa 4/7: validando momento técnico das ações...");
+    // ═══ ETAPA 3: SCREENING RV BR ═══
+    if(nAcoesBR > 0 && pctRV > 0 && classes !== 'fii-only'){
+      allocProg("Etapa 4: screening RV Brasil...");
+      allocSt("rv","loading");
+      var rvData = await allocatorScreeningRV(macroResumo, pctRV, objetivo, restricoes, Math.min(nAcoesBR + 3, 12));
+      console.log("[allocator] rv BR (bruto):", rvData);
+
+      // Validação técnica BR
       try {
         var validRV = await allocatorValidacaoTecnicaRV(rvData.acoes, macroResumo);
-        console.log("[allocator] rv (validação técnica):", validRV);
-
-        // Filtrar: manter só APROVADAS
-        var aprovadosRV = [];
-        var rejeitadasInfo = [];
-        (rvData.acoes||[]).forEach(function(acao){
-          var v = (validRV.validacoes||[]).find(function(vv){return vv.ticker===acao.ticker});
+        var aprov = [], rej = [];
+        (rvData.acoes||[]).forEach(function(a){
+          var v = (validRV.validacoes||[]).find(function(vv){return vv.ticker===a.ticker});
           if(v && v.status === 'APROVADO'){
-            // Anexar dados técnicos validados na acao
-            acao.veredictoTecnico = v.veredictoTecnico || acao.veredictoTecnico;
-            acao.momentoTecnico = v.motivo || acao.momentoTecnico;
-            acao.rsi = v.rsi;
-            acao.tendencia = v.tendencia;
-            aprovadosRV.push(acao);
+            a.veredictoTecnico = v.veredictoTecnico || a.veredictoTecnico;
+            a.momentoTecnico = v.motivo || a.momentoTecnico;
+            a.rsi = v.rsi; a.tendencia = v.tendencia;
+            a.mercado = 'br';
+            aprov.push(a);
           } else if(v && v.status === 'REJEITADO'){
-            rejeitadasInfo.push({ticker:acao.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
-          } else {
-            // Sem validação clara — incluir mas marcar
-            acao.veredictoTecnico = acao.veredictoTecnico || 'COMPRAR';
-            aprovadosRV.push(acao);
-          }
+            rej.push({ticker:a.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
+          } else { a.mercado='br'; aprov.push(a); }
         });
-        rvData.acoes = aprovadosRV.slice(0, nAcoes); // limita ao N alvo
-        rvData.rejeitadasNaValidacao = rejeitadasInfo;
+        rvData.acoes = aprov.slice(0, nAcoesBR);
+        rvData.rejeitadasNaValidacao = rej;
         rvData.resumoValidacao = validRV.resumoValidacao;
-        console.log("[allocator] rv aprovadas:", rvData.acoes.length, "| rejeitadas:", rejeitadasInfo.length);
-      } catch(vErr){
-        console.warn("[allocator] validação técnica RV falhou (segue sem):", vErr.message);
-      }
-
+        dados.validacaoRV = validRV;
+      } catch(e){ console.warn("[allocator] validação RV BR falhou:", e.message) }
+      dados.rv = rvData;
       allocRenderRV(rvData);
-      allocSt("rv","done");
       await new Promise(function(r){setTimeout(r,1500)});
-    } else {
-      allocSt("rv","done");
-      alloc$("alloc-body-rv").innerHTML='<p class="acoes-placeholder">Renda Variável não incluída nesta configuração.</p>';
     }
 
-    // ETAPA 4: SCREENING FIIs (pula se classes for rv-only)
-    var fiiData = {fiis:[]};
-    if(classes!=='rv-only' && pctFII>0 && nFIIs>0){
-      allocProg("Etapa 5/7: vasculhando FIIs do mercado...");
-      allocSt("fii","loading");
-      var nFIIsAmpliado = Math.min(nFIIs + 2, 10);
-      fiiData = await allocatorScreeningFII(macroResumo, pctFII, objetivo, restricoes, nFIIsAmpliado);
-      console.log("[allocator] fii (screening bruto):", fiiData);
+    // ═══ ETAPA 4: SCREENING RV USA ═══
+    if(nAcoesUSA > 0 && pctRVUSA > 0){
+      allocProg("Etapa 5: screening Stocks USA (lente: "+lens+")...");
+      allocSt("rv","loading");
+      var rvUSAData = await allocatorScreeningRVUSA(macroResumo, pctRVUSA, objetivo, restricoes, Math.min(nAcoesUSA + 3, 12), lens, universoKey);
+      console.log("[allocator] rv USA (bruto):", rvUSAData);
 
-      // VALIDAÇÃO MOMENTO CRUZADA (passe 5.5)
-      allocProg("Etapa 6/7: validando momento dos FIIs...");
+      // Validação técnica USA
+      try {
+        var validRVUSA = await allocatorValidacaoTecnicaRVUSA(rvUSAData.acoes, macroResumo);
+        var aprovU = [], rejU = [];
+        (rvUSAData.acoes||[]).forEach(function(a){
+          var v = (validRVUSA.validacoes||[]).find(function(vv){return vv.ticker===a.ticker});
+          if(v && v.status === 'APROVADO'){
+            a.veredictoTecnico = v.veredictoTecnico || a.veredictoTecnico;
+            a.momentoTecnico = v.motivo || a.momentoTecnico;
+            a.rsi = v.rsi; a.tendencia = v.tendencia;
+            a.mercado = 'us';
+            aprovU.push(a);
+          } else if(v && v.status === 'REJEITADO'){
+            rejU.push({ticker:a.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
+          } else { a.mercado='us'; aprovU.push(a); }
+        });
+        rvUSAData.acoes = aprovU.slice(0, nAcoesUSA);
+        rvUSAData.rejeitadasNaValidacao = rejU;
+        rvUSAData.resumoValidacao = validRVUSA.resumoValidacao;
+        dados.validacaoRVUSA = validRVUSA;
+      } catch(e){ console.warn("[allocator] validação RV USA falhou:", e.message) }
+      dados.rvUSA = rvUSAData;
+      // Adicionar ao mesmo container RV (acoes BR + acoes USA)
+      var mergedRV = {
+        acoes: (dados.rv.acoes||[]).concat(rvUSAData.acoes||[]),
+        setoresCobertos: ((dados.rv.setoresCobertos||[])).concat((rvUSAData.setoresCobertos||[])),
+        resumoValidacao: (dados.rv.resumoValidacao||"") + (rvUSAData.resumoValidacao?" · USA: "+rvUSAData.resumoValidacao:""),
+        rejeitadasNaValidacao: (dados.rv.rejeitadasNaValidacao||[]).concat(rvUSAData.rejeitadasNaValidacao||[])
+      };
+      allocRenderRV(mergedRV);
+      await new Promise(function(r){setTimeout(r,1500)});
+    }
+    allocSt("rv","done");
+    if(nAcoesBR===0 && nAcoesUSA===0) alloc$("alloc-body-rv").innerHTML='<p class="acoes-placeholder">Renda Variável não incluída.</p>';
+
+    // ═══ ETAPA 5: SCREENING FIIs BR ═══
+    if(nFIIs > 0 && pctFII > 0 && classes !== 'rv-only'){
+      allocProg("Etapa 6: screening FIIs Brasil...");
+      allocSt("fii","loading");
+      var fiiData = await allocatorScreeningFII(macroResumo, pctFII, objetivo, restricoes, Math.min(nFIIs + 2, 10));
+      console.log("[allocator] fii (bruto):", fiiData);
+
       try {
         var validFII = await allocatorValidacaoTecnicaFII(fiiData.fiis, macroResumo);
-        console.log("[allocator] fii (validação momento):", validFII);
-
-        var aprovadosFII = [];
-        var rejeitadasFIIInfo = [];
-        (fiiData.fiis||[]).forEach(function(fii){
-          var v = (validFII.validacoes||[]).find(function(vv){return vv.ticker===fii.ticker});
+        var aprovF = [], rejF = [];
+        (fiiData.fiis||[]).forEach(function(f){
+          var v = (validFII.validacoes||[]).find(function(vv){return vv.ticker===f.ticker});
           if(v && v.status === 'APROVADO'){
-            fii.veredictoMomento = v.veredictoMomento || fii.veredictoMomento;
-            fii.leituraMomento = v.motivo || fii.leituraMomento;
-            aprovadosFII.push(fii);
+            f.veredictoMomento = v.veredictoMomento || f.veredictoMomento;
+            f.leituraMomento = v.motivo || f.leituraMomento;
+            f.mercado = 'br';
+            aprovF.push(f);
           } else if(v && v.status === 'REJEITADO'){
-            rejeitadasFIIInfo.push({ticker:fii.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
-          } else {
-            fii.veredictoMomento = fii.veredictoMomento || 'ALOCAR';
-            aprovadosFII.push(fii);
-          }
+            rejF.push({ticker:f.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
+          } else { f.mercado='br'; aprovF.push(f); }
         });
-        fiiData.fiis = aprovadosFII.slice(0, nFIIs);
-        fiiData.rejeitadosNaValidacao = rejeitadasFIIInfo;
+        fiiData.fiis = aprovF.slice(0, nFIIs);
+        fiiData.rejeitadosNaValidacao = rejF;
         fiiData.resumoValidacao = validFII.resumoValidacao;
-        console.log("[allocator] fii aprovados:", fiiData.fiis.length, "| rejeitados:", rejeitadasFIIInfo.length);
-      } catch(vErr){
-        console.warn("[allocator] validação momento FII falhou (segue sem):", vErr.message);
-      }
-
+        dados.validacaoFII = validFII;
+      } catch(e){ console.warn("[allocator] validação FII falhou:", e.message) }
+      dados.fii = fiiData;
       allocRenderFII(fiiData);
-      allocSt("fii","done");
       await new Promise(function(r){setTimeout(r,1500)});
-    } else {
-      allocSt("fii","done");
-      alloc$("alloc-body-fii").innerHTML='<p class="acoes-placeholder">FIIs não incluídos nesta configuração.</p>';
     }
 
-    // ETAPA 5: CONSOLIDAÇÃO
-    allocProg("Etapa 7/7: consolidando carteira executável...");
+    // ═══ ETAPA 6: SCREENING REITs USA ═══
+    if(nREITs > 0 && pctREITs > 0){
+      allocProg("Etapa 7: screening REITs USA...");
+      allocSt("fii","loading");
+      var reitsData = await allocatorScreeningREITs(macroResumo, pctREITs, objetivo, restricoes, Math.min(nREITs + 2, 8));
+      console.log("[allocator] reits (bruto):", reitsData);
+
+      try {
+        var validREITs = await allocatorValidacaoREITs(reitsData.reits, macroResumo);
+        var aprovR = [], rejR = [];
+        (reitsData.reits||[]).forEach(function(r){
+          var v = (validREITs.validacoes||[]).find(function(vv){return vv.ticker===r.ticker});
+          if(v && v.status === 'APROVADO'){
+            r.veredictoMomento = v.veredictoMomento || r.veredictoTecnico || 'ALOCAR';
+            r.leituraMomento = v.motivo || r.momentoTecnico;
+            r.mercado = 'us';
+            aprovR.push(r);
+          } else if(v && v.status === 'REJEITADO'){
+            rejR.push({ticker:r.ticker, motivo:v.motivo, substituto:v.sugerirSubstituto});
+          } else { r.mercado='us'; aprovR.push(r); }
+        });
+        reitsData.reits = aprovR.slice(0, nREITs);
+        reitsData.rejeitadosNaValidacao = rejR;
+        reitsData.resumoValidacao = validREITs.resumoValidacao;
+        dados.validacaoREITs = validREITs;
+      } catch(e){ console.warn("[allocator] validação REITs falhou:", e.message) }
+      dados.reits = reitsData;
+      // Mesclar REITs com FIIs no render (ambos são "renda imobiliária")
+      var mergedFII = {
+        fiis: ((dados.fii.fiis||[]).map(function(f){f.tipoRender='fii';return f}))
+          .concat((reitsData.reits||[]).map(function(r){r.tipoRender='reit';r.segmento=r.segmento||'REIT';return r})),
+        segmentosCobertos: ((dados.fii.segmentosCobertos||[])).concat((reitsData.segmentosCobertos||[])),
+        resumoValidacao: (dados.fii.resumoValidacao||"") + (reitsData.resumoValidacao?" · REITs: "+reitsData.resumoValidacao:""),
+        rejeitadosNaValidacao: (dados.fii.rejeitadosNaValidacao||[]).concat(reitsData.rejeitadosNaValidacao||[])
+      };
+      allocRenderFII(mergedFII);
+      await new Promise(function(r){setTimeout(r,1500)});
+    }
+    allocSt("fii","done");
+    if(nFIIs===0 && nREITs===0) alloc$("alloc-body-fii").innerHTML='<p class="acoes-placeholder">FIIs/REITs não incluídos.</p>';
+
+    // ═══ RENDER FUNIL DE SCREENING (transparência) ═══
+    allocRenderFunil(universo, dados.rv, dados.validacaoRV, dados.fii, dados.validacaoFII, dados.reits, dados.validacaoREITs, dados.rvUSA, dados.validacaoRVUSA);
+    allocSt("funil","done");
+
+    // ═══ ETAPA 7: CONSOLIDAÇÃO ═══
+    allocProg("Etapa final: consolidando carteira executável...");
     allocSt("final","loading");
-    var consolidacao = await allocatorConsolidacao(valor, estrategia.alocacao, rvData.acoes, fiiData.fiis, perfil, objetivo);
+    // Mergear ativos pra consolidação
+    var todasAcoes = (dados.rv.acoes||[]).concat(dados.rvUSA.acoes||[]);
+    var todosFIIs = (dados.fii.fiis||[]).concat(dados.reits.reits||[]);
+    var consolidacao = await allocatorConsolidacao(valor, estrategia.alocacao, todasAcoes, todosFIIs, perfil, objetivo);
     console.log("[allocator] consolidacao:", consolidacao);
+    dados.consolidacao = consolidacao;
+    // Marcar mercado em cada item da carteira final
+    (consolidacao.carteiraFinal||[]).forEach(function(p){
+      var orig = todasAcoes.concat(todosFIIs).find(function(x){return x.ticker===p.ticker});
+      if(orig) p.mercado = orig.mercado;
+    });
     allocRenderFinal(consolidacao, valor);
     allocSt("final","done");
 
     allocProg(null);
     console.log("[allocator] construção concluída");
 
-    // Mostrar botões de ação
     var actionsEl = alloc$("allocator-actions");
     if(actionsEl){actionsEl.style.display="flex"; actionsEl.classList.remove("acoes-hidden")}
 
@@ -14161,17 +15386,18 @@ async function allocatorStart(){
       try { atualizarBotaoNext('allocator'); } catch(e){}
     }
 
-    // Salvar dados pra eventual PDF
     window._allocData = {
-      macro:macro, estrategia:estrategia, rv:rvData, fii:fiiData, consolidacao:consolidacao,
+      macro:dados.macro, estrategia:dados.estrategia, universo:dados.universo,
+      rv:dados.rv, rvUSA:dados.rvUSA, fii:dados.fii, reits:dados.reits,
+      consolidacao:dados.consolidacao,
       perfil:perfil, objetivo:objetivo, horizonte:horizonte, tolVol:tolVol, restricoes:restricoes,
-      valor:valor, nome:nome, idade:idade
+      valor:valor, nome:nome, idade:idade, mercado:mercado, lens:lens, pctInt:pctInt
     };
 
   } catch(err) {
     console.error("[allocator] erro:", err);
     allocProg("Erro: " + err.message);
-    ["macro","estrategia","rv","fii","final"].forEach(function(k){
+    ["macro","estrategia","funil","rv","fii","final"].forEach(function(k){
       var e=alloc$("alloc-st-"+k);
       if(e && e.textContent==="carregando") allocSt(k,"error");
     });
