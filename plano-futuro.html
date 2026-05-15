@@ -3554,7 +3554,15 @@ function iniciarFluxoSelecionado(modulos){
     setTimeout(initAllocator, 100);
     return;
   }
-  
+
+  // ATALHO: se for SOMENTE Simulação de Renda, pula o cadastro do cliente
+  if(window._filaExecucao.length === 1 && window._filaExecucao[0] === 'renda'){
+    window._filaExecucao.shift();
+    showScreen('s-renda');
+    setTimeout(initRendaSimulator, 100);
+    return;
+  }
+
   showScreen('s0b');
   setTimeout(startJarvis2, 100);
 }
