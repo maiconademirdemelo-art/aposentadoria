@@ -488,7 +488,7 @@ const server = http.createServer(async function(req,res){
       try {
         const r = await db.query(`SELECT * FROM submissoes WHERE id=$1`, [id]);
         if(r.rows.length === 0) return sendErr(res, 'Submissão não encontrada.', 404);
-        return sendJson(res, {ok:true, item: r.rows[0]});
+        return sendJson(res, {ok:true, submissao: r.rows[0]});
       } catch(err){
         console.error('[get]', err);
         return sendErr(res, 'Erro ao buscar.', 500);
