@@ -7435,6 +7435,114 @@ function startFromSplash() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// AUTO-CARREGAR SUBMISSÃO via #abrir-ref=ID (vindo do submissoes.html)
+// ═══════════════════════════════════════════════════════════════
+window._submissaoAtiva = null;
+
+function lerHashAbrirRef(){
+  const h = window.location.hash || '';
+  const m = h.match(/abrir-ref=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+function lerToken(){
+  try {
+    const u = new URL(window.location.href);
+    return u.searchParams.get('t') || '';
+  } catch(e){ return ''; }
+}
+
+async function carregarSubmissaoAtiva(id, token){
+  try {
+    const r = await fetch('/api/diag/get?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(token));
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'erro');
+    window._submissaoAtiva = j.submissao;
+    mostrarBannerSubmissao(j.submissao);
+    return j.submissao;
+  } catch(err){
+    console.warn('[abrir-ref] falha ao carregar submissão', err);
+    return null;
+  }
+}
+
+function mostrarBannerSubmissao(s){
+  // Banner fixo no topo mostrando qual lead está em análise
+  if(document.getElementById('lead-banner')) return;
+  const wa = (s.whatsapp||'').replace(/\D/g,'');
+  const waFmt = wa.length >= 12 ? `+${wa.slice(0,2)} (${wa.slice(2,4)}) ${wa.slice(4,9)}-${wa.slice(9)}` : s.whatsapp;
+  const div = document.createElement('div');
+  div.id = 'lead-banner';
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:998;background:linear-gradient(135deg,rgba(76,139,245,.18),rgba(76,139,245,.08));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(76,139,245,.35);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;font-family:\'Instrument Sans\',sans-serif;color:#fff;font-size:13px;animation:lbSlide .4s ease';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
+      <div style="width:8px;height:8px;border-radius:50%;background:#4c8bf5;box-shadow:0 0 12px #4c8bf5;animation:lbPulse 1.6s ease-in-out infinite;flex-shrink:0"></div>
+      <div style="min-width:0;overflow:hidden">
+        <div style="font-weight:700;font-size:14px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Analisando: ${(s.nome||'').replace(/[<>&"]/g,'')}</div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,.7);font-family:'JetBrains Mono',monospace;letter-spacing:.04em">${waFmt} · score ${s.score||'—'}/100 · ${s.id}</div>
+      </div>
+    </div>
+    <a href="/submissoes.html" style="font-size:12px;color:rgba(255,255,255,.7);text-decoration:none;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);white-space:nowrap;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='transparent'">← Voltar</a>
+  `;
+  // Adiciona CSS de animação
+  const css = document.createElement('style');
+  css.textContent = '@keyframes lbSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}} @keyframes lbPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}} body.has-lead-banner{padding-top:58px}';
+  document.head.appendChild(css);
+  document.body.appendChild(div);
+  document.body.classList.add('has-lead-banner');
+}
+
+// Hook: ao carregar a página, se tem #abrir-ref, pula splash + s0 + s0b e roda os 4 módulos de planejamento patrimonial direto
+(function bootstrapAbrirRef(){
+  document.addEventListener('DOMContentLoaded', async function(){
+    const refId = lerHashAbrirRef();
+    if(!refId) return;
+    const token = lerToken();
+    if(!token){
+      console.warn('[abrir-ref] sem token — abortando');
+      return;
+    }
+    // Pula splash automaticamente
+    const splash = document.getElementById('splash');
+    if(splash){
+      splash.style.transition = 'opacity .35s';
+      splash.style.opacity = '0';
+      setTimeout(() => { splash.style.display = 'none'; }, 350);
+    }
+    // Carrega a submissão PRIMEIRO
+    const s = await carregarSubmissaoAtiva(refId, token);
+    if(!s){
+      // Falha → cai no fluxo normal (tela do consultor)
+      setTimeout(() => {
+        if(typeof showScreen === 'function') showScreen('s0');
+        if(typeof animarTelaConsultor === 'function') setTimeout(animarTelaConsultor, 200);
+      }, 400);
+      return;
+    }
+    // Configura dados do cliente automaticamente
+    if(typeof setUserName === 'function') setUserName(s.nome || 'Cliente');
+    window._userCelular = (s.whatsapp || '').replace(/\D/g,'');
+    window._lgpdConsent = true;
+    window._dataConsentimento = new Date().toISOString();
+    // Fila de execução: roda os 4 módulos de planejamento patrimonial em sequência
+    // (aposentadoria → pgbl → holding → vgbl)
+    // Módulos de análise de carteira/ações/fiis NÃO entram (são análises de portfólio, outra ferramenta)
+    window._filaExecucao = ['aposentadoria','pgbl','holding','vgbl'];
+    if(typeof fluxoAtual !== 'undefined') fluxoAtual = 'raioX';
+    console.log('[abrir-ref] fila configurada:', window._filaExecucao);
+    // Vai direto pro primeiro módulo (aposentadoria → tela s1)
+    setTimeout(() => {
+      if(typeof proximoModuloDaFila === 'function'){
+        proximoModuloDaFila();
+      } else {
+        console.warn('[abrir-ref] proximoModuloDaFila indisponível, caindo no fluxo padrão');
+        if(typeof showScreen === 'function') showScreen('s0');
+      }
+    }, 500);
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════════
 // ANIMAÇÃO PROGRESSIVA DA TELA DO CONSULTOR
 // ═══════════════════════════════════════════════════════════════
 

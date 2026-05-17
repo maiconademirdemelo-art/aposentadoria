@@ -557,6 +557,11 @@ const server = http.createServer(async function(req,res){
       res.writeHead(302,{'Location':'/app'});res.end();return;
     }
 
+    // /mentoria → LP de mentoria (URL limpa)
+    if(p==='/mentoria' || p==='/mentoria/'){
+      return serve(res,'index-lp-mentoria-v2.html');
+    }
+
     // Estáticos (qualquer .html, .css, .js, imagem na raiz)
     var ext = path.extname(p);
     if(ext && MIME[ext]) return serve(res, p.slice(1));

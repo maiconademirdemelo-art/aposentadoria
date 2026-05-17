@@ -105,6 +105,72 @@ html,body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',s
 .modal-btn{padding:11px 20px;border-radius:10px;border:none;font-size:13.5px;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-weight:600}
 .modal-btn-cancel{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--bdr)}
 .modal-btn-confirm{background:#f07070;color:#fff}
+
+/* ─── MODAL VER COMPLETO ─── */
+.detail-overlay{
+  position:fixed;inset:0;background:rgba(5,10,24,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  z-index:2000;display:none;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .25s
+}
+.detail-overlay.show{display:flex;opacity:1}
+.detail-card{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:16px;
+  max-width:760px;width:100%;max-height:90vh;display:flex;flex-direction:column;
+  transform:scale(.96) translateY(20px);transition:transform .3s cubic-bezier(.2,.65,.3,1)
+}
+.detail-overlay.show .detail-card{transform:scale(1) translateY(0)}
+.detail-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  padding:24px 28px 18px;border-bottom:1px solid var(--bdr)
+}
+.detail-head-l{flex:1;min-width:0}
+.detail-name{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:700;color:var(--white);letter-spacing:-.01em;margin-bottom:4px}
+.detail-sub{font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.detail-close{
+  width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0;
+  transition:background .2s,transform .3s
+}
+.detail-close:hover{background:rgba(240,193,75,.15);transform:rotate(90deg)}
+.detail-body{padding:8px 28px 24px;overflow-y:auto;flex:1}
+.detail-section{margin-top:24px}
+.detail-section:first-child{margin-top:8px}
+.detail-section-t{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px
+}
+.detail-section-t::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 18px}
+@media(max-width:600px){.detail-grid{grid-template-columns:1fr}}
+.detail-row{display:flex;flex-direction:column;gap:3px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.detail-lbl{font-size:11.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.detail-val{font-size:14px;color:var(--white);font-weight:500;word-break:break-word}
+.detail-val.empty{color:var(--light);font-weight:400;font-style:italic}
+.detail-val.money{color:var(--green);font-family:'Bricolage Grotesque',sans-serif;font-weight:600}
+.detail-textarea{
+  background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:10px;padding:14px;
+  font-size:13.5px;line-height:1.55;color:var(--text);font-style:italic
+}
+.detail-foot{
+  padding:16px 28px;border-top:1px solid var(--bdr);display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap
+}
+.detail-foot .det-info{flex:1;font-size:11.5px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.detail-foot-btn{
+  padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-family:'Instrument Sans',sans-serif;border:none
+}
+.detail-foot-btn.secondary{background:rgba(255,255,255,.04);color:var(--text);border:1px solid var(--bdr)}
+.detail-foot-btn.secondary:hover{background:rgba(76,139,245,.12);border-color:var(--accent);color:var(--white)}
+.detail-foot-btn.primary{background:linear-gradient(135deg,#4c8bf5,#3a6fd8);color:#fff}
+.detail-foot-btn.primary:hover{box-shadow:0 6px 14px rgba(76,139,245,.35)}
+.detail-loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px;color:var(--muted)
+}
+.detail-spin{
+  width:32px;height:32px;border:3px solid var(--bdr);border-top-color:var(--accent);border-radius:50%;
+  animation:detail-spin 1s linear infinite
+}
+@keyframes detail-spin{to{transform:rotate(360deg)}}
+body.detail-open{overflow:hidden}
 </style>
 </head>
 <body>
@@ -315,8 +381,8 @@ function renderLista(){
           <div class="item-score-lbl">SCORE/100</div>
         </div>
         <div class="item-actions">
-          <a class="act act-primary" href="/painel?t=${encodeURIComponent(TOKEN)}#abrir-ref=${encodeURIComponent(s.id)}" title="Abrir no painel">Abrir no painel</a>
-          <a class="act" href="/diagnostico.html?ref=${encodeURIComponent(s.id)}&t=${encodeURIComponent(TOKEN)}" title="Abrir diagnóstico direto">Abrir direto</a>
+          <button class="act act-primary" onclick="verCompleto('${s.id}')" title="Ver todos os dados preenchidos">Ver completo</button>
+          <a class="act" href="/painel?t=${encodeURIComponent(TOKEN)}#abrir-ref=${encodeURIComponent(s.id)}" title="Rodar análise completa no painel">Rodar análise</a>
           <button class="act act-danger" onclick="abrirDel('${s.id}', '${escapar(s.nome).replace(/'/g,"\\'")}')" title="Excluir">×</button>
         </div>
       </div>
@@ -372,6 +438,225 @@ async function confirmarDel(){
     alert('Erro de conexão.');
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   MODAL "VER COMPLETO" — todos os dados preenchidos
+   ═══════════════════════════════════════════════════ */
+function getOvl(){ return document.getElementById('detailOverlay'); }
+
+async function verCompleto(id){
+  const OVL = getOvl();
+  if(!OVL){ console.warn('modal não montado'); return; }
+  // Abre overlay já com loading
+  OVL.classList.add('show');
+  document.body.classList.add('detail-open');
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-loading">
+      <div class="detail-spin"></div>
+      <div>Carregando dados completos…</div>
+    </div>
+  `;
+  document.getElementById('detailHead').innerHTML = `
+    <div class="detail-head-l">
+      <div class="detail-name">Carregando…</div>
+      <div class="detail-sub">${id}</div>
+    </div>
+    <button class="detail-close" onclick="fecharDetalhe()" aria-label="Fechar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  `;
+  document.getElementById('detailFoot').innerHTML = '';
+
+  try {
+    const r = await fetch('/api/diag/get?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(TOKEN));
+    const j = await r.json();
+    if(!j.ok){
+      document.getElementById('detailContent').innerHTML = `<div class="detail-loading" style="color:#f07070">Erro ao carregar: ${escapar(j.error||'desconhecido')}</div>`;
+      return;
+    }
+    renderDetalhe(j.submissao);
+  } catch(err){
+    document.getElementById('detailContent').innerHTML = `<div class="detail-loading" style="color:#f07070">Erro de conexão.</div>`;
+  }
+}
+
+function fecharDetalhe(){
+  const OVL = getOvl();
+  if(!OVL) return;
+  OVL.classList.remove('show');
+  document.body.classList.remove('detail-open');
+}
+
+// Listeners do modal — registrados após o DOM montar
+document.addEventListener('DOMContentLoaded', function(){
+  const OVL = getOvl();
+  if(!OVL) return;
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && OVL.classList.contains('show')) fecharDetalhe();
+  });
+  OVL.addEventListener('click', function(e){
+    if(e.target === OVL) fecharDetalhe();
+  });
+});
+
+/* Helpers de formatação */
+function fmtR(v){ if(v==null||v==='') return '—'; const n=Number(v); if(!isFinite(n)) return '—'; return 'R$ ' + Math.round(n).toLocaleString('pt-BR'); }
+function fmtPct(v){ if(v==null||v==='') return '—'; const n=Number(v); if(!isFinite(n)) return '—'; return n + '%'; }
+function fmtBool(v){ if(v===true||v==='sim'||v==='Sim') return 'Sim'; if(v===false||v==='nao'||v==='não') return 'Não'; if(v==null||v==='') return '—'; return String(v); }
+function fmtTxt(v){ if(v==null||v==='') return '—'; return String(v); }
+
+function row(lbl, val, type){
+  const empty = (val === '—' || val == null || val === '');
+  const cls = empty ? 'detail-val empty' : ('detail-val' + (type === 'money' ? ' money' : ''));
+  return `<div class="detail-row"><div class="detail-lbl">${lbl}</div><div class="${cls}">${escapar(val ?? '—')}</div></div>`;
+}
+
+function renderDetalhe(s){
+  const d = s.dados || {};
+  const data = formatarData(s.criado_em);
+  const wa = formatarWa(s.whatsapp);
+  const score = s.score != null ? s.score : '—';
+  const statusLbl = s.status === 'analisado' ? 'Analisado' : 'Pendente';
+  const lgpdData = s.lgpd_aceito_em ? formatarData(s.lgpd_aceito_em) : '—';
+
+  document.getElementById('detailHead').innerHTML = `
+    <div class="detail-head-l">
+      <div class="detail-name">${escapar(s.nome)}</div>
+      <div class="detail-sub">${wa} · score ${score}/100 · ${statusLbl} · ${data}</div>
+    </div>
+    <button class="detail-close" onclick="fecharDetalhe()" aria-label="Fechar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  `;
+
+  // Mapeamentos
+  const ecivilLbl = {solteiro:'Solteiro(a)',casado:'Casado(a)',uniao:'União estável',divorciado:'Divorciado(a)',viuvo:'Viúvo(a)'};
+  const regbensLbl = {comunhao_parcial:'Comunhão parcial',comunhao_universal:'Comunhão universal',separacao_total:'Separação total',participacao_final:'Participação final aquestos'};
+  const regimeLbl = {clt:'CLT',pj:'PJ',autonomo:'Autônomo',misto:'Misto',aposentado:'Aposentado',empresario:'Empresário(a)',servidor:'Servidor público'};
+  const irLbl = {completa:'Declaração completa',simplificada:'Simplificada',isento:'Isento'};
+  const temprLbl = {curto:'Curto prazo (<3a)',medio:'Médio prazo (3-7a)',longo:'Longo prazo (>7a)'};
+  const perfilLbl = {conservador:'Conservador',moderado:'Moderado',arrojado:'Arrojado',agressivo:'Agressivo'};
+  const estratLbl = {renda:'Renda passiva',crescimento:'Crescimento',misto:'Misto'};
+  const objetLbl = {aposentadoria:'Aposentadoria',patrimonio:'Crescer patrimônio',sucessao:'Sucessão',independencia:'Independência financeira',renda:'Renda passiva'};
+
+  const composicao = `RF ${fmtPct(d.compRF)} · Ações ${fmtPct(d.compAcoes)} · FII ${fmtPct(d.compFII)} · Internac. ${fmtPct(d.compInter)} · Outros ${fmtPct(d.compOutros)}`;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-t">Identificação</div>
+      <div class="detail-grid">
+        ${row('Nome', s.nome)}
+        ${row('Idade', d.idade ? d.idade + ' anos' : '—')}
+        ${row('Profissão', fmtTxt(d.prof))}
+        ${row('Estado civil', ecivilLbl[d.ecivil] || fmtTxt(d.ecivil))}
+        ${d.ecivil && d.ecivil !== 'solteiro' ? row('Regime de bens', regbensLbl[d.regbens] || fmtTxt(d.regbens)) : ''}
+        ${d.ecivil && d.ecivil !== 'solteiro' ? row('Idade do cônjuge', d.idadeConj ? d.idadeConj + ' anos' : '—') : ''}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-t">Renda & Regime</div>
+      <div class="detail-grid">
+        ${row('Regime de trabalho', regimeLbl[d.regime] || fmtTxt(d.regime))}
+        ${row('Contribui INSS', fmtBool(d.inss))}
+        ${row('Declaração IR', irLbl[d.ir] || fmtTxt(d.ir))}
+        ${row('Renda principal', fmtR(d.renda), 'money')}
+        ${row('Renda extra', fmtR(d.rendaExtra), 'money')}
+        ${row('Despesa mensal', fmtR(d.despesaMensal), 'money')}
+        ${row('Reserva (meses)', d.reservaMeses != null ? d.reservaMeses + ' meses' : '—')}
+        ${row('Tem dívida?', fmtBool(d.temDivida))}
+        ${d.temDivida ? row('Total da dívida', fmtR(d.dividaTotal), 'money') : ''}
+        ${d.temDivida ? row('Prazo da dívida', d.dividaPrazo ? d.dividaPrazo + ' meses' : '—') : ''}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-t">Patrimônio</div>
+      <div class="detail-grid">
+        ${row('Patrimônio total', fmtR(d.patrim), 'money')}
+        ${row('Aporte mensal', fmtR(d.aporte), 'money')}
+        ${row('Horizonte de prazo', temprLbl[d.tempr] || fmtTxt(d.tempr))}
+        ${row('PGBL · saldo', fmtR(d.pgblSaldo), 'money')}
+        ${row('PGBL · aporte mensal', fmtR(d.pgblAporte), 'money')}
+        ${row('VGBL · saldo', fmtR(d.vgblSaldo), 'money')}
+      </div>
+      <div class="detail-row" style="margin-top:10px;border-top:1px solid var(--bdr);padding-top:14px">
+        <div class="detail-lbl">Composição da carteira</div>
+        <div class="detail-val" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.02em">${composicao}</div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-t">Perfil & Aposentadoria</div>
+      <div class="detail-grid">
+        ${row('Perfil de investidor', perfilLbl[d.perfil] || fmtTxt(d.perfil))}
+        ${row('Idade-alvo aposentadoria', d.aposAge ? d.aposAge + ' anos' : '—')}
+        ${row('Estratégia desejada', estratLbl[d.estrat] || fmtTxt(d.estrat))}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-t">Imóveis</div>
+      <div class="detail-grid">
+        ${row('Tem imóveis?', fmtBool(d.temimo))}
+        ${d.temimo ? row('Qtde de imóveis', fmtTxt(d.qtdimo)) : ''}
+        ${d.temimo ? row('Valor total estimado', fmtR(d.valimo), 'money') : ''}
+        ${d.temimo ? row('Aluguel mensal recebido', fmtR(d.alug), 'money') : ''}
+        ${d.temimo ? row('Compra/venda no ano', fmtTxt(d.cvqtd)) : ''}
+        ${d.temimo ? row('Holding patrimonial', fmtBool(d.temhld)) : ''}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-t">Sucessão</div>
+      <div class="detail-grid">
+        ${row('Tem dependentes/herdeiros?', fmtBool(d.depend))}
+        ${d.depend ? row('Quantidade', fmtTxt(d.qtddep)) : ''}
+        ${d.depend && Array.isArray(d.idadesFilhos) && d.idadesFilhos.length ? row('Idades dos filhos', d.idadesFilhos.filter(x=>x).join(' · ') + ' anos') : ''}
+        ${row('Tem testamento', fmtBool(d.temTestamento))}
+        ${row('Longevidade familiar', fmtTxt(d.longevFamiliar))}
+        ${row('Objetivo principal', objetLbl[d.objet] || fmtTxt(d.objet))}
+      </div>
+    </div>
+
+    ${d.preocupacao ? `
+    <div class="detail-section">
+      <div class="detail-section-t">Preocupação pessoal (texto livre)</div>
+      <div class="detail-textarea">${escapar(d.preocupacao)}</div>
+    </div>` : ''}
+
+    <div class="detail-section">
+      <div class="detail-section-t">Conformidade & Metadados</div>
+      <div class="detail-grid">
+        ${row('Protocolo', s.id)}
+        ${row('LGPD aceito em', lgpdData)}
+        ${row('IP de aceite', fmtTxt(s.lgpd_ip))}
+        ${row('Analisado em', s.analisado_em ? formatarData(s.analisado_em) : '—')}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detailFoot').innerHTML = `
+    <div class="det-info">Protocolo <strong>${s.id}</strong></div>
+    <button class="detail-foot-btn secondary" onclick="fecharDetalhe()">Fechar</button>
+    <a class="detail-foot-btn primary" href="/painel?t=${encodeURIComponent(TOKEN)}#abrir-ref=${encodeURIComponent(s.id)}">
+      Rodar análise completa
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </a>
+  `;
+}
 </script>
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL "VER COMPLETO"
+     ═══════════════════════════════════════════════════ -->
+<div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true">
+  <div class="detail-card">
+    <div class="detail-head" id="detailHead"></div>
+    <div class="detail-body" id="detailContent"></div>
+    <div class="detail-foot" id="detailFoot"></div>
+  </div>
+</div>
+
 </body>
 </html>
