@@ -4085,12 +4085,23 @@ function preencherDadosDosModulos(D){
       if(typeof qtdImoveis !== 'undefined') qtdImoveis = relatorio.qtdImoveis || 0;
       if(typeof valorImoveis !== 'undefined') valorImoveis = relatorio.valorImoveis || 0;
       mostrarBannerLead(s);
+
+      // Pré-preenche os inputs DOM com os dados da submissão pra que "Editar análise" funcione
+      // (sem isso, editar abriria os módulos vazios)
+      if(s.dados && typeof preencherDadosDosModulos === 'function'){
+        try { preencherDadosDosModulos(s.dados); }
+        catch(e){ console.warn('[ver-relatorio] falha ao pré-preencher módulos:', e); }
+      }
+      if(typeof fluxoAtual !== 'undefined') fluxoAtual = 'raioX';
+      window._filaExecucao = [];
+      window._modoAnaliseAutomatica = true;
+
       setTimeout(() => {
         if(typeof showScreen === 'function') showScreen('s-final');
         if(typeof renderTelaFinal === 'function'){
           setTimeout(renderTelaFinal, 200);
         }
-        // Esconde o botão "Salvar" porque já está salvo
+        // Esconde o botão "Salvar" porque já está salvo, mas mostra "Editar análise"
         setTimeout(() => {
           const btn = document.getElementById('btn-final-salvar');
           if(btn){
@@ -4102,6 +4113,9 @@ function preencherDadosDosModulos(D){
               stat.style.display = 'block';
             }
           }
+          // Habilita botão "Editar análise"
+          const btnEditar = document.getElementById('btn-editar-analise');
+          if(btnEditar) btnEditar.style.display = 'inline-flex';
         }, 500);
       }, 500);
       return;
@@ -4147,30 +4161,110 @@ function preencherDadosDosModulos(D){
     window._lgpdConsent = true;
     window._dataConsentimento = new Date().toISOString();
 
-    // Configurar fluxo raio-x e fila SEM aposentadoria
-    // (aposentadoria será mostrada já como relatório direto)
+    // Configurar fluxo raio-x e fila completa (caso usuário clique "Editar análise" depois)
     if(typeof fluxoAtual !== 'undefined') fluxoAtual = 'raioX';
     window._filaExecucao = ['pgbl', 'holding', 'vgbl'];
+
+    // Marca que estamos em modo "análise automática" — usado pelo botão Editar
+    window._modoAnaliseAutomatica = true;
 
     // Pré-preenche TODOS os inputs/variáveis dos 4 módulos
     preencherDadosDosModulos(D);
 
-    // Aguarda DOM estar 100% pronto e mostra o RELATÓRIO COMPLETO de aposentadoria (s3)
+    // ⚡ RODA ANÁLISE AUTOMÁTICA — calcula os 4 módulos em sequência e mostra s-final
     setTimeout(() => {
-      if(typeof _renderDiag === 'function'){
-        _renderDiag(); // gera relatório completo aposentadoria e mostra s3
-        // Habilita botão "Próximo módulo" no s3 (aparece se fluxoAtual === 'raioX')
-        if(typeof atualizarBotoesDiagnostico === 'function'){
-          setTimeout(atualizarBotoesDiagnostico, 200);
-        }
-        console.log('[abrir-ref] relatório aposentadoria renderizado · fila restante:', window._filaExecucao);
+      if(typeof executarAnaliseAutomatica === 'function'){
+        executarAnaliseAutomatica();
       } else {
-        console.warn('[abrir-ref] _renderDiag indisponível, fallback pra s0');
+        console.warn('[abrir-ref] executarAnaliseAutomatica indisponível, fallback pra s0');
         if(typeof showScreen === 'function') showScreen('s0');
       }
     }, 600);
   });
 })();
+
+// ═══════════════════════════════════════════════════════════════════
+// ANÁLISE AUTOMÁTICA · roda os 4 módulos em sequência e mostra s-final
+// ═══════════════════════════════════════════════════════════════════
+// Pré-requisito: preencherDadosDosModulos(D) foi chamado antes (inputs DOM preenchidos)
+// Cada calc/init popula window._dadosFinal.<modulo>; renderTelaFinal consome o agregado.
+function executarAnaliseAutomatica(){
+  console.log('[análise-auto] iniciando 4 módulos…');
+  const t0 = performance.now();
+
+  // Reset _dadosFinal pra garantir estado limpo
+  window._dadosFinal = { aposentadoria: null, pgbl: null, holding: null, vgbl: null, carteira: null, renda: null };
+
+  // 1) APOSENTADORIA — _renderDiag popula _dadosFinal.aposentadoria
+  //    (chama showScreen('s3') internamente; tudo bem, mostramos s-final depois)
+  try {
+    if(typeof _renderDiag === 'function') _renderDiag();
+    else console.warn('[análise-auto] _renderDiag indisponível');
+  } catch(e){ console.error('[análise-auto] falha aposentadoria:', e); }
+
+  // 2) PGBL — calcPGBL lê inputs já preenchidos e popula _dadosFinal.pgbl
+  try {
+    if(typeof calcPGBL === 'function') calcPGBL();
+    else console.warn('[análise-auto] calcPGBL indisponível');
+  } catch(e){ console.error('[análise-auto] falha pgbl:', e); }
+
+  // 3) HOLDING — initHoldingSimulator chama calcHolding() que popula _dadosFinal.holding
+  try {
+    if(typeof initHoldingSimulator === 'function') initHoldingSimulator();
+    else console.warn('[análise-auto] initHoldingSimulator indisponível');
+  } catch(e){ console.error('[análise-auto] falha holding:', e); }
+
+  // 4) VGBL — initVGBLSimulator chama calcVGBL() que popula _dadosFinal.vgbl
+  try {
+    if(typeof initVGBLSimulator === 'function') initVGBLSimulator();
+    else console.warn('[análise-auto] initVGBLSimulator indisponível');
+  } catch(e){ console.error('[análise-auto] falha vgbl:', e); }
+
+  // Esvazia a fila (já rodou tudo) — se editar depois, a fila é repopulada
+  window._filaExecucao = [];
+
+  const t1 = performance.now();
+  console.log(`[análise-auto] concluído em ${Math.round(t1-t0)}ms · _dadosFinal:`, {
+    aposentadoria: !!window._dadosFinal.aposentadoria,
+    pgbl: !!window._dadosFinal.pgbl,
+    holding: !!window._dadosFinal.holding,
+    vgbl: !!window._dadosFinal.vgbl
+  });
+
+  // Mostra a tela final consolidada
+  setTimeout(() => {
+    if(typeof showScreen === 'function') showScreen('s-final');
+    if(typeof renderTelaFinal === 'function') setTimeout(renderTelaFinal, 150);
+    // Mostra o botão "Editar análise" só no fluxo automático
+    setTimeout(() => {
+      const btnEditar = document.getElementById('btn-editar-analise');
+      if(btnEditar && window._modoAnaliseAutomatica){
+        btnEditar.style.display = 'inline-flex';
+      }
+    }, 300);
+  }, 250);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// EDITAR ANÁLISE · reabre o fluxo manual (s3 → pgbl → holding → vgbl → s-final)
+// preservando os dados já calculados, pra o consultor revisar/ajustar
+// ═══════════════════════════════════════════════════════════════════
+function editarAnaliseAtual(){
+  if(!confirm('Reabrir o fluxo de análise para edição? Você poderá ajustar cada módulo e voltar à tela final ao concluir.')) return;
+  // Reconfigura fila a partir do PGBL (aposentadoria abre primeiro via showScreen)
+  if(typeof fluxoAtual !== 'undefined') fluxoAtual = 'raioX';
+  window._filaExecucao = ['pgbl', 'holding', 'vgbl'];
+  console.log('[editar-análise] fila restaurada:', window._filaExecucao);
+  // Volta pra aposentadoria (s3). _renderDiag já foi chamado em executarAnaliseAutomatica,
+  // então os dados estão lá. Só re-renderiza pra garantir e mostra a tela.
+  try {
+    if(typeof _renderDiag === 'function') _renderDiag();
+  } catch(e){ console.warn('[editar-análise] _renderDiag falhou:', e); }
+  // Garante botão "Próximo módulo" no s3
+  setTimeout(() => {
+    if(typeof atualizarBotoesDiagnostico === 'function') atualizarBotoesDiagnostico();
+  }, 200);
+}
 
 // Atualiza texto do botão próxima etapa no PGBL
 function atualizarBotaoPGBLProx(){
@@ -7828,7 +7922,13 @@ function reiniciarFluxo(){
   window._dadosFinal = { aposentadoria: null, pgbl: null, holding: null, vgbl: null, carteira: null, renda: null };
   window._modulosSelecionados = [];
   window._filaExecucao = [];
+  window._modoAnaliseAutomatica = false;
+  window._submissaoAtiva = null;
   fluxoAtual = '';
+
+  // Esconde botão "Editar análise" pra próxima sessão começar limpa
+  const btnEditar = document.getElementById('btn-editar-analise');
+  if(btnEditar) btnEditar.style.display = 'none';
   
   // Reseta seleção visual dos módulos
   document.querySelectorAll('.modulo-card.selected').forEach(el => el.classList.remove('selected'));
@@ -11107,10 +11207,16 @@ USD em conta exterior R$ 60.000" style="width:100%;padding:11px 14px;background:
     <!-- BOTÃO SALVAR -->
     <div class="final-salvar-wrap">
       <p class="final-salvar-info">Ao salvar, este diagnóstico será registrado para acompanhamento futuro.</p>
-      <button class="btn-final-salvar" id="btn-final-salvar" onclick="salvarDiagnosticoFinal()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Salvar Diagnóstico
-      </button>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center">
+        <button class="btn-final-salvar" id="btn-final-salvar" onclick="salvarDiagnosticoFinal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar Diagnóstico
+        </button>
+        <button class="btn-editar-analise" id="btn-editar-analise" onclick="editarAnaliseAtual()" style="display:none;align-items:center;gap:10px;padding:16px 28px;background:transparent;border:1.5px solid rgba(76,139,245,.4);border-radius:99px;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:600;color:#4c8bf5;cursor:pointer;transition:all .2s">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Editar análise
+        </button>
+      </div>
       <div class="final-salvar-status" id="final-salvar-status"></div>
     </div>
     
