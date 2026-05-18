@@ -3751,6 +3751,248 @@ function proximaEtapaHolding(){
   irParaVGBL();
 }
 
+// ═══════════════════════════════════════════════════════════════
+// SISTEMA "ABRIR LEAD DA SUBMISSÃO" (handler #abrir-ref=ID)
+// Carrega dados da submissão, pré-preenche todos os 4 módulos
+// e mostra cada relatório completo em sequência:
+//   aposentadoria (s3) → pgbl → holding → vgbl → s-final
+// ═══════════════════════════════════════════════════════════════
+
+function lerHashAbrirRef(){
+  const hash = window.location.hash || '';
+  const m = hash.match(/abrir-ref=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+function lerToken(){
+  // 1) URL ?t=
+  const qs = new URLSearchParams(window.location.search);
+  const t = qs.get('t');
+  if(t) return t;
+  // 2) sessionStorage
+  try { return sessionStorage.getItem('wpln-token') || null; } catch(e){ return null; }
+}
+
+async function carregarSubmissaoApi(id, token){
+  try {
+    const r = await fetch('/api/diag/get?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(token));
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'falha');
+    return j.submissao;
+  } catch(err){
+    console.warn('[abrir-ref] falha ao carregar', err);
+    return null;
+  }
+}
+
+function mostrarBannerLead(s){
+  if(document.getElementById('lead-banner')) return;
+  const score = s.score != null ? s.score : '—';
+  const wa = (s.whatsapp||'').replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, '+$1 ($2) $3-$4');
+  const div = document.createElement('div');
+  div.id = 'lead-banner';
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9990;background:linear-gradient(90deg,rgba(76,139,245,.96),rgba(58,111,216,.96));backdrop-filter:blur(8px);color:#fff;padding:9px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;font-family:"Manrope",sans-serif;font-size:13px;border-bottom:1px solid rgba(255,255,255,.15);box-shadow:0 4px 16px rgba(0,0,0,.3)';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+      <div style="width:8px;height:8px;border-radius:50%;background:#2ecc8a;box-shadow:0 0 12px #2ecc8a;animation:axPulse 1.6s ease-in-out infinite;flex-shrink:0"></div>
+      <div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        <strong>Analisando: ${(s.nome||'Cliente').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}</strong>
+        <span style="opacity:.85;margin-left:8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">${wa} · score ${score}/100 · ${s.id}</span>
+      </div>
+    </div>
+    <a href="/submissoes.html" style="background:rgba(255,255,255,.15);color:#fff;padding:6px 14px;border-radius:999px;font-weight:600;text-decoration:none;font-size:12.5px;white-space:nowrap;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">← Voltar</a>
+  `;
+  document.body.appendChild(div);
+  // Ajusta padding-top do body pra não cobrir nav
+  document.body.style.paddingTop = (div.offsetHeight) + 'px';
+  // Animação CSS pulse
+  if(!document.getElementById('lead-banner-style')){
+    const st = document.createElement('style');
+    st.id = 'lead-banner-style';
+    st.textContent = '@keyframes axPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}';
+    document.head.appendChild(st);
+  }
+}
+
+function preencherDadosDosModulos(D){
+  // ─── APOSENTADORIA (consumida por _renderDiag) ───
+  if(document.getElementById('i1')) setMoeda('i1', D.aporte || 0);
+  if(document.getElementById('i2')) setMoeda('i2', D.patrim || 0);
+  if(document.getElementById('i3')) document.getElementById('i3').value = String(D.idade || 40);
+  if(document.getElementById('i4')) document.getElementById('i4').value = String(D.aposAge || 65);
+
+  // Variáveis globais do wizard
+  if(typeof perfil !== 'undefined') perfil = D.perfil || 'moderado';
+  if(typeof estrat !== 'undefined') estrat = D.estrat || 'renda';
+  if(typeof rendaMensal !== 'undefined') rendaMensal = D.renda || 0;
+  if(typeof possuiImoveis !== 'undefined') possuiImoveis = D.temimo === 'sim';
+  if(typeof possuiHolding !== 'undefined') possuiHolding = D.temhld === 'sim';
+  if(typeof qtdImoveis !== 'undefined') qtdImoveis = D.qtdimo || 0;
+  if(typeof valorImoveis !== 'undefined') valorImoveis = D.valimo || 0;
+
+  // ─── PGBL (consumida por calcPGBL) ───
+  if(document.getElementById('pgbl-renda')) setMoeda('pgbl-renda', (D.renda || 0) * 12);
+  if(document.getElementById('pgbl-contrib')) setMoeda('pgbl-contrib', (D.pgblAporte || 0) * 12);
+  const pgblAnos = document.getElementById('pgbl-anos');
+  if(pgblAnos){ pgblAnos.value = '15'; const lbl = document.getElementById('pgbl-anos-val'); if(lbl) lbl.textContent = '15'; }
+  if(typeof pgblINSS !== 'undefined') pgblINSS = D.inss === 'sim';
+
+  // ─── HOLDING (initHoldingSimulator pega qtdImoveis e valorImoveis das globais) ───
+  // Se cliente tem aluguel, preencher hld-aluguel também
+  if(D.alug && D.alug > 0){
+    if(typeof hldGeraAluguel !== 'undefined') hldGeraAluguel = true;
+    if(typeof hldAluguel !== 'undefined') hldAluguel = D.alug;
+    if(document.getElementById('hld-aluguel')) setMoeda('hld-aluguel', D.alug);
+  }
+
+  // ─── VGBL (consumida por initVGBLSimulator/calcVGBL) ───
+  if(document.getElementById('vgbl-patrimonio')) setMoeda('vgbl-patrimonio', D.patrim || 2000000);
+  if(document.getElementById('vgbl-idade')) document.getElementById('vgbl-idade').value = String(D.idade || 65);
+  if(document.getElementById('vgbl-cdi-input')) document.getElementById('vgbl-cdi-input').value = '10';
+
+  console.log('[abrir-ref] dados preenchidos:', {
+    aposentadoria: { aporte: D.aporte, patrim: D.patrim, idade: D.idade, aposAge: D.aposAge, perfil: D.perfil, estrat: D.estrat },
+    pgbl: { rendaAnual: (D.renda||0)*12, contribAnual: (D.pgblAporte||0)*12, inss: D.inss },
+    holding: { qtd: D.qtdimo, valor: D.valimo, alug: D.alug, temhld: D.temhld },
+    vgbl: { patrim: D.patrim, idade: D.idade }
+  });
+}
+
+// Bootstrap: roda quando a página carrega COM #abrir-ref=ID na URL
+(function bootstrapAbrirRef(){
+  document.addEventListener('DOMContentLoaded', async function(){
+    // Handler 1 · #ver-relatorio=ID — reabre relatório SALVO (sem refazer análise)
+    const hashVer = (window.location.hash||'').match(/ver-relatorio=([^&]+)/);
+    if(hashVer){
+      const refId = decodeURIComponent(hashVer[1]);
+      const token = lerToken();
+      if(!token){ console.warn('[ver-relatorio] sem token'); return; }
+      const splash = document.getElementById('splash');
+      if(splash){
+        splash.style.transition='opacity .35s'; splash.style.opacity='0';
+        setTimeout(()=>{ splash.style.display='none'; }, 350);
+      }
+      const s = await carregarSubmissaoApi(refId, token);
+      if(!s){
+        console.warn('[ver-relatorio] submissão não carregou');
+        if(typeof showScreen === 'function') showScreen('s0');
+        return;
+      }
+      // Tentar parsear o relatório salvo em ia_consultiva
+      let relatorio = null;
+      try {
+        if(s.ia_consultiva){ relatorio = JSON.parse(s.ia_consultiva); }
+      } catch(e){ console.warn('[ver-relatorio] ia_consultiva não é JSON válido', e); }
+      if(!relatorio){
+        // Sem relatório salvo — cai para abrir-ref (refazer)
+        console.warn('[ver-relatorio] sem relatório salvo, redirecionando para abrir-ref');
+        window.location.hash = 'abrir-ref=' + refId;
+        window.location.reload();
+        return;
+      }
+      // Tem relatório → popula window._dadosFinal e mostra s-final direto
+      window._submissaoAtiva = s;
+      window._dadosFinal = {
+        aposentadoria: relatorio.aposentadoria || null,
+        pgbl: relatorio.pgbl || null,
+        holding: relatorio.holding || null,
+        vgbl: relatorio.vgbl || null,
+        carteira: null, renda: null
+      };
+      // Variáveis globais necessárias pra renderTelaFinal
+      if(typeof userName !== 'undefined') userName = s.nome || 'Cliente';
+      if(typeof rendaMensal !== 'undefined') rendaMensal = relatorio.rendaMensal || 0;
+      if(typeof possuiImoveis !== 'undefined') possuiImoveis = !!relatorio.possuiImoveis;
+      if(typeof qtdImoveis !== 'undefined') qtdImoveis = relatorio.qtdImoveis || 0;
+      if(typeof valorImoveis !== 'undefined') valorImoveis = relatorio.valorImoveis || 0;
+      mostrarBannerLead(s);
+      setTimeout(() => {
+        if(typeof showScreen === 'function') showScreen('s-final');
+        if(typeof renderTelaFinal === 'function'){
+          setTimeout(renderTelaFinal, 200);
+        }
+        // Esconde o botão "Salvar" porque já está salvo
+        setTimeout(() => {
+          const btn = document.getElementById('btn-final-salvar');
+          if(btn){
+            btn.style.display = 'none';
+            const stat = document.getElementById('final-salvar-status');
+            if(stat){
+              stat.innerHTML = '✓ Relatório salvo em ' + new Date(relatorio.salvoEm||s.analisado_em||Date.now()).toLocaleString('pt-BR') + ' · <a href="/submissoes.html" style="color:#4c8bf5">Voltar</a>';
+              stat.className = 'final-salvar-status success';
+              stat.style.display = 'block';
+            }
+          }
+        }, 500);
+      }, 500);
+      return;
+    }
+
+    // Handler 2 · #abrir-ref=ID — abre fluxo completo (rodar análise)
+    const refId = lerHashAbrirRef();
+    if(!refId) return;
+    const token = lerToken();
+    if(!token){
+      console.warn('[abrir-ref] sem token, abortando');
+      return;
+    }
+
+    // Esconde splash
+    const splash = document.getElementById('splash');
+    if(splash){
+      splash.style.transition = 'opacity .35s';
+      splash.style.opacity = '0';
+      setTimeout(() => { splash.style.display = 'none'; }, 350);
+    }
+
+    // Carrega a submissão
+    const s = await carregarSubmissaoApi(refId, token);
+    if(!s){
+      console.warn('[abrir-ref] submissão não carregou, caindo no fluxo padrão');
+      setTimeout(() => {
+        if(typeof showScreen === 'function') showScreen('s0');
+        if(typeof animarTelaConsultor === 'function') setTimeout(animarTelaConsultor, 200);
+      }, 400);
+      return;
+    }
+
+    const D = s.dados || {};
+    window._submissaoAtiva = s;
+
+    // Banner azul no topo identificando o lead
+    mostrarBannerLead(s);
+
+    // Configurar nome do cliente
+    if(typeof setUserName === 'function') setUserName(s.nome || 'Cliente');
+    window._userCelular = (s.whatsapp || '').replace(/\D/g,'');
+    window._lgpdConsent = true;
+    window._dataConsentimento = new Date().toISOString();
+
+    // Configurar fluxo raio-x e fila SEM aposentadoria
+    // (aposentadoria será mostrada já como relatório direto)
+    if(typeof fluxoAtual !== 'undefined') fluxoAtual = 'raioX';
+    window._filaExecucao = ['pgbl', 'holding', 'vgbl'];
+
+    // Pré-preenche TODOS os inputs/variáveis dos 4 módulos
+    preencherDadosDosModulos(D);
+
+    // Aguarda DOM estar 100% pronto e mostra o RELATÓRIO COMPLETO de aposentadoria (s3)
+    setTimeout(() => {
+      if(typeof _renderDiag === 'function'){
+        _renderDiag(); // gera relatório completo aposentadoria e mostra s3
+        // Habilita botão "Próximo módulo" no s3 (aparece se fluxoAtual === 'raioX')
+        if(typeof atualizarBotoesDiagnostico === 'function'){
+          setTimeout(atualizarBotoesDiagnostico, 200);
+        }
+        console.log('[abrir-ref] relatório aposentadoria renderizado · fila restante:', window._filaExecucao);
+      } else {
+        console.warn('[abrir-ref] _renderDiag indisponível, fallback pra s0');
+        if(typeof showScreen === 'function') showScreen('s0');
+      }
+    }, 600);
+  });
+})();
+
 // Atualiza texto do botão próxima etapa no PGBL
 function atualizarBotaoPGBLProx(){
   const btn = document.getElementById('btn-pgbl-prox');
@@ -7264,7 +7506,56 @@ async function salvarDiagnosticoFinal(){
   btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Salvando...';
   status.textContent = '';
   status.className = 'final-salvar-status';
-  
+
+  // ─── FLUXO ABRIR-REF · salva relatório consolidado vinculado à submissão ───
+  if(window._submissaoAtiva && window._submissaoAtiva.id){
+    const subId = window._submissaoAtiva.id;
+    const token = lerToken();
+    if(!token){
+      btn.disabled = false;
+      status.textContent = 'Sessão expirada. Volte ao painel.';
+      status.className = 'final-salvar-status error';
+      return;
+    }
+    try {
+      const dados = window._dadosFinal || {};
+      const relatorio = {
+        salvoEm: new Date().toISOString(),
+        consultor: userName || '',
+        aposentadoria: dados.aposentadoria || null,
+        pgbl: dados.pgbl || null,
+        holding: dados.holding || null,
+        vgbl: dados.vgbl || null,
+        rendaMensal: rendaMensal || 0,
+        possuiImoveis: !!possuiImoveis,
+        qtdImoveis: qtdImoveis || 0,
+        valorImoveis: valorImoveis || 0
+      };
+      const resp = await fetch('/api/diag/save-relatorio?id=' + encodeURIComponent(subId) + '&t=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ relatorio })
+      });
+      const data = await resp.json();
+      if(resp.ok && data.ok){
+        btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg> Salvo no banco!';
+        btn.style.background = 'linear-gradient(135deg,#2ecc8a,#27b77a)';
+        status.innerHTML = 'Relatório salvo. <a href="/submissoes.html" style="color:#4c8bf5">Voltar ao painel →</a>';
+        status.className = 'final-salvar-status success';
+      } else {
+        throw new Error(data.error || 'Erro ao salvar');
+      }
+    } catch(err){
+      console.error('[save-relatorio]', err);
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Tentar novamente';
+      status.textContent = err.message;
+      status.className = 'final-salvar-status error';
+    }
+    return;
+  }
+
+  // ─── FLUXO PADRÃO · cria novo cooperado (mantido) ───
   try {
     // Teste de conexão primeiro
     console.log('🔍 Testando conexão com servidor...');
@@ -7433,114 +7724,6 @@ function startFromSplash() {
     setTimeout(animarTelaConsultor, 200);
   }, 500);
 }
-
-// ═══════════════════════════════════════════════════════════════
-// AUTO-CARREGAR SUBMISSÃO via #abrir-ref=ID (vindo do submissoes.html)
-// ═══════════════════════════════════════════════════════════════
-window._submissaoAtiva = null;
-
-function lerHashAbrirRef(){
-  const h = window.location.hash || '';
-  const m = h.match(/abrir-ref=([^&]+)/);
-  return m ? decodeURIComponent(m[1]) : null;
-}
-
-function lerToken(){
-  try {
-    const u = new URL(window.location.href);
-    return u.searchParams.get('t') || '';
-  } catch(e){ return ''; }
-}
-
-async function carregarSubmissaoAtiva(id, token){
-  try {
-    const r = await fetch('/api/diag/get?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(token));
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.error || 'erro');
-    window._submissaoAtiva = j.submissao;
-    mostrarBannerSubmissao(j.submissao);
-    return j.submissao;
-  } catch(err){
-    console.warn('[abrir-ref] falha ao carregar submissão', err);
-    return null;
-  }
-}
-
-function mostrarBannerSubmissao(s){
-  // Banner fixo no topo mostrando qual lead está em análise
-  if(document.getElementById('lead-banner')) return;
-  const wa = (s.whatsapp||'').replace(/\D/g,'');
-  const waFmt = wa.length >= 12 ? `+${wa.slice(0,2)} (${wa.slice(2,4)}) ${wa.slice(4,9)}-${wa.slice(9)}` : s.whatsapp;
-  const div = document.createElement('div');
-  div.id = 'lead-banner';
-  div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:998;background:linear-gradient(135deg,rgba(76,139,245,.18),rgba(76,139,245,.08));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(76,139,245,.35);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;font-family:\'Instrument Sans\',sans-serif;color:#fff;font-size:13px;animation:lbSlide .4s ease';
-  div.innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
-      <div style="width:8px;height:8px;border-radius:50%;background:#4c8bf5;box-shadow:0 0 12px #4c8bf5;animation:lbPulse 1.6s ease-in-out infinite;flex-shrink:0"></div>
-      <div style="min-width:0;overflow:hidden">
-        <div style="font-weight:700;font-size:14px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Analisando: ${(s.nome||'').replace(/[<>&"]/g,'')}</div>
-        <div style="font-size:11.5px;color:rgba(255,255,255,.7);font-family:'JetBrains Mono',monospace;letter-spacing:.04em">${waFmt} · score ${s.score||'—'}/100 · ${s.id}</div>
-      </div>
-    </div>
-    <a href="/submissoes.html" style="font-size:12px;color:rgba(255,255,255,.7);text-decoration:none;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);white-space:nowrap;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='transparent'">← Voltar</a>
-  `;
-  // Adiciona CSS de animação
-  const css = document.createElement('style');
-  css.textContent = '@keyframes lbSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}} @keyframes lbPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}} body.has-lead-banner{padding-top:58px}';
-  document.head.appendChild(css);
-  document.body.appendChild(div);
-  document.body.classList.add('has-lead-banner');
-}
-
-// Hook: ao carregar a página, se tem #abrir-ref, pula splash + s0 + s0b e roda os 4 módulos de planejamento patrimonial direto
-(function bootstrapAbrirRef(){
-  document.addEventListener('DOMContentLoaded', async function(){
-    const refId = lerHashAbrirRef();
-    if(!refId) return;
-    const token = lerToken();
-    if(!token){
-      console.warn('[abrir-ref] sem token — abortando');
-      return;
-    }
-    // Pula splash automaticamente
-    const splash = document.getElementById('splash');
-    if(splash){
-      splash.style.transition = 'opacity .35s';
-      splash.style.opacity = '0';
-      setTimeout(() => { splash.style.display = 'none'; }, 350);
-    }
-    // Carrega a submissão PRIMEIRO
-    const s = await carregarSubmissaoAtiva(refId, token);
-    if(!s){
-      // Falha → cai no fluxo normal (tela do consultor)
-      setTimeout(() => {
-        if(typeof showScreen === 'function') showScreen('s0');
-        if(typeof animarTelaConsultor === 'function') setTimeout(animarTelaConsultor, 200);
-      }, 400);
-      return;
-    }
-    // Configura dados do cliente automaticamente
-    if(typeof setUserName === 'function') setUserName(s.nome || 'Cliente');
-    window._userCelular = (s.whatsapp || '').replace(/\D/g,'');
-    window._lgpdConsent = true;
-    window._dataConsentimento = new Date().toISOString();
-    // Fila de execução: roda os 4 módulos de planejamento patrimonial em sequência
-    // (aposentadoria → pgbl → holding → vgbl)
-    // Módulos de análise de carteira/ações/fiis NÃO entram (são análises de portfólio, outra ferramenta)
-    window._filaExecucao = ['aposentadoria','pgbl','holding','vgbl'];
-    if(typeof fluxoAtual !== 'undefined') fluxoAtual = 'raioX';
-    console.log('[abrir-ref] fila configurada:', window._filaExecucao);
-    // Vai direto pro primeiro módulo (aposentadoria → tela s1)
-    setTimeout(() => {
-      if(typeof proximoModuloDaFila === 'function'){
-        proximoModuloDaFila();
-      } else {
-        console.warn('[abrir-ref] proximoModuloDaFila indisponível, caindo no fluxo padrão');
-        if(typeof showScreen === 'function') showScreen('s0');
-      }
-    }, 500);
-  });
-})();
 
 // ═══════════════════════════════════════════════════════════════
 // ANIMAÇÃO PROGRESSIVA DA TELA DO CONSULTOR

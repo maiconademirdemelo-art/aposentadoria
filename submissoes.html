@@ -78,6 +78,8 @@ html,body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',s
 .act{background:rgba(255,255,255,.04);border:1px solid var(--bdr);color:var(--text);padding:8px 14px;border-radius:9px;font-size:12.5px;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none}
 .act:hover{background:rgba(76,139,245,.1);border-color:var(--accent);color:var(--white)}
 .act-primary{background:linear-gradient(135deg,#4c8bf5,#3a6fd8);border:none;color:#fff;font-weight:600}
+.act-saved{background:linear-gradient(135deg,#2ecc8a,#27b77a);border:none;color:#fff;font-weight:600}
+.act-saved:hover{background:linear-gradient(135deg,#37e09a,#2ec483);color:#fff;border:none}
 .act-primary:hover{box-shadow:0 4px 10px rgba(76,139,245,.3)}
 .act-danger:hover{background:rgba(240,112,112,.1);border-color:#f07070;color:#f07070}
 
@@ -382,7 +384,10 @@ function renderLista(){
         </div>
         <div class="item-actions">
           <button class="act act-primary" onclick="verCompleto('${s.id}')" title="Ver todos os dados preenchidos">Ver completo</button>
-          <a class="act" href="/painel?t=${encodeURIComponent(TOKEN)}#abrir-ref=${encodeURIComponent(s.id)}" title="Rodar análise completa no painel">Rodar análise</a>
+          ${s.status === 'analisado' && s.ia_consultiva
+            ? `<a class="act act-saved" href="/painel?t=${encodeURIComponent(TOKEN)}#ver-relatorio=${encodeURIComponent(s.id)}" title="Abrir relatório consolidado salvo">Ver relatório</a>`
+            : `<a class="act" href="/painel?t=${encodeURIComponent(TOKEN)}#abrir-ref=${encodeURIComponent(s.id)}" title="Rodar análise completa no painel">Rodar análise</a>`
+          }
           <button class="act act-danger" onclick="abrirDel('${s.id}', '${escapar(s.nome).replace(/'/g,"\\'")}')" title="Excluir">×</button>
         </div>
       </div>

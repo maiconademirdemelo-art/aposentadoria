@@ -519,6 +519,27 @@ const server = http.createServer(async function(req,res){
       }
     }
 
+    // ─── POST /api/diag/save-relatorio?id=X · salva relatório consolidado (PROTEGIDO) ───
+    // body: { relatorio: {aposentadoria, pgbl, holding, vgbl, ...} }
+    // Armazena o JSON serializado em ia_consultiva (campo TEXT) e marca status='analisado'
+    if(p==='/api/diag/save-relatorio' && req.method==='POST'){
+      if(!requireAuth(req, res, url)) return;
+      const id = url.searchParams.get('id');
+      if(!id) return sendErr(res, 'Falta id.');
+      const d = await readBody(req);
+      if(!d.relatorio) return sendErr(res, 'Falta relatorio.');
+      try {
+        await db.query(
+          `UPDATE submissoes SET ia_consultiva=$2, status='analisado', analisado_em=NOW() WHERE id=$1`,
+          [id, JSON.stringify(d.relatorio)]
+        );
+        return sendJson(res, {ok:true});
+      } catch(err){
+        console.error('[save-relatorio]', err);
+        return sendErr(res, 'Erro ao salvar relatório.', 500);
+      }
+    }
+
     // ─── DELETE /api/diag/delete?id=X · consultor remove submissão (PROTEGIDO) ───
     if(p==='/api/diag/delete' && (req.method==='DELETE' || req.method==='POST')){
       if(!requireAuth(req, res, url)) return;
