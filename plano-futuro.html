@@ -3578,6 +3578,11 @@ function proximoModuloDaFila(){
   
   const proximo = window._filaExecucao.shift();
   
+  // ⚡ INTERLIGAÇÃO: aplica dados da submissão (se houver) ANTES da tela
+  if(window._submissaoAtiva && typeof aplicarSubmissaoNaTela === 'function'){
+    aplicarSubmissaoNaTela(proximo);
+  }
+  
   switch(proximo){
     case 'aposentadoria':
       showScreen('s1');
@@ -3589,6 +3594,7 @@ function proximoModuloDaFila(){
       break;
     case 'holding':
       showScreen('s-holding');
+      setTimeout(() => { if(typeof initHoldingSimulator === 'function') initHoldingSimulator(); }, 100);
       atualizarBotaoNext('holding');
       break;
     case 'vgbl':
@@ -3814,48 +3820,170 @@ function mostrarBannerLead(s){
   }
 }
 
-function preencherDadosDosModulos(D){
-  // ─── APOSENTADORIA (consumida por _renderDiag) ───
-  if(document.getElementById('i1')) setMoeda('i1', D.aporte || 0);
-  if(document.getElementById('i2')) setMoeda('i2', D.patrim || 0);
-  if(document.getElementById('i3')) document.getElementById('i3').value = String(D.idade || 40);
-  if(document.getElementById('i4')) document.getElementById('i4').value = String(D.aposAge || 65);
+// ═══════════════════════════════════════════════════════════════
+// PREENCHIMENTO DOS MÓDULOS COM DADOS DO DIAGNÓSTICO
+// Mapa completo D → inputs/variáveis de cada módulo.
+// Função retorna log estruturado pra rastreabilidade.
+// ═══════════════════════════════════════════════════════════════
 
-  // Variáveis globais do wizard
-  if(typeof perfil !== 'undefined') perfil = D.perfil || 'moderado';
-  if(typeof estrat !== 'undefined') estrat = D.estrat || 'renda';
-  if(typeof rendaMensal !== 'undefined') rendaMensal = D.renda || 0;
-  if(typeof possuiImoveis !== 'undefined') possuiImoveis = D.temimo === 'sim';
-  if(typeof possuiHolding !== 'undefined') possuiHolding = D.temhld === 'sim';
-  if(typeof qtdImoveis !== 'undefined') qtdImoveis = D.qtdimo || 0;
-  if(typeof valorImoveis !== 'undefined') valorImoveis = D.valimo || 0;
+function _logFill(modulo, log){ console.log('[fill:'+modulo+']', log); return log; }
 
-  // ─── PGBL (consumida por calcPGBL) ───
-  if(document.getElementById('pgbl-renda')) setMoeda('pgbl-renda', (D.renda || 0) * 12);
-  if(document.getElementById('pgbl-contrib')) setMoeda('pgbl-contrib', (D.pgblAporte || 0) * 12);
-  const pgblAnos = document.getElementById('pgbl-anos');
-  if(pgblAnos){ pgblAnos.value = '15'; const lbl = document.getElementById('pgbl-anos-val'); if(lbl) lbl.textContent = '15'; }
-  if(typeof pgblINSS !== 'undefined') pgblINSS = D.inss === 'sim';
+// Helper seguro pra preencher input money (dataset.raw + value)
+function _setMoneyInput(id, valor){
+  const el = document.getElementById(id);
+  if(!el || valor == null || isNaN(valor)) return false;
+  el.dataset.raw = String(valor);
+  el.value = Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return true;
+}
+function _setValueInput(id, valor){
+  const el = document.getElementById(id);
+  if(!el || valor == null) return false;
+  el.value = String(valor);
+  return true;
+}
 
-  // ─── HOLDING (initHoldingSimulator pega qtdImoveis e valorImoveis das globais) ───
-  // Se cliente tem aluguel, preencher hld-aluguel também
-  if(D.alug && D.alug > 0){
-    if(typeof hldGeraAluguel !== 'undefined') hldGeraAluguel = true;
-    if(typeof hldAluguel !== 'undefined') hldAluguel = D.alug;
-    if(document.getElementById('hld-aluguel')) setMoeda('hld-aluguel', D.alug);
+// === APOSENTADORIA ===
+function aplicarDadosAposentadoria(D){
+  const log = { preenchidos: [], faltantes: [] };
+  if(_setMoneyInput('i1', D.aporte || 0)) log.preenchidos.push('aporte mensal: R$ '+(D.aporte||0));
+  if(_setMoneyInput('i2', D.patrim || 0)) log.preenchidos.push('patrimônio: R$ '+(D.patrim||0));
+  if(_setValueInput('i3', D.idade || 40)) log.preenchidos.push('idade: '+(D.idade||40));
+  if(_setValueInput('i4', D.aposAge || 65)) log.preenchidos.push('idade aposentadoria: '+(D.aposAge||65));
+  try {
+    if(typeof perfil !== 'undefined'){ perfil = D.perfil || 'moderado'; log.preenchidos.push('perfil: '+perfil); }
+    if(typeof estrat !== 'undefined'){ estrat = D.estrat || 'renda'; log.preenchidos.push('estratégia: '+estrat); }
+    if(typeof rendaMensal !== 'undefined'){ rendaMensal = D.renda || 0; log.preenchidos.push('renda mensal: R$ '+rendaMensal); }
+    if(typeof possuiImoveis !== 'undefined'){ possuiImoveis = D.temimo === 'sim'; log.preenchidos.push('possui imóveis: '+possuiImoveis); }
+    if(typeof possuiHolding !== 'undefined'){ possuiHolding = D.temhld === 'sim'; log.preenchidos.push('possui holding: '+possuiHolding); }
+    if(typeof qtdImoveis !== 'undefined'){ qtdImoveis = D.qtdimo || 0; }
+    if(typeof valorImoveis !== 'undefined'){ valorImoveis = D.valimo || 0; }
+  } catch(e){ log.faltantes.push('vars globais: '+e.message); }
+  return _logFill('aposentadoria', log);
+}
+
+// === PGBL ===
+function aplicarDadosPGBL(D){
+  const log = { preenchidos: [], faltantes: [] };
+  const rendaAnual = (D.renda || 0) * 12 + (D.rendaExtra || 0) * 12;
+  const contribAnual = (D.pgblAporte || 0) * 12;
+  if(_setMoneyInput('pgbl-renda', rendaAnual)) log.preenchidos.push('renda anual: R$ '+rendaAnual);
+  if(_setMoneyInput('pgbl-contrib', contribAnual)) log.preenchidos.push('contrib anual: R$ '+contribAnual);
+  const anosEl = document.getElementById('pgbl-anos');
+  if(anosEl){ anosEl.value = '15'; const lbl = document.getElementById('pgbl-anos-val'); if(lbl) lbl.textContent='15'; log.preenchidos.push('horizonte: 15a'); }
+  // INSS: setar var global E o toggle visual (sim/nao)
+  const temINSS = D.inss === 'sim';
+  try { if(typeof pgblINSS !== 'undefined'){ pgblINSS = temINSS; log.preenchidos.push('INSS: '+(temINSS?'sim':'não')); } } catch(e){}
+  // Aplicar visual ao toggle: se função togglePGBLInss existir, chamar
+  try {
+    const btnSim = document.getElementById('pgbl-inss-sim');
+    const btnNao = document.getElementById('pgbl-inss-nao');
+    if(btnSim && btnNao){
+      btnSim.classList.toggle('active', temINSS);
+      btnNao.classList.toggle('active', !temINSS);
+      log.preenchidos.push('toggle INSS aplicado');
+    }
+  } catch(e){ log.faltantes.push('toggle INSS: '+e.message); }
+  // IR completa: salvar info pra usar nos cálculos
+  window._dDiag_irCompleta = D.ir === 'completa';
+  log.preenchidos.push('declara IR completa: '+window._dDiag_irCompleta);
+  return _logFill('pgbl', log);
+}
+
+// === HOLDING ===
+function aplicarDadosHolding(D){
+  const log = { preenchidos: [], faltantes: [] };
+  const qtd = Math.max(1, Math.min(50, parseInt(D.qtdimo) || 1));
+  const valor = D.valimo || 0;
+  const alug = D.alug || 0;
+  const cvqtd = D.cvqtd || 0;
+  // Quantidade
+  try {
+    if(typeof hldQtd !== 'undefined'){ hldQtd = qtd; }
+    const qtdEl = document.getElementById('hld-qtd');
+    if(qtdEl){ qtdEl.textContent = String(qtd); log.preenchidos.push('qtd imóveis: '+qtd); }
+  } catch(e){}
+  // Valor
+  try {
+    if(typeof hldValor !== 'undefined'){ hldValor = valor; }
+    if(_setMoneyInput('hld-valor', valor)) log.preenchidos.push('valor imóveis: R$ '+valor);
+  } catch(e){}
+  // Aluguel — toggle on/off + valor
+  try {
+    if(typeof hldGeraAluguel !== 'undefined'){ hldGeraAluguel = alug > 0; }
+    if(typeof hldAluguel !== 'undefined'){ hldAluguel = alug; }
+    if(alug > 0){
+      if(_setMoneyInput('hld-aluguel', alug)) log.preenchidos.push('aluguel mensal: R$ '+alug);
+      // Ativar toggle visual de aluguel
+      const grupoAlug = document.getElementById('hld-grupo-aluguel');
+      if(grupoAlug) grupoAlug.style.display = 'block';
+    }
+  } catch(e){ log.faltantes.push('aluguel: '+e.message); }
+  // Compra/venda de imóveis
+  try {
+    if(cvqtd > 0){
+      _setValueInput('hld-cv-qtd', cvqtd);
+      // Estimar lucro por venda (30% do valor médio)
+      const lucroMedio = qtd > 0 ? Math.round((valor / qtd) * 0.30) : 200000;
+      _setMoneyInput('hld-cv-lucro', lucroMedio);
+      log.preenchidos.push('CV imóveis: '+cvqtd+' (lucro estimado R$ '+lucroMedio+')');
+      // Ativar grupo CV
+      const grupoCV = document.getElementById('hld-grupo-cv');
+      if(grupoCV) grupoCV.style.display = 'block';
+    }
+  } catch(e){ log.faltantes.push('CV: '+e.message); }
+  // Já tem holding? (apenas info pra render)
+  log.preenchidos.push('já tem holding: '+(D.temhld === 'sim'));
+  return _logFill('holding', log);
+}
+
+// === VGBL ===
+function aplicarDadosVGBL(D){
+  const log = { preenchidos: [], faltantes: [] };
+  const patrim = D.patrim || 0;
+  const vgblSaldo = D.vgblSaldo || 0;
+  // Patrimônio total considerado pra VGBL = patrimônio financeiro
+  if(_setMoneyInput('vgbl-patrimonio', patrim)) log.preenchidos.push('patrimônio: R$ '+patrim);
+  if(_setValueInput('vgbl-idade', D.idade || 50)) log.preenchidos.push('idade: '+(D.idade||50));
+  if(_setValueInput('vgbl-cdi-input', '10')) log.preenchidos.push('CDI: 10%');
+  // Info pra calc
+  window._dDiag_vgblSaldo = vgblSaldo;
+  window._dDiag_temDependentes = D.depend === 'sim';
+  window._dDiag_qtdDependentes = D.qtddep || 0;
+  if(vgblSaldo > 0) log.preenchidos.push('VGBL existente: R$ '+vgblSaldo);
+  if(D.depend === 'sim') log.preenchidos.push('herdeiros: '+(D.qtddep||1));
+  return _logFill('vgbl', log);
+}
+
+// === MASTER: aplica conforme módulo, retorna log consolidado ===
+function aplicarSubmissaoNaTela(modulo){
+  if(!window._submissaoAtiva || !window._submissaoAtiva.dados){
+    console.warn('[fill] sem submissão ativa, fluxo normal');
+    return null;
   }
+  const D = window._submissaoAtiva.dados;
+  let log;
+  switch(modulo){
+    case 'aposentadoria': log = aplicarDadosAposentadoria(D); break;
+    case 'pgbl':          log = aplicarDadosPGBL(D); break;
+    case 'holding':       log = aplicarDadosHolding(D); break;
+    case 'vgbl':          log = aplicarDadosVGBL(D); break;
+    default: return null;
+  }
+  return log;
+}
 
-  // ─── VGBL (consumida por initVGBLSimulator/calcVGBL) ───
-  if(document.getElementById('vgbl-patrimonio')) setMoeda('vgbl-patrimonio', D.patrim || 2000000);
-  if(document.getElementById('vgbl-idade')) document.getElementById('vgbl-idade').value = String(D.idade || 65);
-  if(document.getElementById('vgbl-cdi-input')) document.getElementById('vgbl-cdi-input').value = '10';
-
-  console.log('[abrir-ref] dados preenchidos:', {
-    aposentadoria: { aporte: D.aporte, patrim: D.patrim, idade: D.idade, aposAge: D.aposAge, perfil: D.perfil, estrat: D.estrat },
-    pgbl: { rendaAnual: (D.renda||0)*12, contribAnual: (D.pgblAporte||0)*12, inss: D.inss },
-    holding: { qtd: D.qtdimo, valor: D.valimo, alug: D.alug, temhld: D.temhld },
-    vgbl: { patrim: D.patrim, idade: D.idade }
-  });
+// Função pública — chamar uma vez ao carregar pra preencher todos
+function preencherDadosDosModulos(D){
+  window._submissaoAtiva = window._submissaoAtiva || { dados: D };
+  const all = {
+    aposentadoria: aplicarDadosAposentadoria(D),
+    pgbl:          aplicarDadosPGBL(D),
+    holding:       aplicarDadosHolding(D),
+    vgbl:          aplicarDadosVGBL(D),
+  };
+  console.log('[fill:ALL] resumo:', all);
+  return all;
 }
 
 // Bootstrap: roda quando a página carrega COM #abrir-ref=ID na URL
