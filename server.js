@@ -522,7 +522,8 @@ const server = http.createServer(async function(req,res){
 
     // ─── POST /api/diag/save-relatorio?id=X · salva relatório consolidado (PROTEGIDO) ───
     // body: { relatorio: {aposentadoria, pgbl, holding, vgbl, ...} }
-    // Armazena o JSON serializado em ia_consultiva (campo TEXT) e marca status='analisado'
+    // Armazena o JSON em ia_consultiva (campo JSONB) e marca status='analisado'.
+    // OBS: driver pg parseia JSONB automaticamente no SELECT → frontend recebe objeto, não string.
     if(p==='/api/diag/save-relatorio' && req.method==='POST'){
       if(!requireAuth(req, res, url)) return;
       const id = url.searchParams.get('id');

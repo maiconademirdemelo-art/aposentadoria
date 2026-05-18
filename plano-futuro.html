@@ -4008,23 +4008,40 @@ function preencherDadosDosModulos(D){
         return;
       }
       // Diagnóstico: o que veio do banco?
+      // ATENÇÃO: ia_consultiva é JSONB no Postgres — driver pg parseia automaticamente.
+      // Portanto pode chegar como: (a) objeto já parseado, (b) string JSON (legado), (c) null.
+      const iaTipo = s.ia_consultiva === null || s.ia_consultiva === undefined
+        ? 'vazio'
+        : (typeof s.ia_consultiva);
       console.log('[ver-relatorio] submissão recebida:', {
         id: s.id, nome: s.nome, status: s.status,
         tem_ia_consultiva: !!s.ia_consultiva,
-        ia_consultiva_length: s.ia_consultiva ? s.ia_consultiva.length : 0,
-        ia_consultiva_preview: s.ia_consultiva ? s.ia_consultiva.substring(0, 100) : null,
+        ia_consultiva_tipo: iaTipo,
+        ia_consultiva_preview: iaTipo === 'string'
+          ? s.ia_consultiva.substring(0, 100)
+          : (iaTipo === 'object' ? Object.keys(s.ia_consultiva).slice(0, 8) : null),
         analisado_em: s.analisado_em
       });
-      // Tentar parsear o relatório salvo em ia_consultiva
+      // Parsear o relatório salvo (resiliente a objeto OU string)
       let relatorio = null;
       let parseErro = null;
       if(s.ia_consultiva){
-        try {
-          relatorio = JSON.parse(s.ia_consultiva);
-          console.log('[ver-relatorio] JSON parse OK · chaves:', Object.keys(relatorio));
-        } catch(e){
-          parseErro = e.message;
-          console.error('[ver-relatorio] JSON.parse falhou:', e.message, '· conteúdo:', s.ia_consultiva.substring(0, 200));
+        if(typeof s.ia_consultiva === 'object'){
+          // Driver pg já parseou JSONB → usa direto
+          relatorio = s.ia_consultiva;
+          console.log('[ver-relatorio] JSONB direto · chaves:', Object.keys(relatorio));
+        } else if(typeof s.ia_consultiva === 'string'){
+          // Legado (gravação antiga como TEXT) → tenta parsear
+          try {
+            relatorio = JSON.parse(s.ia_consultiva);
+            console.log('[ver-relatorio] JSON.parse OK · chaves:', Object.keys(relatorio));
+          } catch(e){
+            parseErro = e.message;
+            console.error('[ver-relatorio] JSON.parse falhou:', e.message, '· conteúdo:', s.ia_consultiva.substring(0, 200));
+          }
+        } else {
+          parseErro = 'tipo inesperado: ' + iaTipo;
+          console.error('[ver-relatorio] tipo inesperado de ia_consultiva:', iaTipo, s.ia_consultiva);
         }
       } else {
         console.warn('[ver-relatorio] ia_consultiva está vazio no banco');
