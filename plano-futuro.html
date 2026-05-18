@@ -1482,6 +1482,48 @@ body.has-rxp{padding-top:48px}
   .acoes-btn-row{grid-template-columns:1fr}
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   MODO RELATÓRIO COMPLETO · todas as telas dos módulos visíveis em sequência
+   Ativado por document.body.classList.add('relatorio-completo')
+   ═══════════════════════════════════════════════════════════════════ */
+body.relatorio-completo #s3,
+body.relatorio-completo #s-pgbl,
+body.relatorio-completo #s-holding,
+body.relatorio-completo #s-vgbl,
+body.relatorio-completo #s-final{
+  display:flex !important;
+  min-height:auto;
+  animation:none !important;
+}
+/* Separador visual entre seções (cada tela vira um "capítulo") */
+body.relatorio-completo #s-pgbl,
+body.relatorio-completo #s-holding,
+body.relatorio-completo #s-vgbl,
+body.relatorio-completo #s-final{
+  border-top:1px solid rgba(255,255,255,.06);
+  padding-top:32px;
+  margin-top:24px;
+}
+/* Esconde elementos de navegação/ação que não fazem sentido no relatório consolidado */
+body.relatorio-completo .rw,
+body.relatorio-completo .pgbl-next-wrap,
+body.relatorio-completo #pgbl-next-wrap,
+body.relatorio-completo #holding-next-wrap,
+body.relatorio-completo #vgbl-next-wrap,
+body.relatorio-completo .raiox-btn-canto,
+body.relatorio-completo #raio-x-progress,
+body.relatorio-completo #splash{
+  display:none !important;
+}
+/* Esconde botões de navegação (Voltar / Refazer) dos navs internos das telas */
+body.relatorio-completo #s3 .d-nav .nav-btn,
+body.relatorio-completo #s-pgbl .nav-btn,
+body.relatorio-completo #s-holding .nav-btn,
+body.relatorio-completo #s-vgbl .nav-btn{
+  display:none !important;
+}
+body.relatorio-completo.has-rxp{padding-top:0 !important}
+
 </style>
 </head>
 <body>
@@ -4087,7 +4129,7 @@ function preencherDadosDosModulos(D){
       mostrarBannerLead(s);
 
       // Pré-preenche os inputs DOM com os dados da submissão pra que "Editar análise" funcione
-      // (sem isso, editar abriria os módulos vazios)
+      // E pra que executarAnaliseAutomatica regenere os relatórios ricos
       if(s.dados && typeof preencherDadosDosModulos === 'function'){
         try { preencherDadosDosModulos(s.dados); }
         catch(e){ console.warn('[ver-relatorio] falha ao pré-preencher módulos:', e); }
@@ -4096,10 +4138,16 @@ function preencherDadosDosModulos(D){
       window._filaExecucao = [];
       window._modoAnaliseAutomatica = true;
 
+      // ⚡ REGENERA todos os relatórios ricos a partir dos dados da submissão
+      // (o que está em ia_consultiva são só os consolidados — relatórios visuais
+      //  detalhados são reconstruídos pelas funções de cálculo dos módulos)
       setTimeout(() => {
-        if(typeof showScreen === 'function') showScreen('s-final');
-        if(typeof renderTelaFinal === 'function'){
-          setTimeout(renderTelaFinal, 200);
+        if(typeof executarAnaliseAutomatica === 'function'){
+          executarAnaliseAutomatica();
+        } else {
+          // Fallback: só mostra s-final consolidada
+          if(typeof showScreen === 'function') showScreen('s-final');
+          if(typeof renderTelaFinal === 'function') setTimeout(renderTelaFinal, 200);
         }
         // Esconde o botão "Salvar" porque já está salvo, mas mostra "Editar análise"
         setTimeout(() => {
@@ -4113,10 +4161,9 @@ function preencherDadosDosModulos(D){
               stat.style.display = 'block';
             }
           }
-          // Habilita botão "Editar análise"
           const btnEditar = document.getElementById('btn-editar-analise');
           if(btnEditar) btnEditar.style.display = 'inline-flex';
-        }, 500);
+        }, 700);
       }, 500);
       return;
     }
@@ -4188,12 +4235,18 @@ function preencherDadosDosModulos(D){
 // ═══════════════════════════════════════════════════════════════════
 // Pré-requisito: preencherDadosDosModulos(D) foi chamado antes (inputs DOM preenchidos)
 // Cada calc/init popula window._dadosFinal.<modulo>; renderTelaFinal consome o agregado.
+// IMPORTANTE: ativa o modo "relatorio-completo" ANTES dos cálculos pra que os canvases
+// dos charts (Chart.js responsive) tenham dimensões reais quando criados.
 function executarAnaliseAutomatica(){
   console.log('[análise-auto] iniciando 4 módulos…');
   const t0 = performance.now();
 
   // Reset _dadosFinal pra garantir estado limpo
   window._dadosFinal = { aposentadoria: null, pgbl: null, holding: null, vgbl: null, carteira: null, renda: null };
+
+  // ⚡ ATIVA modo "relatório completo" — torna todas as telas dos módulos visíveis simultaneamente
+  // Isso garante que os canvases dos charts tenham largura/altura > 0 quando os Chart.js inicializam
+  document.body.classList.add('relatorio-completo');
 
   // 1) APOSENTADORIA — _renderDiag popula _dadosFinal.aposentadoria
   //    (chama showScreen('s3') internamente; tudo bem, mostramos s-final depois)
@@ -4231,10 +4284,11 @@ function executarAnaliseAutomatica(){
     vgbl: !!window._dadosFinal.vgbl
   });
 
-  // Mostra a tela final consolidada
+  // Renderiza o sumário consolidado da s-final (ela já está visível pela classe relatorio-completo)
+  // E posiciona scroll no topo pra começar a leitura do relatório pela aposentadoria
   setTimeout(() => {
-    if(typeof showScreen === 'function') showScreen('s-final');
-    if(typeof renderTelaFinal === 'function') setTimeout(renderTelaFinal, 150);
+    if(typeof renderTelaFinal === 'function') renderTelaFinal();
+    window.scrollTo({ top: 0, behavior: 'instant' });
     // Mostra o botão "Editar análise" só no fluxo automático
     setTimeout(() => {
       const btnEditar = document.getElementById('btn-editar-analise');
@@ -4251,6 +4305,8 @@ function executarAnaliseAutomatica(){
 // ═══════════════════════════════════════════════════════════════════
 function editarAnaliseAtual(){
   if(!confirm('Reabrir o fluxo de análise para edição? Você poderá ajustar cada módulo e voltar à tela final ao concluir.')) return;
+  // Sai do modo "relatório completo" — volta ao fluxo screen-a-screen
+  document.body.classList.remove('relatorio-completo');
   // Reconfigura fila a partir do PGBL (aposentadoria abre primeiro via showScreen)
   if(typeof fluxoAtual !== 'undefined') fluxoAtual = 'raioX';
   window._filaExecucao = ['pgbl', 'holding', 'vgbl'];
@@ -7925,6 +7981,9 @@ function reiniciarFluxo(){
   window._modoAnaliseAutomatica = false;
   window._submissaoAtiva = null;
   fluxoAtual = '';
+
+  // Sai do modo "relatório completo" (caso o usuário tenha vindo de uma análise)
+  document.body.classList.remove('relatorio-completo');
 
   // Esconde botão "Editar análise" pra próxima sessão começar limpa
   const btnEditar = document.getElementById('btn-editar-analise');
