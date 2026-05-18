@@ -4002,20 +4002,54 @@ function preencherDadosDosModulos(D){
       }
       const s = await carregarSubmissaoApi(refId, token);
       if(!s){
-        console.warn('[ver-relatorio] submissão não carregou');
-        if(typeof showScreen === 'function') showScreen('s0');
+        console.error('[ver-relatorio] FALHA: submissão não carregou (id=' + refId + ')');
+        alert('Não foi possível carregar a submissão. Volte ao painel e tente novamente.');
+        window.location.href = '/submissoes.html';
         return;
       }
+      // Diagnóstico: o que veio do banco?
+      console.log('[ver-relatorio] submissão recebida:', {
+        id: s.id, nome: s.nome, status: s.status,
+        tem_ia_consultiva: !!s.ia_consultiva,
+        ia_consultiva_length: s.ia_consultiva ? s.ia_consultiva.length : 0,
+        ia_consultiva_preview: s.ia_consultiva ? s.ia_consultiva.substring(0, 100) : null,
+        analisado_em: s.analisado_em
+      });
       // Tentar parsear o relatório salvo em ia_consultiva
       let relatorio = null;
-      try {
-        if(s.ia_consultiva){ relatorio = JSON.parse(s.ia_consultiva); }
-      } catch(e){ console.warn('[ver-relatorio] ia_consultiva não é JSON válido', e); }
+      let parseErro = null;
+      if(s.ia_consultiva){
+        try {
+          relatorio = JSON.parse(s.ia_consultiva);
+          console.log('[ver-relatorio] JSON parse OK · chaves:', Object.keys(relatorio));
+        } catch(e){
+          parseErro = e.message;
+          console.error('[ver-relatorio] JSON.parse falhou:', e.message, '· conteúdo:', s.ia_consultiva.substring(0, 200));
+        }
+      } else {
+        console.warn('[ver-relatorio] ia_consultiva está vazio no banco');
+      }
       if(!relatorio){
-        // Sem relatório salvo — cai para abrir-ref (refazer)
-        console.warn('[ver-relatorio] sem relatório salvo, redirecionando para abrir-ref');
-        window.location.hash = 'abrir-ref=' + refId;
-        window.location.reload();
+        // Sem relatório → MOSTRA UI clara com opção, NÃO redireciona silenciosamente
+        const motivo = !s.ia_consultiva
+          ? 'A submissão foi marcada como analisada mas não há relatório consolidado salvo. Provavelmente foi salva antes do sistema atual de salvar relatório.'
+          : 'O relatório salvo está em formato inválido (' + parseErro + '). Provavelmente foi salvo por uma versão antiga.';
+        document.body.innerHTML = `
+          <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#091122;color:#fff;font-family:'Manrope',sans-serif;padding:24px">
+            <div style="max-width:520px;background:#0e1a30;border:1px solid #2a3a55;border-radius:16px;padding:36px;text-align:center">
+              <div style="width:48px;height:48px;background:rgba(240,193,75,.12);border:1px solid rgba(240,193,75,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#f0c14b;font-size:24px">⚠</div>
+              <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;margin:0 0 10px;color:#fff">Relatório não encontrado</h2>
+              <p style="font-size:14px;color:#a0aec0;line-height:1.6;margin:0 0 24px">${motivo}</p>
+              <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                <a href="/painel?t=${encodeURIComponent(token)}#abrir-ref=${encodeURIComponent(refId)}" style="background:#4c8bf5;color:#fff;padding:11px 20px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">Rodar análise agora</a>
+                <a href="/submissoes.html" style="background:transparent;border:1px solid #2a3a55;color:#a0aec0;padding:11px 20px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">← Voltar ao painel</a>
+              </div>
+              <div style="margin-top:24px;padding-top:18px;border-top:1px solid #1a2a45;font-size:11.5px;color:#6b7a90;font-family:'JetBrains Mono',monospace">
+                ID: ${refId} · Status: ${s.status} · Console (F12) tem detalhes
+              </div>
+            </div>
+          </div>
+        `;
         return;
       }
       // Tem relatório → popula window._dadosFinal e mostra s-final direto
