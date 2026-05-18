@@ -470,7 +470,8 @@ const server = http.createServer(async function(req,res){
       if(!requireAuth(req, res, url)) return;
       try {
         const r = await db.query(
-          `SELECT id, nome, whatsapp, status, score, criado_em, analisado_em
+          `SELECT id, nome, whatsapp, status, score, criado_em, analisado_em,
+                  (ia_consultiva IS NOT NULL) AS tem_relatorio
            FROM submissoes ORDER BY criado_em DESC LIMIT 200`
         );
         return sendJson(res, {ok:true, items: r.rows});

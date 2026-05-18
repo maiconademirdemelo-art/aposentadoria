@@ -384,7 +384,7 @@ function renderLista(){
         </div>
         <div class="item-actions">
           <button class="act act-primary" onclick="verCompleto('${s.id}')" title="Ver todos os dados preenchidos">Ver completo</button>
-          ${s.status === 'analisado' && s.ia_consultiva
+          ${s.status === 'analisado' && s.tem_relatorio
             ? `<a class="act act-saved" href="/painel?t=${encodeURIComponent(TOKEN)}#ver-relatorio=${encodeURIComponent(s.id)}" title="Abrir relatório consolidado salvo">Ver relatório</a>`
             : `<a class="act" href="/painel?t=${encodeURIComponent(TOKEN)}#abrir-ref=${encodeURIComponent(s.id)}" title="Rodar análise completa no painel">Rodar análise</a>`
           }
